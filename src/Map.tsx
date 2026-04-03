@@ -10,16 +10,20 @@ const STYLE_URL =
 const Map: React.FC = () => {
   const mapContainer = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<maptilersdk.Map | null>(null);
+  const globeSize = "min(70vw, 70vh)";
 
   useEffect(() => {
     if (!mapContainer.current) return;
+    let animationFrameId = 0;
+    let lastFrameTime = 0;
+    const rotationSpeedDegPerSec = 1.2;
 
     const map = new maptilersdk.Map({
       container: mapContainer.current,
       style: STYLE_URL,
       projection: "globe",
       center: [0, 20],
-      zoom: 1.2,
+      zoom: 1,
       pitch: 20,
       navigationControl: false,
       geolocateControl: false,
@@ -32,7 +36,26 @@ const Map: React.FC = () => {
 
     mapRef.current = map;
 
+    const animateRotation = (timestamp: number) => {
+      if (!lastFrameTime) {
+        lastFrameTime = timestamp;
+      }
+
+      const deltaSeconds = (timestamp - lastFrameTime) / 1000;
+      lastFrameTime = timestamp;
+
+      const center = map.getCenter();
+      const nextLng = (((center.lng - deltaSeconds * rotationSpeedDegPerSec) + 540) % 360) - 180;
+      map.setCenter([nextLng, center.lat]);
+      animationFrameId = window.requestAnimationFrame(animateRotation);
+    };
+
+    map.on("load", () => {
+      animationFrameId = window.requestAnimationFrame(animateRotation);
+    });
+
     return () => {
+      window.cancelAnimationFrame(animationFrameId);
       map.remove();
     };
   }, []);
@@ -41,8 +64,8 @@ const Map: React.FC = () => {
     <div
       ref={mapContainer}
       style={{
-        width: "70vh",
-        height: "70vh"
+        width: globeSize,
+        height: globeSize
       }}
     />
   );
