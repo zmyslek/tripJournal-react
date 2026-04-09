@@ -1,20 +1,58 @@
 import React, { useEffect, useRef } from "react";
 import * as maptilersdk from "@maptiler/sdk";
 import "@maptiler/sdk/dist/maptiler-sdk.css";
+import { getCountryName, type CountriesGeoJson } from "../types/countries";
 
 const STYLE_URL =
   "https://api.maptiler.com/maps/0196a729-51f8-7a04-8b3a-22b8d925ea1b/style.json?key=FelxstvCdS6k0g9YnLdK";
 
-const FRANCE_LAYER_ID = "france-fill";
-const FRANCE_OUTLINE_LAYER_ID = "france-outline";
-const FRANCE_SOURCE_ID = "france-geojson";
+const COUNTRY_LAYER_ID = "country-fill";
+const COUNTRY_OUTLINE_LAYER_ID = "country-outline";
+const COUNTRY_SOURCE_ID = "countries-geojson";
 
-// const highlightedCountries = ["Spain", "France", "Germany"];
+type MapProps = {
+  countriesData: CountriesGeoJson | null;
+  selectedCountries: string[];
+};
 
-const Map: React.FC = () => {
+const EMPTY_FEATURE_COLLECTION: CountriesGeoJson = {
+  type: "FeatureCollection",
+  features: []
+};
+
+const Map: React.FC<MapProps> = ({ countriesData, selectedCountries }) => {
   const mapContainer = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<maptilersdk.Map | null>(null);
+  const countriesDataRef = useRef<CountriesGeoJson | null>(countriesData);
+  const selectedCountriesRef = useRef<string[]>(selectedCountries);
   const globeSize = "min(70vw, 70vh)";
+
+  const updateHighlightedCountries = () => {
+    const map = mapRef.current;
+    if (!map || !map.isStyleLoaded()) {
+      return;
+    }
+
+    const source = map.getSource(COUNTRY_SOURCE_ID);
+    if (!source || !("setData" in source)) {
+      return;
+    }
+
+    const selectedCountrySet = new Set(selectedCountriesRef.current);
+    const highlightedData: CountriesGeoJson = {
+      type: "FeatureCollection",
+      features:
+        countriesDataRef.current?.features.filter((feature) => selectedCountrySet.has(getCountryName(feature))) ?? []
+    };
+
+    (source as { setData: (data: unknown) => void }).setData(highlightedData);
+  };
+
+  useEffect(() => {
+    countriesDataRef.current = countriesData;
+    selectedCountriesRef.current = selectedCountries;
+    updateHighlightedCountries();
+  }, [countriesData, selectedCountries]);
 
   useEffect(() => {
     if (!mapContainer.current) return;
@@ -60,47 +98,36 @@ const Map: React.FC = () => {
       animationFrameId = window.requestAnimationFrame(animateRotation);
     };
 
-    map.on("load", async () => {
-      try {
-        const response = await fetch("/countries.geojson");
-        const countries = await response.json();
-        const france = {
-          ...countries,
-          features: countries.features.filter((feature: { properties?: { [key: string]: string } }) =>
-            feature.properties?.name === "France"
-          )
-        };
+    map.on("load", () => {
+      if (!map.getSource(COUNTRY_SOURCE_ID)) {
+        map.addSource(COUNTRY_SOURCE_ID, {
+          type: "geojson",
+          data: EMPTY_FEATURE_COLLECTION
+        });
 
-        if (!map.getSource(FRANCE_SOURCE_ID)) {
-          map.addSource(FRANCE_SOURCE_ID, {
-            type: "geojson",
-            data: france
-          });
+        map.addLayer({
+          id: COUNTRY_LAYER_ID,
+          type: "fill",
+          source: COUNTRY_SOURCE_ID,
+          paint: {
+            "fill-color": "#fabe7d",
+            "fill-opacity": 0.58,
+            "fill-outline-color": "#ffead4"
+          }
+        });
 
-          map.addLayer({
-            id: FRANCE_LAYER_ID,
-            type: "fill",
-            source: FRANCE_SOURCE_ID,
-            paint: {
-              "fill-color": "#ff4fa3",
-              "fill-opacity": 0.78,
-              "fill-outline-color": "#ffd1e8"
-            }
-          });
-
-          map.addLayer({
-            id: FRANCE_OUTLINE_LAYER_ID,
-            type: "line",
-            source: FRANCE_SOURCE_ID,
-            paint: {
-              "line-color": "#ffd1e8",
-              "line-width": 1.5
-            }
-          });
-        }
-      } catch (error) {
-        console.error("Failed to load France GeoJSON", error);
+        map.addLayer({
+          id: COUNTRY_OUTLINE_LAYER_ID,
+          type: "line",
+          source: COUNTRY_SOURCE_ID,
+          paint: {
+            "line-color": "#ffead4",
+            "line-width": 1.35
+          }
+        });
       }
+
+      updateHighlightedCountries();
 
       map.on("dragstart", () => {
         isUserInteracting = true;
