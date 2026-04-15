@@ -25,7 +25,7 @@ const Map: React.FC<MapProps> = ({ countriesData, selectedCountries }) => {
   const mapRef = useRef<maptilersdk.Map | null>(null);
   const countriesDataRef = useRef<CountriesGeoJson | null>(countriesData);
   const selectedCountriesRef = useRef<string[]>(selectedCountries);
-  const globeSize = "min(70vw, 70vh)";
+  const globeSize = "min(78vw, 78vh)";
 
   const updateHighlightedCountries = () => {
     const map = mapRef.current;
@@ -105,7 +105,7 @@ const Map: React.FC<MapProps> = ({ countriesData, selectedCountries }) => {
       const canvas = map.getCanvas();
       canvas.style.backgroundColor = "transparent";
 
-      // Hide basemap layers so only our country highlight layers render.
+      // Hide all basemap layers so only highlighted countries render.
       map.getStyle().layers?.forEach((layer) => {
         if (layer.id !== COUNTRY_LAYER_ID && layer.id !== COUNTRY_OUTLINE_LAYER_ID) {
           map.setLayoutProperty(layer.id, "visibility", "none");
@@ -113,6 +113,18 @@ const Map: React.FC<MapProps> = ({ countriesData, selectedCountries }) => {
 
         if (layer.type === "background") {
           map.setPaintProperty(layer.id, "background-opacity", 0);
+        }
+
+        if (layer.type === "fill") {
+          map.setPaintProperty(layer.id, "fill-opacity", 0);
+        }
+
+        if (layer.type === "line") {
+          map.setPaintProperty(layer.id, "line-opacity", 0);
+        }
+
+        if (layer.type === "raster") {
+          map.setPaintProperty(layer.id, "raster-opacity", 0);
         }
       });
 
