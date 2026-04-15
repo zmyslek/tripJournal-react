@@ -3,8 +3,20 @@ import * as maptilersdk from "@maptiler/sdk";
 import "@maptiler/sdk/dist/maptiler-sdk.css";
 import { getCountryName, type CountriesGeoJson } from "../types/countries";
 
-const STYLE_URL =
-  "https://api.maptiler.com/maps/0196a729-51f8-7a04-8b3a-22b8d925ea1b/style.json?key=FelxstvCdS6k0g9YnLdK";
+const TRANSPARENT_GLOBE_STYLE = {
+  version: 8,
+  sources: {},
+  layers: [
+    {
+      id: "transparent-background",
+      type: "background",
+      paint: {
+        "background-color": "rgba(0, 0, 0, 0)",
+        "background-opacity": 0
+      }
+    }
+  ]
+};
 
 const COUNTRY_LAYER_ID = "country-fill";
 const COUNTRY_OUTLINE_LAYER_ID = "country-outline";
@@ -63,7 +75,7 @@ const Map: React.FC<MapProps> = ({ countriesData, selectedCountries }) => {
 
     const map = new maptilersdk.Map({
       container: mapContainer.current,
-      style: STYLE_URL,
+      style: TRANSPARENT_GLOBE_STYLE as unknown as string,
       canvasContextAttributes: {
         alpha: true
       },
@@ -104,29 +116,7 @@ const Map: React.FC<MapProps> = ({ countriesData, selectedCountries }) => {
     map.on("load", () => {
       const canvas = map.getCanvas();
       canvas.style.backgroundColor = "transparent";
-
-      // Hide all basemap layers so only highlighted countries render.
-      map.getStyle().layers?.forEach((layer) => {
-        if (layer.id !== COUNTRY_LAYER_ID && layer.id !== COUNTRY_OUTLINE_LAYER_ID) {
-          map.setLayoutProperty(layer.id, "visibility", "none");
-        }
-
-        if (layer.type === "background") {
-          map.setPaintProperty(layer.id, "background-opacity", 0);
-        }
-
-        if (layer.type === "fill") {
-          map.setPaintProperty(layer.id, "fill-opacity", 0);
-        }
-
-        if (layer.type === "line") {
-          map.setPaintProperty(layer.id, "line-opacity", 0);
-        }
-
-        if (layer.type === "raster") {
-          map.setPaintProperty(layer.id, "raster-opacity", 0);
-        }
-      });
+      map.getContainer().style.background = "transparent";
 
       if (!map.getSource(COUNTRY_SOURCE_ID)) {
         map.addSource(COUNTRY_SOURCE_ID, {
