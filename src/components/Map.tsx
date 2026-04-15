@@ -64,6 +64,9 @@ const Map: React.FC<MapProps> = ({ countriesData, selectedCountries }) => {
     const map = new maptilersdk.Map({
       container: mapContainer.current,
       style: STYLE_URL,
+      canvasContextAttributes: {
+        alpha: true
+      },
       projection: "globe",
       center: [0, 20],
       zoom: 1,
@@ -99,6 +102,20 @@ const Map: React.FC<MapProps> = ({ countriesData, selectedCountries }) => {
     };
 
     map.on("load", () => {
+      const canvas = map.getCanvas();
+      canvas.style.backgroundColor = "transparent";
+
+      // Hide basemap layers so only our country highlight layers render.
+      map.getStyle().layers?.forEach((layer) => {
+        if (layer.id !== COUNTRY_LAYER_ID && layer.id !== COUNTRY_OUTLINE_LAYER_ID) {
+          map.setLayoutProperty(layer.id, "visibility", "none");
+        }
+
+        if (layer.type === "background") {
+          map.setPaintProperty(layer.id, "background-opacity", 0);
+        }
+      });
+
       if (!map.getSource(COUNTRY_SOURCE_ID)) {
         map.addSource(COUNTRY_SOURCE_ID, {
           type: "geojson",
@@ -156,8 +173,10 @@ const Map: React.FC<MapProps> = ({ countriesData, selectedCountries }) => {
 
   return (
     <div
+      className="map-canvas-shell"
       ref={mapContainer}
       style={{
+        background: "transparent",
         width: globeSize,
         height: globeSize
       }}
