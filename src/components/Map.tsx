@@ -13,6 +13,7 @@ const COUNTRY_SOURCE_ID = "countries-geojson";
 type MapProps = {
   countriesData: CountriesGeoJson | null;
   selectedCountries: string[];
+  viewMode: "globe" | "map";
 };
 
 const EMPTY_FEATURE_COLLECTION: CountriesGeoJson = {
@@ -20,12 +21,16 @@ const EMPTY_FEATURE_COLLECTION: CountriesGeoJson = {
   features: []
 };
 
-const Map: React.FC<MapProps> = ({ countriesData, selectedCountries }) => {
+const Map: React.FC<MapProps> = ({ countriesData, selectedCountries, viewMode }) => {
   const mapContainer = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<maptilersdk.Map | null>(null);
   const countriesDataRef = useRef<CountriesGeoJson | null>(countriesData);
   const selectedCountriesRef = useRef<string[]>(selectedCountries);
+  const viewModeRef = useRef<"globe" | "map">(viewMode);
+
   const globeSize = "min(70vw, 70vh)";
+  const flatMapWidth = "min(78vw, 1100px)";
+  const flatMapHeight = "min(48vh, 560px)";
 
   const updateHighlightedCountries = () => {
     const map = mapRef.current;
@@ -53,6 +58,30 @@ const Map: React.FC<MapProps> = ({ countriesData, selectedCountries }) => {
     selectedCountriesRef.current = selectedCountries;
     updateHighlightedCountries();
   }, [countriesData, selectedCountries]);
+
+  useEffect(() => {
+    viewModeRef.current = viewMode;
+    const map = mapRef.current;
+    if (!map || !map.isStyleLoaded()) {
+      return;
+    }
+
+    const projectionApi = map as unknown as {
+      setProjection?: (projection: "globe" | "mercator") => void;
+      easeTo: (options: { center: [number, number]; zoom: number; pitch: number; duration: number }) => void;
+    };
+
+    if (projectionApi.setProjection) {
+      projectionApi.setProjection(viewMode === "globe" ? "globe" : "mercator");
+    }
+
+    projectionApi.easeTo({
+      center: [0, 20],
+      zoom: viewMode === "globe" ? 1 : 1.15,
+      pitch: viewMode === "globe" ? 20 : 0,
+      duration: 600
+    });
+  }, [viewMode]);
 
   useEffect(() => {
     if (!mapContainer.current) return;
@@ -90,7 +119,7 @@ const Map: React.FC<MapProps> = ({ countriesData, selectedCountries }) => {
       const deltaSeconds = (timestamp - lastFrameTime) / 1000;
       lastFrameTime = timestamp;
 
-      if (isUserInteracting) {
+      if (isUserInteracting || viewModeRef.current !== "globe") {
         animationFrameId = window.requestAnimationFrame(animateRotation);
         return;
       }
@@ -142,6 +171,22 @@ const Map: React.FC<MapProps> = ({ countriesData, selectedCountries }) => {
 
       updateHighlightedCountries();
 
+      const projectionApi = map as unknown as {
+        setProjection?: (projection: "globe" | "mercator") => void;
+        easeTo: (options: { center: [number, number]; zoom: number; pitch: number; duration: number }) => void;
+      };
+
+      if (projectionApi.setProjection) {
+        projectionApi.setProjection(viewModeRef.current === "globe" ? "globe" : "mercator");
+      }
+
+      projectionApi.easeTo({
+        center: [0, 20],
+        zoom: viewModeRef.current === "globe" ? 1 : 1.15,
+        pitch: viewModeRef.current === "globe" ? 20 : 0,
+        duration: 0
+      });
+
       map.on("dragstart", () => {
         isUserInteracting = true;
       });
@@ -173,8 +218,10 @@ const Map: React.FC<MapProps> = ({ countriesData, selectedCountries }) => {
       ref={mapContainer}
       style={{
         background: "transparent",
-        width: globeSize,
-        height: globeSize
+        width: viewMode === "globe" ? globeSize : flatMapWidth,
+        height: viewMode === "globe" ? globeSize : flatMapHeight,
+        borderRadius: viewMode === "globe" ? "9999px" : "0.85rem",
+        transform: viewMode === "globe" ? "translateY(-0.75rem)" : "translateY(0)"
       }}
     />
   );
