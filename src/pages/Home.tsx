@@ -11,6 +11,7 @@ type HomeProps = {
 
 function Home({ countriesData, selectedCountries, toggleCountry }: HomeProps) {
     const [searchTerm, setSearchTerm] = useState("");
+    const [mapViewMode, setMapViewMode] = useState<"globe" | "map">("globe");
 
     const countryNames = useMemo(() => {
         if (!countriesData) {
@@ -88,14 +89,27 @@ function Home({ countriesData, selectedCountries, toggleCountry }: HomeProps) {
                 )}
             </section>
 
-            <div className="map-wrapper">
+            <div className="map-wrapper flex-col gap-4 px-3 md:flex-row md:items-center md:justify-center">
                 <Suspense
                     fallback={
                         <div className="h-[min(70vw,70vh)] w-[min(70vw,70vh)] rounded-full border border-[#eab681] bg-white/60" />
                     }
                 >
-                    <Map countriesData={countriesData} selectedCountries={selectedCountries} />
+                    <Map
+                        countriesData={countriesData}
+                        selectedCountries={selectedCountries}
+                        viewMode={mapViewMode}
+                    />
                 </Suspense>
+
+                <button
+                    type="button"
+                    onClick={() => setMapViewMode((prev) => (prev === "globe" ? "map" : "globe"))}
+                    className="rounded-[0.7rem] border border-[#eab681] bg-white px-4 py-2 font-[Cormorant_Garamond] text-[1.1rem] text-[#50300d] shadow-[0_3px_10px_rgb(80_48_13_/_14%)] transition hover:bg-[#ffead4]"
+                    aria-label="Switch between globe and flat map view"
+                >
+                    {mapViewMode === "globe" ? "Switch to Flat Map" : "Switch to Globe"}
+                </button>
             </div>
 
             <section
