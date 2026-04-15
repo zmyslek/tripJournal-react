@@ -1,0 +1,1 @@
+import{t as e}from"./jsx-runtime-DAs1UGHr.js";var t=e();function n(){return(0,t.jsxs)(`section`,{className:`page-placeholder`,"aria-label":`Gallery page`,children:[(0,t.jsx)(`h2`,{className:`page-placeholder__title`,children:`Gallery`}),(0,t.jsx)(`p`,{className:`page-placeholder__text`,children:`This page is intentionally empty for now.`})]})}export{n as default};

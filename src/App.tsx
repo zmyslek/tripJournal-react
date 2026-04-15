@@ -1,11 +1,17 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
-import Home from "./pages/Home";
 import MainLayout from "./components/MainLayout.tsx";
-import Gallery from "./pages/Gallery";
-import Profile from "./pages/Profile";
 import "./css/App.css";
 import type { CountriesGeoJson } from "./types/countries";
+
+const Home = lazy(() => import("./pages/Home"));
+const Gallery = lazy(() => import("./pages/Gallery"));
+const Profile = lazy(() => import("./pages/Profile"));
+const COUNTRIES_CACHE_KEY = "tripjournal:countries:v1";
+
+function RouteFallback() {
+    return <div className="h-20" />;
+}
 
 function App() {
     const [countriesData, setCountriesData] = useState<CountriesGeoJson | null>(null);
@@ -13,10 +19,24 @@ function App() {
 
     useEffect(() => {
         let isMounted = true;
+        const abortController = new AbortController();
+
+        try {
+            const cachedValue = localStorage.getItem(COUNTRIES_CACHE_KEY);
+            if (cachedValue) {
+                const parsedCached = JSON.parse(cachedValue) as CountriesGeoJson;
+                setCountriesData(parsedCached);
+            }
+        } catch {
+            // Ignore cache parse/storage failures and continue with network fetch.
+        }
 
         const loadCountries = async () => {
             try {
-                const response = await fetch("/countries.geojson");
+                const response = await fetch(`${import.meta.env.BASE_URL}countries.geojson`, {
+                    cache: "force-cache",
+                    signal: abortController.signal
+                });
                 if (!response.ok) {
                     throw new Error(`Failed to fetch countries.geojson: ${response.status}`);
                 }
@@ -25,7 +45,16 @@ function App() {
                 if (isMounted) {
                     setCountriesData(data);
                 }
+
+                try {
+                    localStorage.setItem(COUNTRIES_CACHE_KEY, JSON.stringify(data));
+                } catch {
+                    // Ignore cache write failures.
+                }
             } catch (error) {
+                if (error instanceof DOMException && error.name === "AbortError") {
+                    return;
+                }
                 console.error("Failed to load countries GeoJSON", error);
             }
         };
@@ -34,6 +63,7 @@ function App() {
 
         return () => {
             isMounted = false;
+            abortController.abort();
         };
     }, []);
 
@@ -53,25 +83,43 @@ function App() {
                 <Route
                     path="/"
                     element={
-                        <Home
-                            countriesData={countriesData}
-                            selectedCountries={selectedCountries}
-                            toggleCountry={toggleCountry}
-                        />
+                        <Suspense fallback={<RouteFallback />}>
+                            <Home
+                                countriesData={countriesData}
+                                selectedCountries={selectedCountries}
+                                toggleCountry={toggleCountry}
+                            />
+                        </Suspense>
                     }
                 />
-                <Route path="/gallery" element={<Gallery />} />
-                <Route path="/profile" element={<Profile />} />
+                <Route
+                    path="/gallery"
+                    element={
+                        <Suspense fallback={<RouteFallback />}>
+                            <Gallery />
+                        </Suspense>
+                    }
+                />
+                <Route
+                    path="/profile"
+                    element={
+                        <Suspense fallback={<RouteFallback />}>
+                            <Profile />
+                        </Suspense>
+                    }
+                />
             </Route>
 
             <Route
                 path="/map-only"
                 element={
-                    <Home
-                        countriesData={countriesData}
-                        selectedCountries={selectedCountries}
-                        toggleCountry={toggleCountry}
-                    />
+                    <Suspense fallback={<RouteFallback />}>
+                        <Home
+                            countriesData={countriesData}
+                            selectedCountries={selectedCountries}
+                            toggleCountry={toggleCountry}
+                        />
+                    </Suspense>
                 }
             />
 
