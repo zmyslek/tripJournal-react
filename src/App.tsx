@@ -8,6 +8,29 @@ const Home = lazy(() => import("./pages/Home"));
 const Gallery = lazy(() => import("./pages/Gallery"));
 const Profile = lazy(() => import("./pages/Profile"));
 const COUNTRIES_CACHE_KEY = "tripjournal:countries:v1";
+const SELECTED_COUNTRIES_CACHE_KEY = "tripjournal:selected-countries:v1";
+
+function getCachedSelectedCountries(): string[] {
+    try {
+        const cachedSelectedCountries = localStorage.getItem(SELECTED_COUNTRIES_CACHE_KEY);
+        if (!cachedSelectedCountries) {
+            return [];
+        }
+
+        const parsedSelectedCountries = JSON.parse(cachedSelectedCountries);
+        if (!Array.isArray(parsedSelectedCountries)) {
+            return [];
+        }
+
+        const normalizedSelectedCountries = parsedSelectedCountries.filter(
+            (country): country is string => typeof country === "string" && country.trim().length > 0
+        );
+
+        return [...new Set(normalizedSelectedCountries)];
+    } catch {
+        return [];
+    }
+}
 
 function RouteFallback() {
     return <div className="h-20" />;
@@ -15,7 +38,7 @@ function RouteFallback() {
 
 function App() {
     const [countriesData, setCountriesData] = useState<CountriesGeoJson | null>(null);
-    const [selectedCountries, setSelectedCountries] = useState<string[]>([]);
+    const [selectedCountries, setSelectedCountries] = useState<string[]>(() => getCachedSelectedCountries());
 
     useEffect(() => {
         let isMounted = true;
@@ -66,6 +89,14 @@ function App() {
             abortController.abort();
         };
     }, []);
+
+    useEffect(() => {
+        try {
+            localStorage.setItem(SELECTED_COUNTRIES_CACHE_KEY, JSON.stringify(selectedCountries));
+        } catch {
+            // Ignore cache write failures.
+        }
+    }, [selectedCountries]);
 
     const toggleCountry = (countryName: string) => {
         setSelectedCountries((prevSelected) => {

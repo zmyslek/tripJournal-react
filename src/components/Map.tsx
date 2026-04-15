@@ -1,14 +1,14 @@
 import React, { useEffect, useRef } from "react";
 import * as maptilersdk from "@maptiler/sdk";
 import "@maptiler/sdk/dist/maptiler-sdk.css";
-import { getCountryName, type CountriesGeoJson } from "../types/countries";
+import { type CountriesGeoJson } from "../types/countries";
 
 const STYLE_URL =
   "https://api.maptiler.com/maps/0196a729-51f8-7a04-8b3a-22b8d925ea1b/style.json?key=FelxstvCdS6k0g9YnLdK";
 
-const COUNTRY_LAYER_ID = "country-fill";
-const COUNTRY_OUTLINE_LAYER_ID = "country-outline";
-const COUNTRY_SOURCE_ID = "countries-geojson";
+const COUNTRY_LAYER_ID = "tripjournal-country-fill";
+const COUNTRY_OUTLINE_LAYER_ID = "tripjournal-country-outline";
+const COUNTRY_SOURCE_ID = "tripjournal-countries-geojson";
 
 type MapProps = {
   countriesData: CountriesGeoJson | null;
@@ -19,6 +19,18 @@ type MapProps = {
 const EMPTY_FEATURE_COLLECTION: CountriesGeoJson = {
   type: "FeatureCollection",
   features: []
+};
+
+const buildSelectedFilter = (selectedCountries: string[]) => {
+  const normalizedCountries = selectedCountries
+    .map((country) => country.trim())
+    .filter((country) => country.length > 0);
+
+  if (normalizedCountries.length === 0) {
+    return ["==", "name", "__tripjournal_no_match__"];
+  }
+
+  return ["in", "name", ...normalizedCountries];
 };
 
 const Map: React.FC<MapProps> = ({ countriesData, selectedCountries, viewMode }) => {
@@ -32,56 +44,91 @@ const Map: React.FC<MapProps> = ({ countriesData, selectedCountries, viewMode })
   const flatMapWidth = "min(78vw, 1100px)";
   const flatMapHeight = "min(48vh, 560px)";
 
+  const rebuildHighlightLayers = (map: maptilersdk.Map) => {
+    if (map.getLayer(COUNTRY_OUTLINE_LAYER_ID)) {
+      map.removeLayer(COUNTRY_OUTLINE_LAYER_ID);
+    }
+
+    if (map.getLayer(COUNTRY_LAYER_ID)) {
+      map.removeLayer(COUNTRY_LAYER_ID);
+    }
+
+    if (map.getSource(COUNTRY_SOURCE_ID)) {
+      map.removeSource(COUNTRY_SOURCE_ID);
+    }
+
+    map.addSource(COUNTRY_SOURCE_ID, {
+      type: "geojson",
+      data: EMPTY_FEATURE_COLLECTION
+    });
+
+    map.addLayer({
+      id: COUNTRY_LAYER_ID,
+      type: "fill",
+      source: COUNTRY_SOURCE_ID,
+      paint: {
+        "fill-color": "#e96f4a",
+        "fill-opacity": 0.72,
+        "fill-outline-color": "#fff4e6"
+      }
+    });
+
+    map.addLayer({
+      id: COUNTRY_OUTLINE_LAYER_ID,
+      type: "line",
+      source: COUNTRY_SOURCE_ID,
+      paint: {
+        "line-color": "#fff4e6",
+        "line-width": 1.8
+      }
+    });
+  };
+
   const updateHighlightedCountries = () => {
     const map = mapRef.current;
     if (!map || !map.isStyleLoaded()) {
       return;
     }
 
+    rebuildHighlightLayers(map);
+
     const source = map.getSource(COUNTRY_SOURCE_ID);
     if (!source || !("setData" in source)) {
       return;
     }
 
-    const selectedCountrySet = new Set(selectedCountriesRef.current);
-    const highlightedData: CountriesGeoJson = {
-      type: "FeatureCollection",
-      features:
-        countriesDataRef.current?.features.filter((feature) => selectedCountrySet.has(getCountryName(feature))) ?? []
-    };
+    (source as { setData: (data: unknown) => void }).setData(countriesDataRef.current ?? EMPTY_FEATURE_COLLECTION);
 
-    (source as { setData: (data: unknown) => void }).setData(highlightedData);
+    const selectedFilter = buildSelectedFilter(selectedCountriesRef.current) as unknown as Parameters<
+      maptilersdk.Map["setFilter"]
+    >[1];
+
+    map.setFilter(COUNTRY_LAYER_ID, selectedFilter);
+    map.setFilter(COUNTRY_OUTLINE_LAYER_ID, selectedFilter);
+
+    try {
+      map.moveLayer(COUNTRY_LAYER_ID);
+      map.moveLayer(COUNTRY_OUTLINE_LAYER_ID);
+    } catch {
+      // Layer ordering can fail transiently during style updates.
+    }
   };
+
+  useEffect(() => {
+    viewModeRef.current = viewMode;
+  }, [viewMode]);
 
   useEffect(() => {
     countriesDataRef.current = countriesData;
     selectedCountriesRef.current = selectedCountries;
     updateHighlightedCountries();
-  }, [countriesData, selectedCountries]);
 
-  useEffect(() => {
-    viewModeRef.current = viewMode;
     const map = mapRef.current;
-    if (!map || !map.isStyleLoaded()) {
-      return;
+    if (map) {
+      map.resize();
+      map.triggerRepaint();
     }
-
-    const projectionApi = map as unknown as {
-      setProjection?: (projection: "globe" | "mercator") => void;
-      easeTo: (options: { center: [number, number]; zoom: number; pitch: number; duration: number }) => void;
-    };
-
-    if (projectionApi.setProjection) {
-      projectionApi.setProjection(viewMode === "globe" ? "globe" : "mercator");
-    }
-
-    projectionApi.easeTo({
-      center: [0, 20],
-      zoom: viewMode === "globe" ? 1 : 1.15,
-      pitch: viewMode === "globe" ? 20 : 0,
-      duration: 600
-    });
-  }, [viewMode]);
+  }, [countriesData, selectedCountries]);
 
   useEffect(() => {
     if (!mapContainer.current) return;
@@ -96,10 +143,10 @@ const Map: React.FC<MapProps> = ({ countriesData, selectedCountries, viewMode })
       canvasContextAttributes: {
         alpha: true
       },
-      projection: "globe",
+      projection: viewModeRef.current === "globe" ? "globe" : "mercator",
       center: [0, 20],
-      zoom: 1,
-      pitch: 20,
+      zoom: viewModeRef.current === "globe" ? 1 : 1.15,
+      pitch: viewModeRef.current === "globe" ? 20 : 0,
       navigationControl: false,
       geolocateControl: false,
       scaleControl: false,
@@ -141,50 +188,17 @@ const Map: React.FC<MapProps> = ({ countriesData, selectedCountries, viewMode })
         }
       });
 
-      if (!map.getSource(COUNTRY_SOURCE_ID)) {
-        map.addSource(COUNTRY_SOURCE_ID, {
-          type: "geojson",
-          data: EMPTY_FEATURE_COLLECTION
-        });
-
-        map.addLayer({
-          id: COUNTRY_LAYER_ID,
-          type: "fill",
-          source: COUNTRY_SOURCE_ID,
-          paint: {
-            "fill-color": "#fabe7d",
-            "fill-opacity": 0.58,
-            "fill-outline-color": "#ffead4"
-          }
-        });
-
-        map.addLayer({
-          id: COUNTRY_OUTLINE_LAYER_ID,
-          type: "line",
-          source: COUNTRY_SOURCE_ID,
-          paint: {
-            "line-color": "#ffead4",
-            "line-width": 1.35
-          }
-        });
-      }
+      rebuildHighlightLayers(map);
 
       updateHighlightedCountries();
 
-      const projectionApi = map as unknown as {
-        setProjection?: (projection: "globe" | "mercator") => void;
-        easeTo: (options: { center: [number, number]; zoom: number; pitch: number; duration: number }) => void;
-      };
+      map.on("styledata", () => {
+        if (!map.isStyleLoaded()) {
+          return;
+        }
 
-      if (projectionApi.setProjection) {
-        projectionApi.setProjection(viewModeRef.current === "globe" ? "globe" : "mercator");
-      }
-
-      projectionApi.easeTo({
-        center: [0, 20],
-        zoom: viewModeRef.current === "globe" ? 1 : 1.15,
-        pitch: viewModeRef.current === "globe" ? 20 : 0,
-        duration: 0
+        rebuildHighlightLayers(map);
+        updateHighlightedCountries();
       });
 
       map.on("dragstart", () => {
@@ -211,6 +225,33 @@ const Map: React.FC<MapProps> = ({ countriesData, selectedCountries, viewMode })
       map.remove();
     };
   }, []);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) {
+      return;
+    }
+
+    const targetProjection = viewMode === "globe" ? "globe" : "mercator";
+
+    if (map.isStyleLoaded()) {
+      try {
+        (map as unknown as { setProjection?: (projection: string) => void }).setProjection?.(targetProjection);
+      } catch {
+        // Ignore projection API issues on older SDK/runtime combinations.
+      }
+
+      map.easeTo({
+        center: [0, 20],
+        zoom: viewMode === "globe" ? 1 : 1.15,
+        pitch: viewMode === "globe" ? 20 : 0,
+        duration: 500
+      });
+
+      map.resize();
+      updateHighlightedCountries();
+    }
+  }, [viewMode]);
 
   return (
     <div
