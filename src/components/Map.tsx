@@ -3,20 +3,8 @@ import * as maptilersdk from "@maptiler/sdk";
 import "@maptiler/sdk/dist/maptiler-sdk.css";
 import { getCountryName, type CountriesGeoJson } from "../types/countries";
 
-const TRANSPARENT_GLOBE_STYLE = {
-  version: 8,
-  sources: {},
-  layers: [
-    {
-      id: "transparent-background",
-      type: "background",
-      paint: {
-        "background-color": "rgba(0, 0, 0, 0)",
-        "background-opacity": 0
-      }
-    }
-  ]
-};
+const STYLE_URL =
+  "https://api.maptiler.com/maps/0196a729-51f8-7a04-8b3a-22b8d925ea1b/style.json?key=FelxstvCdS6k0g9YnLdK";
 
 const COUNTRY_LAYER_ID = "country-fill";
 const COUNTRY_OUTLINE_LAYER_ID = "country-outline";
@@ -37,7 +25,7 @@ const Map: React.FC<MapProps> = ({ countriesData, selectedCountries }) => {
   const mapRef = useRef<maptilersdk.Map | null>(null);
   const countriesDataRef = useRef<CountriesGeoJson | null>(countriesData);
   const selectedCountriesRef = useRef<string[]>(selectedCountries);
-  const globeSize = "min(78vw, 78vh)";
+  const globeSize = "min(70vw, 70vh)";
 
   const updateHighlightedCountries = () => {
     const map = mapRef.current;
@@ -75,7 +63,7 @@ const Map: React.FC<MapProps> = ({ countriesData, selectedCountries }) => {
 
     const map = new maptilersdk.Map({
       container: mapContainer.current,
-      style: TRANSPARENT_GLOBE_STYLE as unknown as string,
+      style: STYLE_URL,
       canvasContextAttributes: {
         alpha: true
       },
@@ -117,6 +105,12 @@ const Map: React.FC<MapProps> = ({ countriesData, selectedCountries }) => {
       const canvas = map.getCanvas();
       canvas.style.backgroundColor = "transparent";
       map.getContainer().style.background = "transparent";
+
+      map.getStyle().layers?.forEach((layer) => {
+        if (layer.type === "symbol") {
+          map.setLayoutProperty(layer.id, "visibility", "none");
+        }
+      });
 
       if (!map.getSource(COUNTRY_SOURCE_ID)) {
         map.addSource(COUNTRY_SOURCE_ID, {
