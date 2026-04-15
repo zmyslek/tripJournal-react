@@ -81,8 +81,8 @@
 .app-main {
   flex: 1;
   background-image: url("../assets/wrinkled-paper.png");
-  background-repeat: no-repeat;
-  background-size: cover;
+  background-repeat: repeat;
+  background-size: 720px auto;
   background-position: center;
 }
 
