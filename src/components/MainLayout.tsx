@@ -68,7 +68,7 @@ function MainLayout() {
             </main>
 
             {cookieConsent === null && (
-                <section className="sticky bottom-0 z-20 mx-4 mb-4 mt-3 flex items-center justify-between gap-4 rounded-2xl border border-[#eab681] bg-[linear-gradient(180deg,rgb(255_250_243_/_98%),rgb(255_241_226_/_96%))] p-4 shadow-[0_12px_28px_rgb(80_48_13_/_18%)] max-md:flex-col max-md:items-stretch" aria-label="Cookie consent notice">
+                <section className="sticky bottom-0 z-20 mx-4 mb-4 mt-3 flex items-center justify-between gap-4 rounded-2xl border border-[#eab681] bg-[linear-gradient(180deg,rgb(248_227_198_/_98%),rgb(241_210_172_/_96%))] p-4 shadow-[0_12px_28px_rgb(80_48_13_/_18%)] max-md:flex-col max-md:items-stretch" aria-label="Cookie consent notice">
                     <div className="min-w-0">
                         <p className="m-0 font-[Adamina] text-[1.1rem] text-[#50300d]">Cookie notice</p>
                         <p className="mt-1.5 m-0 font-[Cormorant_Garamond] text-[1.05rem] leading-[1.35] text-[#50300d]">
@@ -79,14 +79,14 @@ function MainLayout() {
                     <div className="flex flex-wrap gap-2.5 max-md:justify-start">
                         <button
                             type="button"
-                            className="cursor-pointer rounded-full border border-[#eab681] bg-[#8f5a20] px-4 py-2 font-[Adamina] text-[0.95rem] text-[#fff8ef] transition hover:-translate-y-px hover:shadow-[0_6px_14px_rgb(80_48_13_/_12%)]"
+                            className="cursor-pointer rounded-full border border-[#eab681] bg-[#8f5a20] px-4 py-2 font-[Adamina] text-[0.95rem] text-[#ffe0c2] transition hover:-translate-y-px hover:shadow-[0_6px_14px_rgb(80_48_13_/_12%)]"
                             onClick={() => setCookieConsent("accepted")}
                         >
                             Accept
                         </button>
                         <button
                             type="button"
-                            className="cursor-pointer rounded-full border border-[#eab681] bg-[#fff5e9] px-4 py-2 font-[Adamina] text-[0.95rem] text-[#50300d] transition hover:-translate-y-px hover:shadow-[0_6px_14px_rgb(80_48_13_/_12%)]"
+                            className="cursor-pointer rounded-full border border-[#eab681] bg-[#f6dfc1] px-4 py-2 font-[Adamina] text-[0.95rem] text-[#50300d] transition hover:-translate-y-px hover:shadow-[0_6px_14px_rgb(80_48_13_/_12%)]"
                             onClick={() => setCookieConsent("rejected")}
                         >
                             Reject

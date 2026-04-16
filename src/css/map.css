@@ -1,12 +1,23 @@
 .map-canvas-shell {
   border-radius: 9999px;
   overflow: hidden;
+  background: transparent !important;
+  background-color: transparent !important;
 }
 
 .map-canvas-shell,
 .map-canvas-shell .maptiler-map,
 .map-canvas-shell .maplibregl-map,
 .map-canvas-shell .maplibregl-canvas-container,
-.map-canvas-shell .maplibregl-canvas {
+.map-canvas-shell .maplibregl-canvas,
+.map-canvas-shell .maplibregl-control-container,
+.map-canvas-shell .maplibregl-ctrl,
+.map-canvas-shell canvas {
   background: transparent !important;
+  background-color: transparent !important;
+}
+
+.map-canvas-shell[data-view-mode="globe"] .maplibregl-canvas,
+.map-canvas-shell[data-view-mode="globe"] canvas {
+  mix-blend-mode: multiply;
 }
