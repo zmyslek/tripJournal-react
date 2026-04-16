@@ -1,17 +1,18 @@
 import { Suspense, lazy, useMemo, useState } from "react";
-import { getCountryName, type CountriesGeoJson } from "../types/countries";
+import { getCountryName } from "../types/countries";
+import { useCountriesData } from "../hooks/useCountriesData";
 
 const Map = lazy(() => import("../components/Map"));
 
 type HomeProps = {
-    countriesData: CountriesGeoJson | null;
     selectedCountries: string[];
     toggleCountry: (countryName: string) => void;
 };
 
-function Home({ countriesData, selectedCountries, toggleCountry }: HomeProps) {
+function Home({ selectedCountries, toggleCountry }: HomeProps) {
     const [searchTerm, setSearchTerm] = useState("");
     const [mapViewMode, setMapViewMode] = useState<"globe" | "map">("globe");
+    const { countriesData, isLoading, error } = useCountriesData();
 
     const countryNames = useMemo(() => {
         if (!countriesData) {
@@ -47,10 +48,7 @@ function Home({ countriesData, selectedCountries, toggleCountry }: HomeProps) {
 
     return (
         <>
-            <section
-                className="mx-auto my-4 w-[min(95vw,1400px)] rounded-[0.8rem] border border-[#eab681] bg-white p-4 shadow-[0_3px_14px_rgb(80_48_13_/_15%)]"
-                aria-label="Country filters"
-            >
+            <section className="mx-auto my-4 w-[min(95vw,1400px)] rounded-[0.8rem] border border-[#eab681] bg-white p-4 shadow-[0_3px_14px_rgb(80_48_13_/_15%)]" aria-label="Country filters">
                 <input
                     type="search"
                     value={searchTerm}
@@ -58,6 +56,11 @@ function Home({ countriesData, selectedCountries, toggleCountry }: HomeProps) {
                     placeholder="Search countries"
                     className="w-full rounded-[0.6rem] border border-[#eab681] bg-white px-[0.8rem] py-[0.65rem] font-[Cormorant_Garamond] text-[1.1rem] text-[#50300d] outline-offset-2 focus:outline focus:outline-2 focus:outline-[#eab681]"
                 />
+                {error && (
+                    <p className="mt-3 rounded-lg border border-[#eab681] bg-[#fff5e9] px-3 py-2 font-[Cormorant_Garamond] text-[1.05rem] text-[#50300d]">
+                        {error}
+                    </p>
+                )}
                 {searchTerm.trim().length > 0 && (
                     <div
                         className="mt-[0.85rem] grid max-h-[220px] grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-y-[0.55rem] gap-x-[0.85rem] overflow-y-auto pr-[0.25rem]"
@@ -89,18 +92,20 @@ function Home({ countriesData, selectedCountries, toggleCountry }: HomeProps) {
                 )}
             </section>
 
-            <div className="map-wrapper flex-col gap-4 px-3 md:flex-row md:items-center md:justify-center">
-                <Suspense
-                    fallback={
-                        <div className="h-[min(70vw,70vh)] w-[min(70vw,70vh)] rounded-full border border-[#eab681] bg-white/60" />
-                    }
-                >
-                    <Map
-                        countriesData={countriesData}
-                        selectedCountries={selectedCountries}
-                        viewMode={mapViewMode}
-                    />
-                </Suspense>
+            <div className="flex flex-col items-center justify-center gap-4 px-3 py-3 md:flex-row">
+                {isLoading || !countriesData ? (
+                    <div className="flex h-[min(70vw,70vh)] w-[min(70vw,70vh)] items-center justify-center rounded-full border border-[#eab681] bg-white/70 text-center font-[Cormorant_Garamond] text-[1.15rem] text-[#50300d] shadow-[0_3px_14px_rgb(80_48_13_/_12%)]">
+                        Loading map data...
+                    </div>
+                ) : (
+                    <Suspense
+                        fallback={
+                            <div className="h-[min(70vw,70vh)] w-[min(70vw,70vh)] rounded-full border border-[#eab681] bg-white/60" />
+                        }
+                    >
+                        <Map countriesData={countriesData} selectedCountries={selectedCountries} viewMode={mapViewMode} />
+                    </Suspense>
+                )}
 
                 <button
                     type="button"
