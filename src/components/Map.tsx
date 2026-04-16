@@ -39,6 +39,7 @@ const Map: React.FC<MapProps> = ({ countriesData, selectedCountries, viewMode })
   const countriesDataRef = useRef<CountriesGeoJson | null>(countriesData);
   const selectedCountriesRef = useRef<string[]>(selectedCountries);
   const viewModeRef = useRef<"globe" | "map">(viewMode);
+  const highlightRefreshFrameRef = useRef<number | null>(null);
 
   const globeSize = "min(70vw, 70vh)";
   const flatMapWidth = "min(78vw, 1100px)";
@@ -84,7 +85,7 @@ const Map: React.FC<MapProps> = ({ countriesData, selectedCountries, viewMode })
     });
   };
 
-  const updateHighlightedCountries = () => {
+  const applyHighlightedCountries = () => {
     const map = mapRef.current;
     if (!map || !map.isStyleLoaded()) {
       return;
@@ -114,6 +115,17 @@ const Map: React.FC<MapProps> = ({ countriesData, selectedCountries, viewMode })
     }
   };
 
+  const scheduleHighlightRefresh = () => {
+    if (highlightRefreshFrameRef.current !== null) {
+      window.cancelAnimationFrame(highlightRefreshFrameRef.current);
+    }
+
+    highlightRefreshFrameRef.current = window.requestAnimationFrame(() => {
+      highlightRefreshFrameRef.current = null;
+      applyHighlightedCountries();
+    });
+  };
+
   useEffect(() => {
     viewModeRef.current = viewMode;
   }, [viewMode]);
@@ -121,7 +133,7 @@ const Map: React.FC<MapProps> = ({ countriesData, selectedCountries, viewMode })
   useEffect(() => {
     countriesDataRef.current = countriesData;
     selectedCountriesRef.current = selectedCountries;
-    updateHighlightedCountries();
+    scheduleHighlightRefresh();
 
     const map = mapRef.current;
     if (map) {
@@ -188,17 +200,18 @@ const Map: React.FC<MapProps> = ({ countriesData, selectedCountries, viewMode })
         }
       });
 
-      rebuildHighlightLayers(map);
-
-      updateHighlightedCountries();
+      scheduleHighlightRefresh();
 
       map.on("styledata", () => {
         if (!map.isStyleLoaded()) {
           return;
         }
 
-        rebuildHighlightLayers(map);
-        updateHighlightedCountries();
+        scheduleHighlightRefresh();
+      });
+
+      map.once("idle", () => {
+        scheduleHighlightRefresh();
       });
 
       map.on("dragstart", () => {
@@ -249,7 +262,7 @@ const Map: React.FC<MapProps> = ({ countriesData, selectedCountries, viewMode })
       });
 
       map.resize();
-      updateHighlightedCountries();
+      scheduleHighlightRefresh();
     }
   }, [viewMode]);
 
