@@ -12,7 +12,9 @@ const MAPTILER_STYLE_ID =
 
 const MAPTILER_STYLE_URL = ENV?.VITE_MAPTILER_STYLE_URL;
 const GLOBE_BACKGROUND_COLOR = "#FFEAD4";
-const DEFAULT_STYLE_URL = `https://api.maptiler.com/maps/${MAPTILER_STYLE_ID}/style.json?key=${MAPTILER_API_KEY}`;
+const GLOBE_WATER_COLOR = "#FFEAD4";
+const FALLBACK_STYLE_ID = "0196a729-51f8-7a04-8b3a-22b8d925ea1b";
+const DEFAULT_STYLE_URL = `https://api.maptiler.com/maps/${FALLBACK_STYLE_ID}/style.json?key=${MAPTILER_API_KEY}`;
 
 const resolveStyleUrl = () => {
   const normalizeMaptilerUrl = (url: string) => {
@@ -22,7 +24,7 @@ const resolveStyleUrl = () => {
 
       // Convert share/dashboard URLs into API style.json endpoints.
       if ((host === "cloud.maptiler.com" || host.endsWith(".maptiler.com")) && !parsed.pathname.endsWith("/style.json")) {
-        const mapsMatch = parsed.pathname.match(/\/maps\/([^\/?#]+)/i);
+        const mapsMatch = parsed.pathname.match(/\/maps\/([^/?#]+)/i);
         const styleId = mapsMatch?.[1];
         if (styleId) {
           return `https://api.maptiler.com/maps/${styleId}/style.json`;
@@ -31,7 +33,7 @@ const resolveStyleUrl = () => {
 
       // Convert API map URLs without /style.json into style URLs.
       if (host === "api.maptiler.com") {
-        const apiMapsMatch = parsed.pathname.match(/^\/maps\/([^\/?#]+)\/?$/i);
+        const apiMapsMatch = parsed.pathname.match(/^\/maps\/([^/?#]+)\/?$/i);
         if (apiMapsMatch?.[1]) {
           return `https://api.maptiler.com/maps/${apiMapsMatch[1]}/style.json`;
         }
@@ -51,9 +53,14 @@ const resolveStyleUrl = () => {
     return `${url}${url.includes("?") ? "&" : "?"}key=${MAPTILER_API_KEY}`;
   };
 
-  const configuredStyle = (MAPTILER_STYLE_URL?.trim() || MAPTILER_STYLE_ID.trim()).replace(/^['\"]|['\"]$/g, "");
+  const configuredStyle = (MAPTILER_STYLE_URL?.trim() || MAPTILER_STYLE_ID.trim()).replace(/^['"]|['"]$/g, "");
 
   if (!configuredStyle) {
+    return DEFAULT_STYLE_URL;
+  }
+
+  // Human-readable style names (e.g. "Streets Default v2") are not valid style IDs/URLs.
+  if (configuredStyle.includes(" ")) {
     return DEFAULT_STYLE_URL;
   }
 
@@ -77,7 +84,7 @@ const resolveStyleUrl = () => {
     return toSafeUrl(appendKeyIfNeeded(`https://api.maptiler.com/${configuredStyle.replace(/^\/+/, "")}`));
   }
 
-  return toSafeUrl(`https://api.maptiler.com/maps/${configuredStyle}/style.json?key=${MAPTILER_API_KEY}`);
+  return toSafeUrl(`https://api.maptiler.com/maps/${encodeURIComponent(configuredStyle)}/style.json?key=${MAPTILER_API_KEY}`);
 };
 
 const STYLE_URL = resolveStyleUrl();
@@ -87,9 +94,8 @@ maptilersdk.config.apiKey = MAPTILER_API_KEY;
 const COUNTRY_LAYER_ID = "tripjournal-country-fill";
 const COUNTRY_OUTLINE_LAYER_ID = "tripjournal-country-outline";
 const COUNTRY_SOURCE_ID = "tripjournal-countries-geojson";
-const USER_LOCATION_SOURCE_ID = "tripjournal-user-location";
-const USER_LOCATION_DOT_LAYER_ID = "tripjournal-user-location-dot";
-const USER_LOCATION_RING_LAYER_ID = "tripjournal-user-location-ring";
+const USER_LOCATION_PIN_COLOR = "#50300d";
+const USER_LOCATION_PIN_STROKE = "#eab681";
 
 type MapProps = {
   countriesData: CountriesGeoJson | null;
@@ -115,6 +121,8 @@ const Map: React.FC<MapProps> = ({
   const selectedCountriesRef = useRef<string[]>(selectedCountries);
   const viewModeRef = useRef<"globe" | "map">(viewMode);
   const userLocationRef = useRef<{ lng: number; lat: number } | null>(userLocation ?? null);
+  const userLocationMarkerRef = useRef<maptilersdk.Marker | null>(null);
+  const hasCenteredOnUserLocationRef = useRef(false);
   const highlightRefreshFrameRef = useRef<number | null>(null);
 
   const globeSize = "min(82vw, 82vh)";
@@ -151,7 +159,7 @@ const Map: React.FC<MapProps> = ({
           try {
             if (layer.type === "fill") {
               if (viewModeRef.current === "globe") {
-                map.setPaintProperty(layer.id, "fill-color", GLOBE_BACKGROUND_COLOR);
+                map.setPaintProperty(layer.id, "fill-color", GLOBE_WATER_COLOR);
                 map.setPaintProperty(layer.id, "fill-opacity", 1);
               } else {
                 map.setPaintProperty(layer.id, "fill-color", "rgba(0, 0, 0, 0)");
@@ -161,7 +169,7 @@ const Map: React.FC<MapProps> = ({
 
             if (layer.type === "line") {
               if (viewModeRef.current === "globe") {
-                map.setPaintProperty(layer.id, "line-color", GLOBE_BACKGROUND_COLOR);
+                map.setPaintProperty(layer.id, "line-color", GLOBE_WATER_COLOR);
                 map.setPaintProperty(layer.id, "line-opacity", 1);
               } else {
                 map.setPaintProperty(layer.id, "line-opacity", 0);
@@ -171,9 +179,9 @@ const Map: React.FC<MapProps> = ({
             if (layer.type === "raster") {
               if (viewModeRef.current === "globe") {
                 map.setPaintProperty(layer.id, "raster-opacity", 1);
-                map.setPaintProperty(layer.id, "raster-saturation", -1);
-                map.setPaintProperty(layer.id, "raster-brightness-min", 0.92);
-                map.setPaintProperty(layer.id, "raster-brightness-max", 0.96);
+                map.setPaintProperty(layer.id, "raster-saturation", -0.35);
+                map.setPaintProperty(layer.id, "raster-brightness-min", 0.78);
+                map.setPaintProperty(layer.id, "raster-brightness-max", 0.9);
               } else {
                 map.setPaintProperty(layer.id, "raster-opacity", 0);
               }
@@ -227,82 +235,60 @@ const Map: React.FC<MapProps> = ({
     }
   };
 
+  const createUserLocationPinElement = () => {
+    const marker = document.createElement("div");
+    marker.setAttribute("aria-hidden", "true");
+    marker.className = "user-location-marker";
+    marker.style.setProperty("--user-location-color", USER_LOCATION_PIN_COLOR);
+    marker.style.setProperty("--user-location-stroke", USER_LOCATION_PIN_STROKE);
+
+    const ringOuter = document.createElement("div");
+    ringOuter.className = "user-location-ring user-location-ring-outer";
+
+    const ringInner = document.createElement("div");
+    ringInner.className = "user-location-ring user-location-ring-inner";
+
+    const dot = document.createElement("div");
+    dot.className = "user-location-dot";
+
+    marker.appendChild(ringOuter);
+    marker.appendChild(ringInner);
+    marker.appendChild(dot);
+
+    return marker;
+  };
+
   const syncUserLocationMarker = (map: maptilersdk.Map) => {
     if (!map.isStyleLoaded()) {
       return;
     }
 
-    if (!map.getSource(USER_LOCATION_SOURCE_ID)) {
-      map.addSource(USER_LOCATION_SOURCE_ID, {
-        type: "geojson",
-        data: {
-          type: "FeatureCollection",
-          features: []
-        }
-      });
-    }
-
-    if (!map.getLayer(USER_LOCATION_RING_LAYER_ID)) {
-      map.addLayer({
-        id: USER_LOCATION_RING_LAYER_ID,
-        type: "circle",
-        source: USER_LOCATION_SOURCE_ID,
-        paint: {
-          "circle-radius": 10,
-          "circle-color": "rgba(255, 224, 194, 0.28)",
-          "circle-stroke-color": "#ffd9b0",
-          "circle-stroke-width": 2
-        }
-      });
-    }
-
-    if (!map.getLayer(USER_LOCATION_DOT_LAYER_ID)) {
-      map.addLayer({
-        id: USER_LOCATION_DOT_LAYER_ID,
-        type: "circle",
-        source: USER_LOCATION_SOURCE_ID,
-        paint: {
-          "circle-radius": 5,
-          "circle-color": "#e96f4a",
-          "circle-stroke-color": "#ffd9b0",
-          "circle-stroke-width": 1.5
-        }
-      });
-    }
-
-    const source = map.getSource(USER_LOCATION_SOURCE_ID);
-    if (!source || !("setData" in source)) {
-      return;
-    }
-
     const location = userLocationRef.current;
     if (!location) {
-      (source as { setData: (data: unknown) => void }).setData({
-        type: "FeatureCollection",
-        features: []
-      });
+      userLocationMarkerRef.current?.remove();
+      userLocationMarkerRef.current = null;
+      hasCenteredOnUserLocationRef.current = false;
       return;
     }
 
-    (source as { setData: (data: unknown) => void }).setData({
-      type: "FeatureCollection",
-      features: [
-        {
-          type: "Feature",
-          properties: {},
-          geometry: {
-            type: "Point",
-            coordinates: [location.lng, location.lat]
-          }
-        }
-      ]
-    });
+    if (!userLocationMarkerRef.current) {
+      userLocationMarkerRef.current = new maptilersdk.Marker({
+        element: createUserLocationPinElement(),
+        anchor: "center"
+      });
+      userLocationMarkerRef.current.setLngLat([location.lng, location.lat]).addTo(map);
+    } else {
+      userLocationMarkerRef.current.setLngLat([location.lng, location.lat]);
+    }
 
-    try {
-      map.moveLayer(USER_LOCATION_RING_LAYER_ID);
-      map.moveLayer(USER_LOCATION_DOT_LAYER_ID);
-    } catch {
-      // Ignore transient layer ordering errors during style refresh.
+    if (!hasCenteredOnUserLocationRef.current) {
+      map.easeTo({
+        center: [location.lng, location.lat],
+        zoom: Math.max(map.getZoom(), 2.2),
+        duration: 900,
+        essential: true
+      });
+      hasCenteredOnUserLocationRef.current = true;
     }
   };
 
@@ -425,8 +411,8 @@ const Map: React.FC<MapProps> = ({
       },
       projection: viewModeRef.current === "globe" ? "globe" : "mercator",
       center: [0, 20],
-      zoom: viewModeRef.current === "globe" ? 1 : 1.15,
-      pitch: viewModeRef.current === "globe" ? 20 : 0,
+      zoom: viewModeRef.current === "globe" ? 1.35 : 1.15,
+      pitch: 0,
       navigationControl: false,
       geolocateControl: false,
       scaleControl: false,
@@ -446,7 +432,9 @@ const Map: React.FC<MapProps> = ({
       const deltaSeconds = (timestamp - lastFrameTime) / 1000;
       lastFrameTime = timestamp;
 
-      if (isUserInteracting || viewModeRef.current !== "globe") {
+      const hasUserLocation = Boolean(userLocationRef.current);
+
+      if (isUserInteracting || hasUserLocation || viewModeRef.current !== "globe") {
         animationFrameId = window.requestAnimationFrame(animateRotation);
         return;
       }
@@ -458,6 +446,17 @@ const Map: React.FC<MapProps> = ({
     };
 
     map.on("load", () => {
+      if (viewModeRef.current === "globe") {
+        map.jumpTo({
+          center: [0, 20],
+          zoom: 1.35,
+          pitch: 0
+        });
+      }
+
+      map.resize();
+      map.triggerRepaint();
+
       applyTransparentBackdrop(map);
 
       try {
@@ -539,6 +538,8 @@ const Map: React.FC<MapProps> = ({
 
     return () => {
       window.cancelAnimationFrame(animationFrameId);
+      userLocationMarkerRef.current?.remove();
+      userLocationMarkerRef.current = null;
       map.remove();
     };
   }, []);

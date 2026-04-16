@@ -10,7 +10,6 @@ type HomeProps = {
 };
 
 const LOCATION_PROMPT_COOKIE_KEY = "tripjournal-location-prompt-asked";
-const LOCATION_ALLOWED_COOKIE_KEY = "tripjournal-location-prompt-allowed";
 
 const getCookie = (cookieName: string) => {
     const escapedName = cookieName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -92,20 +91,7 @@ function Home({ selectedCountries, toggleCountry }: HomeProps) {
     const [searchTerm, setSearchTerm] = useState("");
     const [mapViewMode, setMapViewMode] = useState<"globe" | "map">("globe");
     const [userLocation, setUserLocation] = useState<{ lng: number; lat: number } | null>(null);
-    const [hasAskedForLocation, setHasAskedForLocation] = useState(() => getCookie(LOCATION_PROMPT_COOKIE_KEY) === "1");
-    const [locationPromptAllowed, setLocationPromptAllowed] = useState<boolean | null>(() => {
-        const savedValue = getCookie(LOCATION_ALLOWED_COOKIE_KEY);
-
-        if (savedValue === "1") {
-            return true;
-        }
-
-        if (savedValue === "0") {
-            return false;
-        }
-
-        return null;
-    });
+    const hasPromptedForLocationRef = useRef(getCookie(LOCATION_PROMPT_COOKIE_KEY) === "1");
     const hasAttemptedAutoLocateRef = useRef(false);
     const { countriesData, isLoading, error } = useCountriesData();
 
@@ -143,29 +129,22 @@ function Home({ selectedCountries, toggleCountry }: HomeProps) {
             );
         };
 
-        if (hasAskedForLocation) {
-            if (locationPromptAllowed === true) {
-                tryLocateUser();
-            }
-
+        if (hasPromptedForLocationRef.current) {
+            tryLocateUser();
             return;
         }
 
-        setHasAskedForLocation(true);
+        hasPromptedForLocationRef.current = true;
         setCookie(LOCATION_PROMPT_COOKIE_KEY, "1");
 
         const shouldLocateUser = window.confirm("Allow TripJournal to use your location and auto-select your country?");
         if (!shouldLocateUser) {
-            setLocationPromptAllowed(false);
-            setCookie(LOCATION_ALLOWED_COOKIE_KEY, "0");
             return;
         }
 
-        setLocationPromptAllowed(true);
-        setCookie(LOCATION_ALLOWED_COOKIE_KEY, "1");
         tryLocateUser();
 
-    }, [countriesData, hasAskedForLocation, locationPromptAllowed, selectedCountries, toggleCountry]);
+    }, [countriesData, selectedCountries, toggleCountry]);
 
     const countryNames = useMemo(() => {
         if (!countriesData) {
@@ -262,15 +241,25 @@ function Home({ selectedCountries, toggleCountry }: HomeProps) {
                 <button
                     type="button"
                     onClick={() => setMapViewMode((prev) => (prev === "globe" ? "map" : "globe"))}
-                    className="inline-flex h-[3rem] w-[3rem] items-center justify-center rounded-full border border-[#eab681] text-[1.35rem] text-[#50300d] shadow-[0_3px_10px_rgb(80_48_13_/_14%)] transition hover:bg-[#ffead4]"
+                    className="inline-flex h-[3rem] w-[3rem] items-center justify-center rounded-full border border-[#50300d] bg-[#f6dfc1] text-[1.35rem] text-[#50300d] shadow-[0_3px_10px_rgb(80_48_13_/_18%)] transition hover:bg-[#eab681]"
                     aria-label="Switch between globe and flat map view"
                 >
-                    {mapViewMode === "globe" ? "🗺" : "🌐"}
+                    {mapViewMode === "globe" ? (
+                        <svg viewBox="0 0 24 24" className="h-[1.35rem] w-[1.35rem]" fill="none" aria-hidden="true">
+                            <path d="M3 6.5L9 4l6 2.5L21 4v13.5L15 20l-6-2.5L3 20V6.5Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+                            <path d="M9 4v13.5M15 6.5V20" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                        </svg>
+                    ) : (
+                        <svg viewBox="0 0 24 24" className="h-[1.35rem] w-[1.35rem]" fill="none" aria-hidden="true">
+                            <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
+                            <path d="M3 12h18M12 3c2.6 2.4 4 5.5 4 9s-1.4 6.6-4 9c-2.6-2.4-4-5.5-4-9s1.4-6.6 4-9Z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                    )}
                 </button>
             </div>
 
             <section
-                className="mx-auto my-4 grid w-[min(95vw,1400px)] grid-cols-[repeat(3,minmax(0,1fr))] gap-y-[0.55rem] gap-x-[0.85rem] rounded-[0.8rem] border border-[#eab681] p-4 shadow-[0_3px_14px_rgb(80_48_13_/_15%)]"
+                className="mx-auto my-4 grid w-[min(95vw,1400px)] grid-cols-[repeat(4,minmax(0,1fr))] gap-y-[0.55rem] gap-x-[0.85rem] rounded-[0.8rem] border border-[#eab681] bg-[rgb(255_255_255_/_80%)] p-4 shadow-[0_3px_14px_rgb(80_48_13_/_15%)]"
                 aria-label="Selected country summary"
             >
                 {sortedSummaryCountryNames.map((countryName) => {
