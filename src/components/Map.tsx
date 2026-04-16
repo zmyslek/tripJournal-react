@@ -389,6 +389,8 @@ const Map: React.FC<MapProps> = ({
         }
       }
 
+      // Re-apply style mutations on every mode switch so water visibility is deterministic.
+      applyTransparentBackdrop(map);
       map.resize();
       map.triggerRepaint();
     };
