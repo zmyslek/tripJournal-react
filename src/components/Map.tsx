@@ -156,7 +156,7 @@ const Map: React.FC<MapProps> = ({
         const layerId = layer.id.toLowerCase();
         if (layerId.includes("background")) {
           try {
-            map.setLayoutProperty(layer.id, viewModeRef.current === "globe" ? "visible" : "none");
+            map.setLayoutProperty(layer.id, "visibility", viewModeRef.current === "globe" ? "visible" : "none");
           } catch {
             // Ignore layout mutations for incompatible layer definitions.
           }
