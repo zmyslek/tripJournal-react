@@ -1,4 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Adamina&family=Cormorant+Garamond:wght@400;500;600;700&display=swap');
+@import "@maptiler/sdk/dist/maptiler-sdk.css";
+@import "./map.css";
 
 @tailwind base;
 @tailwind components;
