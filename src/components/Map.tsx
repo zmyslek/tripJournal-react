@@ -130,26 +130,33 @@ const Map: React.FC<MapProps> = ({
   const flatMapHeight = "min(48vh, 560px)";
 
   const applyTransparentBackdrop = (map: maptilersdk.Map) => {
+    const globeBackdrop = viewModeRef.current === "globe" ? GLOBE_BACKGROUND_COLOR : "transparent";
     const canvas = map.getCanvas();
-    canvas.style.backgroundColor = "transparent";
-    canvas.style.setProperty("background", "transparent", "important");
-    map.getContainer().style.background = "transparent";
-    map.getContainer().style.setProperty("background", "transparent", "important");
+    canvas.style.backgroundColor = globeBackdrop;
+    canvas.style.setProperty("background", globeBackdrop, "important");
+    map.getContainer().style.background = globeBackdrop;
+    map.getContainer().style.setProperty("background", globeBackdrop, "important");
 
     // Fog mutations on globe projection are noisy in current SDK versions and can trigger warnings.
 
     try {
       map.getStyle().layers?.forEach((layer) => {
         if (layer.type === "background") {
-          map.setLayoutProperty(layer.id, "visibility", "none");
-          map.setPaintProperty(layer.id, "background-color", "rgba(0, 0, 0, 0)");
-          map.setPaintProperty(layer.id, "background-opacity", 0);
+          if (viewModeRef.current === "globe") {
+            map.setLayoutProperty(layer.id, "visibility", "visible");
+            map.setPaintProperty(layer.id, "background-color", GLOBE_BACKGROUND_COLOR);
+            map.setPaintProperty(layer.id, "background-opacity", 1);
+          } else {
+            map.setLayoutProperty(layer.id, "visibility", "none");
+            map.setPaintProperty(layer.id, "background-color", "rgba(0, 0, 0, 0)");
+            map.setPaintProperty(layer.id, "background-opacity", 0);
+          }
         }
 
         const layerId = layer.id.toLowerCase();
         if (layerId.includes("background")) {
           try {
-            map.setLayoutProperty(layer.id, "visibility", "none");
+            map.setLayoutProperty(layer.id, viewModeRef.current === "globe" ? "visible" : "none");
           } catch {
             // Ignore layout mutations for incompatible layer definitions.
           }
@@ -217,7 +224,7 @@ const Map: React.FC<MapProps> = ({
         paint: {
           "fill-color": "#e96f4a",
           "fill-opacity": 0.72,
-          "fill-outline-color": "#ffd9b0"
+          "fill-outline-color": "rgba(0, 0, 0, 0)"
         }
       });
     }
@@ -227,9 +234,15 @@ const Map: React.FC<MapProps> = ({
         id: COUNTRY_OUTLINE_LAYER_ID,
         type: "line",
         source: COUNTRY_SOURCE_ID,
+        layout: {
+          "line-join": "round",
+          "line-cap": "round"
+        },
         paint: {
           "line-color": "#ffd9b0",
-          "line-width": 1.8
+          "line-width": ["interpolate", ["linear"], ["zoom"], 1, 0.9, 3, 1.4, 6, 2.2],
+          "line-opacity": 0.95,
+          "line-blur": 0.12
         }
       });
     }
@@ -310,7 +323,18 @@ const Map: React.FC<MapProps> = ({
     );
 
     const highlightedFeatures =
-      countriesDataRef.current?.features.filter((feature) => selectedCountrySet.has(feature.properties?.name?.trim() ?? "")) ?? [];
+      countriesDataRef.current?.features.filter((feature) => {
+        if (!selectedCountrySet.has(feature.properties?.name?.trim() ?? "")) {
+          return false;
+        }
+
+        const geometry = feature.geometry;
+        if (!geometry || (geometry.type !== "Polygon" && geometry.type !== "MultiPolygon")) {
+          return false;
+        }
+
+        return Array.isArray(geometry.coordinates) && geometry.coordinates.length > 0;
+      }) ?? [];
 
     (source as { setData: (data: unknown) => void }).setData({
       type: "FeatureCollection",
@@ -550,6 +574,7 @@ const Map: React.FC<MapProps> = ({
       ref={mapContainer}
       data-view-mode={viewMode}
       style={{
+        background: viewMode === "globe" ? GLOBE_BACKGROUND_COLOR : "transparent",
         width: viewMode === "globe" ? globeSize : flatMapWidth,
         height: viewMode === "globe" ? globeSize : flatMapHeight,
         borderRadius: viewMode === "globe" ? "9999px" : "0.85rem",
