@@ -549,7 +549,6 @@ const Map: React.FC<MapProps> = ({
       ref={mapContainer}
       data-view-mode={viewMode}
       style={{
-        background: viewMode === "globe" ? GLOBE_BACKGROUND_COLOR : "transparent",
         width: viewMode === "globe" ? globeSize : flatMapWidth,
         height: viewMode === "globe" ? globeSize : flatMapHeight,
         borderRadius: viewMode === "globe" ? "9999px" : "0.85rem",
