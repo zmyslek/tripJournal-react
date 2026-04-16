@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import * as maptilersdk from "@maptiler/sdk";
 import "@maptiler/sdk/dist/maptiler-sdk.css";
+import "../css/map.css";
 import { type CountriesGeoJson } from "../types/countries";
 
 const STYLE_URL =
@@ -45,60 +46,64 @@ const Map: React.FC<MapProps> = ({ countriesData, selectedCountries, viewMode })
   const flatMapWidth = "min(78vw, 1100px)";
   const flatMapHeight = "min(48vh, 560px)";
 
-  const rebuildHighlightLayers = (map: maptilersdk.Map) => {
-    if (map.getLayer(COUNTRY_OUTLINE_LAYER_ID)) {
-      map.removeLayer(COUNTRY_OUTLINE_LAYER_ID);
+  const ensureHighlightLayers = (map: maptilersdk.Map) => {
+    if (!map.getSource(COUNTRY_SOURCE_ID)) {
+      map.addSource(COUNTRY_SOURCE_ID, {
+        type: "geojson",
+        data: EMPTY_FEATURE_COLLECTION
+      });
     }
 
-    if (map.getLayer(COUNTRY_LAYER_ID)) {
-      map.removeLayer(COUNTRY_LAYER_ID);
+    if (!map.getLayer(COUNTRY_LAYER_ID)) {
+      map.addLayer({
+        id: COUNTRY_LAYER_ID,
+        type: "fill",
+        source: COUNTRY_SOURCE_ID,
+        paint: {
+          "fill-color": "#e96f4a",
+          "fill-opacity": 0.72,
+          "fill-outline-color": "#fff4e6"
+        }
+      });
     }
 
-    if (map.getSource(COUNTRY_SOURCE_ID)) {
-      map.removeSource(COUNTRY_SOURCE_ID);
+    if (!map.getLayer(COUNTRY_OUTLINE_LAYER_ID)) {
+      map.addLayer({
+        id: COUNTRY_OUTLINE_LAYER_ID,
+        type: "line",
+        source: COUNTRY_SOURCE_ID,
+        paint: {
+          "line-color": "#fff4e6",
+          "line-width": 1.8
+        }
+      });
     }
-
-    map.addSource(COUNTRY_SOURCE_ID, {
-      type: "geojson",
-      data: EMPTY_FEATURE_COLLECTION
-    });
-
-    map.addLayer({
-      id: COUNTRY_LAYER_ID,
-      type: "fill",
-      source: COUNTRY_SOURCE_ID,
-      paint: {
-        "fill-color": "#e96f4a",
-        "fill-opacity": 0.72,
-        "fill-outline-color": "#fff4e6"
-      }
-    });
-
-    map.addLayer({
-      id: COUNTRY_OUTLINE_LAYER_ID,
-      type: "line",
-      source: COUNTRY_SOURCE_ID,
-      paint: {
-        "line-color": "#fff4e6",
-        "line-width": 1.8
-      }
-    });
   };
 
-  const applyHighlightedCountries = () => {
+  const syncHighlightedCountries = () => {
     const map = mapRef.current;
     if (!map || !map.isStyleLoaded()) {
       return;
     }
 
-    rebuildHighlightLayers(map);
+    ensureHighlightLayers(map);
 
     const source = map.getSource(COUNTRY_SOURCE_ID);
     if (!source || !("setData" in source)) {
       return;
     }
 
-    (source as { setData: (data: unknown) => void }).setData(countriesDataRef.current ?? EMPTY_FEATURE_COLLECTION);
+    const selectedCountrySet = new Set(
+      selectedCountriesRef.current.map((country) => country.trim()).filter((country) => country.length > 0)
+    );
+
+    const highlightedFeatures =
+      countriesDataRef.current?.features.filter((feature) => selectedCountrySet.has(feature.properties?.name?.trim() ?? "")) ?? [];
+
+    (source as { setData: (data: unknown) => void }).setData({
+      type: "FeatureCollection",
+      features: highlightedFeatures
+    });
 
     const selectedFilter = buildSelectedFilter(selectedCountriesRef.current) as unknown as Parameters<
       maptilersdk.Map["setFilter"]
@@ -122,7 +127,7 @@ const Map: React.FC<MapProps> = ({ countriesData, selectedCountries, viewMode })
 
     highlightRefreshFrameRef.current = window.requestAnimationFrame(() => {
       highlightRefreshFrameRef.current = null;
-      applyHighlightedCountries();
+      syncHighlightedCountries();
     });
   };
 
@@ -200,6 +205,7 @@ const Map: React.FC<MapProps> = ({ countriesData, selectedCountries, viewMode })
         }
       });
 
+      ensureHighlightLayers(map);
       scheduleHighlightRefresh();
 
       map.on("styledata", () => {
@@ -207,6 +213,7 @@ const Map: React.FC<MapProps> = ({ countriesData, selectedCountries, viewMode })
           return;
         }
 
+        ensureHighlightLayers(map);
         scheduleHighlightRefresh();
       });
 

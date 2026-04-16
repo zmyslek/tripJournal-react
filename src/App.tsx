@@ -1,13 +1,10 @@
 import { lazy, Suspense, useEffect, useState } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import MainLayout from "./components/MainLayout.tsx";
-import "./css/App.css";
-import type { CountriesGeoJson } from "./types/countries";
 
 const Home = lazy(() => import("./pages/Home"));
 const Gallery = lazy(() => import("./pages/Gallery"));
 const Profile = lazy(() => import("./pages/Profile"));
-const COUNTRIES_CACHE_KEY = "tripjournal:countries:v1";
 const SELECTED_COUNTRIES_CACHE_KEY = "tripjournal:selected-countries:v1";
 
 function getCachedSelectedCountries(): string[] {
@@ -37,58 +34,7 @@ function RouteFallback() {
 }
 
 function App() {
-    const [countriesData, setCountriesData] = useState<CountriesGeoJson | null>(null);
     const [selectedCountries, setSelectedCountries] = useState<string[]>(() => getCachedSelectedCountries());
-
-    useEffect(() => {
-        let isMounted = true;
-        const abortController = new AbortController();
-
-        try {
-            const cachedValue = localStorage.getItem(COUNTRIES_CACHE_KEY);
-            if (cachedValue) {
-                const parsedCached = JSON.parse(cachedValue) as CountriesGeoJson;
-                setCountriesData(parsedCached);
-            }
-        } catch {
-            // Ignore cache parse/storage failures and continue with network fetch.
-        }
-
-        const loadCountries = async () => {
-            try {
-                const response = await fetch(`${import.meta.env.BASE_URL}countries.geojson`, {
-                    cache: "force-cache",
-                    signal: abortController.signal
-                });
-                if (!response.ok) {
-                    throw new Error(`Failed to fetch countries.geojson: ${response.status}`);
-                }
-
-                const data = (await response.json()) as CountriesGeoJson;
-                if (isMounted) {
-                    setCountriesData(data);
-                }
-
-                try {
-                    localStorage.setItem(COUNTRIES_CACHE_KEY, JSON.stringify(data));
-                } catch {
-                    // Ignore cache write failures.
-                }
-            } catch (error) {
-                if (error instanceof DOMException && error.name === "AbortError") {
-                    return;
-                }
-                console.error("Failed to load countries GeoJSON", error);
-            }
-        };
-
-        void loadCountries();
-
-        return () => {
-            isMounted = false;
-            abortController.abort();
-        };
-    }, []);
 
     useEffect(() => {
         try {
@@ -115,11 +61,7 @@ function App() {
                     path="/"
                     element={
                         <Suspense fallback={<RouteFallback />}>
-                            <Home
-                                countriesData={countriesData}
-                                selectedCountries={selectedCountries}
-                                toggleCountry={toggleCountry}
-                            />
+                            <Home selectedCountries={selectedCountries} toggleCountry={toggleCountry} />
                         </Suspense>
                     }
                 />
@@ -145,11 +87,7 @@ function App() {
                 path="/map-only"
                 element={
                     <Suspense fallback={<RouteFallback />}>
-                        <Home
-                            countriesData={countriesData}
-                            selectedCountries={selectedCountries}
-                            toggleCountry={toggleCountry}
-                        />
+                        <Home selectedCountries={selectedCountries} toggleCountry={toggleCountry} />
                     </Suspense>
                 }
             />

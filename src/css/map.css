@@ -1,0 +1,12 @@
+.map-canvas-shell {
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.map-canvas-shell,
+.map-canvas-shell .maptiler-map,
+.map-canvas-shell .maplibregl-map,
+.map-canvas-shell .maplibregl-canvas-container,
+.map-canvas-shell .maplibregl-canvas {
+  background: transparent !important;
+}
