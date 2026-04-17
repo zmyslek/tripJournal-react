@@ -1,5 +1,4 @@
 .map-canvas-shell {
-  border-radius: 9999px;
   overflow: hidden;
   background: transparent !important;
   background-color: transparent !important;
@@ -20,6 +19,11 @@
 .map-canvas-shell[data-view-mode="globe"] .maplibregl-canvas,
 .map-canvas-shell[data-view-mode="globe"] canvas {
   mix-blend-mode: multiply;
+}
+
+.map-canvas-shell[data-view-mode="globe"] {
+  background: rgba(255, 234, 212, 0.92) !important;
+  background-color: rgba(255, 234, 212, 0.92) !important;
 }
 
 .user-location-marker {

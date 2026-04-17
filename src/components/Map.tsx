@@ -12,6 +12,7 @@ const MAPTILER_STYLE_ID =
 
 const MAPTILER_STYLE_URL = ENV?.VITE_MAPTILER_STYLE_URL;
 const GLOBE_BACKGROUND_COLOR = "#FFEAD4";
+const GLOBE_CONTAINER_BACKGROUND = "rgba(255, 234, 212, 0.92)";
 const GLOBE_WATER_COLOR = "#FFEAD4";
 const FALLBACK_STYLE_ID = "0196a729-51f8-7a04-8b3a-22b8d925ea1b";
 const DEFAULT_STYLE_URL = `https://api.maptiler.com/maps/${FALLBACK_STYLE_ID}/style.json?key=${MAPTILER_API_KEY}`;
@@ -130,7 +131,7 @@ const Map: React.FC<MapProps> = ({
   const flatMapHeight = "min(48vh, 560px)";
 
   const applyTransparentBackdrop = (map: maptilersdk.Map) => {
-    const globeBackdrop = viewModeRef.current === "globe" ? GLOBE_BACKGROUND_COLOR : "transparent";
+    const globeBackdrop = "transparent";
     const canvas = map.getCanvas();
     canvas.style.backgroundColor = globeBackdrop;
     canvas.style.setProperty("background", globeBackdrop, "important");
@@ -576,12 +577,10 @@ const Map: React.FC<MapProps> = ({
       ref={mapContainer}
       data-view-mode={viewMode}
       style={{
-        background: viewMode === "globe" ? GLOBE_BACKGROUND_COLOR : "transparent",
+        background: "transparent",
         width: viewMode === "globe" ? globeSize : flatMapWidth,
         height: viewMode === "globe" ? globeSize : flatMapHeight,
         borderRadius: viewMode === "globe" ? "9999px" : "0.85rem",
-        alignSelf: "center",
-        transform: "translateY(0)"
       }}
     />
   );
