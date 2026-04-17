@@ -35,13 +35,13 @@ function MainLayout() {
                 src={paperBackground}
                 alt=""
                 aria-hidden="true"
-                className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-40"
+                className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-65 mix-blend-multiply"
             />
-            <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,245,230,0.82),rgba(244,225,194,0.72)_45%,rgba(232,197,150,0.52)_100%)]" />
+            <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,245,230,0.64),rgba(244,225,194,0.54)_45%,rgba(232,197,150,0.4)_100%)]" />
 
             <div className="relative z-10 flex min-h-screen flex-col">
-                <header className="px-4 pb-3 pt-4 sm:px-6 lg:px-8">
-                    <div className="relative overflow-hidden rounded-[2rem] border border-[#eab681]/30 shadow-[0_18px_45px_rgba(90,57,43,0.22)]">
+                <header className="sticky top-0 z-30 px-3 pb-2 pt-3 sm:px-4 lg:px-6">
+                    <div className="relative overflow-hidden rounded-[1.2rem] border border-[#eab681]/35 shadow-[0_10px_24px_rgba(90,57,43,0.18)] backdrop-blur-[2px]">
                         <img
                             src={leatherBackground}
                             alt=""
@@ -49,23 +49,23 @@ function MainLayout() {
                             className="absolute inset-0 h-full w-full object-cover"
                         />
                         <div aria-hidden="true" className="absolute inset-0 bg-[linear-gradient(135deg,rgba(58,33,24,0.9),rgba(111,68,43,0.82))]" />
-                        <nav className="relative flex flex-col gap-5 px-5 py-5 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8" aria-label="Primary">
-                            <div className="space-y-2">
-                                <NavLink to="/" className="inline-block font-[Adamina] text-[2rem] leading-none text-[#fff0dd] no-underline sm:text-[2.3rem]" aria-label="Home">
+                        <nav className="relative flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5" aria-label="Primary">
+                            <div className="space-y-1">
+                                <NavLink to="/" className="inline-block font-[Adamina] text-[1.45rem] leading-none text-[#fff0dd] no-underline sm:text-[1.6rem]" aria-label="Home">
                                     TripJournal
                                 </NavLink>
-                                <p className="max-w-xl font-[Cormorant_Garamond] text-[1.1rem] leading-[1.1] text-[#f7dfca]">
+                                <p className="max-w-xl font-[Cormorant_Garamond] text-[0.98rem] leading-[1.1] text-[#f7dfca]">
                                     A tactile travel journal for building your own beautifully marked world map.
                                 </p>
                             </div>
 
-                            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between lg:justify-end">
-                                <div className="inline-flex flex-wrap items-center gap-2 rounded-full border border-white/10 bg-white/5 p-1.5 backdrop-blur-sm">
+                            <div className="flex items-center gap-2.5 sm:gap-3">
+                                <div className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 p-1 backdrop-blur-sm">
                                     <NavLink
                                         to="/"
                                         end
                                         className={({ isActive }) =>
-                                            `inline-flex min-h-[44px] items-center justify-center rounded-full px-5 py-2 font-[Adamina] text-[0.92rem] uppercase tracking-[0.16em] no-underline transition ${isActive ? "bg-[#ffead4] text-[#5a392b] shadow-[0_6px_14px_rgba(31,18,12,0.2)]" : "text-[#fff0dd] hover:bg-white/10"}`
+                                            `inline-flex min-h-[40px] items-center justify-center rounded-full px-4 py-2 font-[Adamina] text-[0.76rem] uppercase tracking-[0.16em] no-underline transition ${isActive ? "bg-[#ffead4] text-[#5a392b] shadow-[0_6px_14px_rgba(31,18,12,0.2)]" : "text-[#fff0dd] hover:bg-white/10"}`
                                         }
                                     >
                                         Atlas
@@ -73,7 +73,7 @@ function MainLayout() {
                                     <NavLink
                                         to="/gallery"
                                         className={({ isActive }) =>
-                                            `inline-flex min-h-[44px] items-center justify-center rounded-full px-5 py-2 font-[Adamina] text-[0.92rem] uppercase tracking-[0.16em] no-underline transition ${isActive ? "bg-[#ffead4] text-[#5a392b] shadow-[0_6px_14px_rgba(31,18,12,0.2)]" : "text-[#fff0dd] hover:bg-white/10"}`
+                                            `inline-flex min-h-[40px] items-center justify-center rounded-full px-4 py-2 font-[Adamina] text-[0.76rem] uppercase tracking-[0.16em] no-underline transition ${isActive ? "bg-[#ffead4] text-[#5a392b] shadow-[0_6px_14px_rgba(31,18,12,0.2)]" : "text-[#fff0dd] hover:bg-white/10"}`
                                         }
                                     >
                                         Gallery
@@ -83,14 +83,14 @@ function MainLayout() {
                                 <NavLink
                                     to="/profile"
                                     className={({ isActive }) =>
-                                        `inline-flex min-h-[50px] items-center gap-3 self-start rounded-full border px-2.5 py-2 pr-4 no-underline transition ${isActive ? "border-[#ffead4]/70 bg-[#ffead4] text-[#5a392b]" : "border-white/15 bg-white/8 text-[#fff0dd] hover:bg-white/12"}`
+                                        `inline-flex min-h-[40px] items-center gap-2 self-start rounded-full border px-2 py-1.5 pr-3 no-underline transition ${isActive ? "border-[#ffead4]/70 bg-[#ffead4] text-[#5a392b]" : "border-white/15 bg-white/8 text-[#fff0dd] hover:bg-white/12"}`
                                     }
                                     aria-label="Profile"
                                 >
-                                    <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[linear-gradient(135deg,#cf8d45,#f7d6b4)] font-[Adamina] text-[0.95rem] tracking-[0.08em] text-[#50300d] shadow-[inset_0_1px_0_rgba(255,255,255,0.5)]">
+                                    <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[linear-gradient(135deg,#cf8d45,#f7d6b4)] font-[Adamina] text-[0.75rem] tracking-[0.08em] text-[#50300d] shadow-[inset_0_1px_0_rgba(255,255,255,0.5)]">
                                         TJ
                                     </span>
-                                    <span className="font-[Adamina] text-[0.9rem] uppercase tracking-[0.16em]">Profile</span>
+                                    <span className="font-[Adamina] text-[0.72rem] uppercase tracking-[0.16em]">Profile</span>
                                 </NavLink>
                             </div>
                         </nav>
