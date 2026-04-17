@@ -2,95 +2,50 @@ import { lazy, Suspense, useEffect, useState } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import MainLayout from "./components/MainLayout.tsx";
 
-const Home = lazy(() => import("./pages/Home.tsx"));
-const Gallery = lazy(() => import("./pages/Gallery.tsx"));
-const Profile = lazy(() => import("./pages/Profile.tsx"));
-
+const Home = lazy(() => import("./pages/Home"));
+const Gallery = lazy(() => import("./pages/Gallery"));
+const Profile = lazy(() => import("./pages/Profile"));
 const COUNTRY_STATUS_CACHE_KEY = "tripjournal:country-statuses:v1";
-const VISITED_COUNTRIES_CACHE_KEY = "tripjournal:selected-countries:v1";
-const WISHLIST_COUNTRIES_CACHE_KEY = "tripjournal:wishlist-countries:v1";
-const WISHLIST_CITIES_CACHE_KEY = "tripjournal:wishlist-cities:v1";
 
-type CountryStatus = "want-to-go" | "visited" | "want-to-visit-again";
-
+export type CountryStatus = "want-to-go" | "visited" | "want-to-visit-again";
 type CountryStatusMap = Record<string, CountryStatus>;
 
-function readCachedStringArray(cacheKey: string): string[] {
+function getCachedCountryStatuses(): CountryStatusMap {
     try {
-        const cachedValue = localStorage.getItem(cacheKey);
-        if (!cachedValue) {
-            return [];
+        const cachedStatuses = localStorage.getItem(COUNTRY_STATUS_CACHE_KEY);
+        if (!cachedStatuses) {
+            return {};
         }
 
-        const parsedValue = JSON.parse(cachedValue);
-        if (!Array.isArray(parsedValue)) {
-            return [];
+        const parsedStatuses = JSON.parse(cachedStatuses);
+        if (!parsedStatuses || typeof parsedStatuses !== "object") {
+            return {};
         }
 
-        const normalizedValue = parsedValue
-            .filter((item): item is string => typeof item === "string" && item.trim().length > 0)
-            .map((item) => item.trim());
+        const normalizedStatuses: CountryStatusMap = {};
 
-        return [...new Set(normalizedValue)];
-    } catch {
-        return [];
-    }
-}
-
-function readCachedCountryStatuses(): CountryStatusMap {
-    try {
-        const cachedValue = localStorage.getItem(COUNTRY_STATUS_CACHE_KEY);
-        if (cachedValue) {
-            const parsedValue = JSON.parse(cachedValue);
-            if (parsedValue && typeof parsedValue === "object" && !Array.isArray(parsedValue)) {
-                const entries = Object.entries(parsedValue as Record<string, unknown>)
-                    .filter(
-                        (entry): entry is [string, CountryStatus] =>
-                            typeof entry[0] === "string"
-                            && entry[0].trim().length > 0
-                            && (entry[1] === "want-to-go" || entry[1] === "visited" || entry[1] === "want-to-visit-again")
-                    )
-                    .map(([countryName, status]) => [countryName.trim(), status] as const);
-
-                if (entries.length > 0) {
-                    return Object.fromEntries(entries);
-                }
+        Object.entries(parsedStatuses).forEach(([countryName, statusValue]) => {
+            if (typeof countryName !== "string" || countryName.trim().length === 0) {
+                return;
             }
-        }
+
+            if (statusValue === "want-to-go" || statusValue === "visited" || statusValue === "want-to-visit-again") {
+                normalizedStatuses[countryName] = statusValue;
+            }
+        });
+
+        return normalizedStatuses;
     } catch {
-        // Fall back to legacy storage below.
+        return {};
     }
-
-    const visitedCountries = readCachedStringArray(VISITED_COUNTRIES_CACHE_KEY);
-    const wishlistCountries = readCachedStringArray(WISHLIST_COUNTRIES_CACHE_KEY);
-    const wishlistCityCountries = readCachedStringArray(WISHLIST_CITIES_CACHE_KEY);
-    const countryStatuses: CountryStatusMap = {};
-
-    visitedCountries.forEach((countryName) => {
-        countryStatuses[countryName] = "visited";
-    });
-
-    wishlistCountries.forEach((countryName) => {
-        if (!countryStatuses[countryName]) {
-            countryStatuses[countryName] = "want-to-go";
-        }
-    });
-
-    wishlistCityCountries.forEach((countryName) => {
-        if (!countryStatuses[countryName]) {
-            countryStatuses[countryName] = "want-to-go";
-        }
-    });
-
-    return countryStatuses;
 }
 
 function RouteFallback() {
-    return <div className="mx-auto min-h-[240px] w-full max-w-[1380px] px-4 py-8 sm:px-6 lg:px-8" />;
+    return <div className="h-20" />;
 }
 
 function App() {
-    const [countryStatuses, setCountryStatuses] = useState<CountryStatusMap>(() => readCachedCountryStatuses());
+    const [countryStatuses, setCountryStatuses] = useState<CountryStatusMap>(() => getCachedCountryStatuses());
 
     useEffect(() => {
         try {
@@ -101,28 +56,23 @@ function App() {
     }, [countryStatuses]);
 
     const setCountryStatus = (countryName: string, status: CountryStatus | null) => {
-        const normalizedCountry = countryName.trim();
-        if (!normalizedCountry) {
-            return;
-        }
-
-        setCountryStatuses((previousStatuses) => {
-            const nextStatuses = { ...previousStatuses };
-
+        setCountryStatuses((prevStatuses) => {
             if (status === null) {
-                delete nextStatuses[normalizedCountry];
+                const nextStatuses = { ...prevStatuses };
+                delete nextStatuses[countryName];
                 return nextStatuses;
             }
 
-            nextStatuses[normalizedCountry] = status;
-            return nextStatuses;
+            return {
+                ...prevStatuses,
+                [countryName]: status
+            };
         });
     };
 
-    const visitedCountries = Object.entries(countryStatuses)
+    const selectedCountries = Object.entries(countryStatuses)
         .filter(([, status]) => status === "visited" || status === "want-to-visit-again")
-        .map(([countryName]) => countryName)
-        .sort((a, b) => a.localeCompare(b));
+        .map(([countryName]) => countryName);
 
     return (
         <Routes>
@@ -132,9 +82,9 @@ function App() {
                     element={
                         <Suspense fallback={<RouteFallback />}>
                             <Home
+                                selectedCountries={selectedCountries}
                                 countryStatuses={countryStatuses}
                                 setCountryStatus={setCountryStatus}
-                                visitedCountries={visitedCountries}
                             />
                         </Suspense>
                     }
@@ -162,9 +112,9 @@ function App() {
                 element={
                     <Suspense fallback={<RouteFallback />}>
                         <Home
+                            selectedCountries={selectedCountries}
                             countryStatuses={countryStatuses}
                             setCountryStatus={setCountryStatus}
-                            visitedCountries={visitedCountries}
                         />
                     </Suspense>
                 }

@@ -10,52 +10,6 @@
   box-sizing: border-box;
 }
 
-:root {
-  --app-radius: 0.75rem;
-  color: #50300d;
-  background: #f3debf;
-  font-family: "Cormorant Garamond", serif;
-  line-height: 1.5;
-  font-weight: 500;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-:where(main, section, article, aside, nav, footer, header, input, button, select, textarea, img, video, canvas) {
-  border-radius: var(--app-radius);
-}
-
-html {
-  background: #f3debf;
-  scroll-behavior: smooth;
-}
-
 body {
   margin: 0;
-  min-width: 320px;
-  background:
-    radial-gradient(circle at top, rgba(255, 244, 226, 0.88), rgba(243, 222, 191, 0.82) 45%, rgba(227, 194, 152, 0.78) 100%);
-  color: #50300d;
-  font-family: "Cormorant Garamond", serif;
-}
-
-#root {
-  min-height: 100vh;
-}
-
-a {
-  color: inherit;
-}
-
-button,
-input,
-select,
-textarea {
-  font: inherit;
-}
-
-::selection {
-  background: rgba(207, 141, 69, 0.3);
-  color: #50300d;
 }
