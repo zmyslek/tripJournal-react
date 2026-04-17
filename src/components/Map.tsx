@@ -121,7 +121,7 @@ const Map: React.FC<MapProps> = ({
   const selectedCountriesRef = useRef<string[]>(selectedCountries);
   const viewModeRef = useRef<"globe" | "map">(viewMode);
   const userLocationRef = useRef<{ lng: number; lat: number } | null>(userLocation ?? null);
-  const userLocationMarkerRef = useRef<maptilersdk.Marker | null>(null);
+  const userLocationOverlayRef = useRef<HTMLDivElement | null>(null);
   const hasCenteredOnUserLocationRef = useRef(false);
   const highlightRefreshFrameRef = useRef<number | null>(null);
 
@@ -271,37 +271,72 @@ const Map: React.FC<MapProps> = ({
     return marker;
   };
 
-  const syncUserLocationMarker = (map: maptilersdk.Map) => {
-    if (!map.isStyleLoaded()) {
+  const ensureUserLocationOverlay = () => {
+    if (userLocationOverlayRef.current || !mapContainer.current) {
       return;
     }
+
+    const overlay = createUserLocationPinElement();
+    overlay.classList.add("user-location-overlay");
+    mapContainer.current.appendChild(overlay);
+    userLocationOverlayRef.current = overlay;
+  };
+
+  const updateUserLocationOverlay = (map: maptilersdk.Map) => {
+    const overlay = userLocationOverlayRef.current;
+    const location = userLocationRef.current;
+
+    if (!overlay) {
+      return;
+    }
+
+    if (!location || !map.isStyleLoaded()) {
+      overlay.style.opacity = "0";
+      return;
+    }
+
+    const point = map.project([location.lng, location.lat]);
+    overlay.style.opacity = "1";
+    overlay.style.left = `${point.x}px`;
+    overlay.style.top = `${point.y}px`;
+    overlay.style.transform = "translate(-50%, -50%)";
+    overlay.dataset.visible = "true";
+  };
+
+  const syncUserLocationOverlay = (map: maptilersdk.Map) => {
+    ensureUserLocationOverlay();
+    updateUserLocationOverlay(map);
 
     const location = userLocationRef.current;
-    if (!location) {
-      userLocationMarkerRef.current?.remove();
-      userLocationMarkerRef.current = null;
-      hasCenteredOnUserLocationRef.current = false;
+    if (!location || hasCenteredOnUserLocationRef.current) {
       return;
     }
 
-    if (!userLocationMarkerRef.current) {
-      userLocationMarkerRef.current = new maptilersdk.Marker({
-        element: createUserLocationPinElement(),
-        anchor: "center"
-      });
-      userLocationMarkerRef.current.setLngLat([location.lng, location.lat]).addTo(map);
-    } else {
-      userLocationMarkerRef.current.setLngLat([location.lng, location.lat]);
-    }
+    hasCenteredOnUserLocationRef.current = true;
+    map.easeTo({
+      center: [location.lng, location.lat],
+      zoom: Math.max(map.getZoom(), 2.2),
+      duration: 900,
+      essential: true
+    });
+  };
+
+  const syncUserLocationOverlayAndCenter = (map: maptilersdk.Map) => {
+    syncUserLocationOverlay(map);
 
     if (!hasCenteredOnUserLocationRef.current) {
+      const location = userLocationRef.current;
+      if (!location) {
+        return;
+      }
+
+      hasCenteredOnUserLocationRef.current = true;
       map.easeTo({
         center: [location.lng, location.lat],
         zoom: Math.max(map.getZoom(), 2.2),
         duration: 900,
         essential: true
       });
-      hasCenteredOnUserLocationRef.current = true;
     }
   };
 
@@ -415,7 +450,7 @@ const Map: React.FC<MapProps> = ({
 
     const map = mapRef.current;
     if (map) {
-      syncUserLocationMarker(map);
+      syncUserLocationOverlay(map);
     }
   }, [userLocation]);
 
@@ -506,7 +541,7 @@ const Map: React.FC<MapProps> = ({
       }
 
       ensureHighlightLayers(map);
-      syncUserLocationMarker(map);
+      syncUserLocationOverlayAndCenter(map);
       scheduleHighlightRefresh();
 
       map.on("styledata", () => {
@@ -529,7 +564,7 @@ const Map: React.FC<MapProps> = ({
         }
 
         ensureHighlightLayers(map);
-        syncUserLocationMarker(map);
+        syncUserLocationOverlay(map);
         scheduleHighlightRefresh();
       });
 
@@ -537,6 +572,8 @@ const Map: React.FC<MapProps> = ({
         if (gl) {
           gl.clearColor(0, 0, 0, 0);
         }
+
+        updateUserLocationOverlay(map);
       });
 
       map.once("idle", () => {
@@ -564,8 +601,8 @@ const Map: React.FC<MapProps> = ({
 
     return () => {
       window.cancelAnimationFrame(animationFrameId);
-      userLocationMarkerRef.current?.remove();
-      userLocationMarkerRef.current = null;
+      userLocationOverlayRef.current?.remove();
+      userLocationOverlayRef.current = null;
       map.remove();
     };
   }, []);

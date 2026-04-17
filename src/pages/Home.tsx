@@ -1,25 +1,12 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { getCountryName } from "../types/countries";
 import { useCountriesData } from "../hooks/useCountriesData";
 import { type CountriesGeoJson, type CountryFeature } from "../types/countries";
-import Map from "../components/Map.tsx";
+const Map = lazy(() => import("../components/Map.tsx"));
 
 type HomeProps = {
     selectedCountries: string[];
     toggleCountry: (countryName: string) => void;
-};
-
-const LOCATION_PROMPT_COOKIE_KEY = "tripjournal-location-prompt-asked";
-
-const getCookie = (cookieName: string) => {
-    const escapedName = cookieName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    const match = document.cookie.match(new RegExp(`(?:^|; )${escapedName}=([^;]*)`));
-    return match ? decodeURIComponent(match[1]) : null;
-};
-
-const setCookie = (cookieName: string, cookieValue: string, days = 365) => {
-    const maxAge = days * 24 * 60 * 60;
-    document.cookie = `${cookieName}=${encodeURIComponent(cookieValue)}; max-age=${maxAge}; path=/; SameSite=Lax`;
 };
 
 const pointInRing = (lng: number, lat: number, ring: number[][]) => {
@@ -91,60 +78,53 @@ function Home({ selectedCountries, toggleCountry }: HomeProps) {
     const [searchTerm, setSearchTerm] = useState("");
     const [mapViewMode, setMapViewMode] = useState<"globe" | "map">("globe");
     const [userLocation, setUserLocation] = useState<{ lng: number; lat: number } | null>(null);
-    const hasPromptedForLocationRef = useRef(getCookie(LOCATION_PROMPT_COOKIE_KEY) === "1");
-    const hasAttemptedAutoLocateRef = useRef(false);
+    const autoSelectedLocationKeyRef = useRef<string | null>(null);
+    const hasRequestedGeolocationRef = useRef(false);
     const { countriesData, isLoading, error } = useCountriesData();
 
     useEffect(() => {
-        if (!countriesData) {
+        if (hasRequestedGeolocationRef.current || !navigator.geolocation) {
             return;
         }
 
-        const tryLocateUser = () => {
-            if (hasAttemptedAutoLocateRef.current || !navigator.geolocation) {
-                return;
+        hasRequestedGeolocationRef.current = true;
+
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                setUserLocation({
+                    lng: position.coords.longitude,
+                    lat: position.coords.latitude
+                });
+            },
+            () => {
+                // Ignore geolocation failures and continue without auto-selection.
+            },
+            {
+                enableHighAccuracy: false,
+                timeout: 4000,
+                maximumAge: 600000
             }
+        );
+    }, []);
 
-            hasAttemptedAutoLocateRef.current = true;
-
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    const lng = position.coords.longitude;
-                    const lat = position.coords.latitude;
-                    setUserLocation({ lng, lat });
-
-                    const countryName = findCountryAtCoordinates(countriesData, lng, lat);
-                    if (countryName && !selectedCountries.includes(countryName)) {
-                        toggleCountry(countryName);
-                    }
-                },
-                () => {
-                    // Ignore geolocation failures and continue without auto-selection.
-                },
-                {
-                    enableHighAccuracy: false,
-                    timeout: 10000,
-                    maximumAge: 300000
-                }
-            );
-        };
-
-        if (hasPromptedForLocationRef.current) {
-            tryLocateUser();
+    useEffect(() => {
+        if (!countriesData || !userLocation) {
             return;
         }
 
-        hasPromptedForLocationRef.current = true;
-        setCookie(LOCATION_PROMPT_COOKIE_KEY, "1");
-
-        const shouldLocateUser = window.confirm("Allow TripJournal to use your location and auto-select your country?");
-        if (!shouldLocateUser) {
+        const locationKey = `${userLocation.lng.toFixed(4)},${userLocation.lat.toFixed(4)}`;
+        if (autoSelectedLocationKeyRef.current === locationKey) {
             return;
         }
 
-        tryLocateUser();
+        autoSelectedLocationKeyRef.current = locationKey;
 
-    }, [countriesData, selectedCountries, toggleCountry]);
+        const countryName = findCountryAtCoordinates(countriesData, userLocation.lng, userLocation.lat);
+        if (countryName && !selectedCountries.includes(countryName)) {
+            toggleCountry(countryName);
+        }
+
+    }, [countriesData, selectedCountries, toggleCountry, userLocation]);
 
     const countryNames = useMemo(() => {
         if (!countriesData) {
@@ -230,12 +210,20 @@ function Home({ selectedCountries, toggleCountry }: HomeProps) {
                         Loading map data...
                     </div>
                 ) : (
-                    <Map
-                        countriesData={countriesData}
-                        selectedCountries={selectedCountries}
-                        viewMode={mapViewMode}
-                        userLocation={userLocation}
-                    />
+                    <Suspense
+                        fallback={
+                            <div className="flex h-[min(82vw,82vh)] w-[min(82vw,82vh)] items-center justify-center rounded-full border border-[#eab681] bg-transparent text-center font-[Cormorant_Garamond] text-[1.15rem] text-[#50300d] shadow-[0_3px_14px_rgb(80_48_13_/_12%)]">
+                                Loading map...
+                            </div>
+                        }
+                    >
+                        <Map
+                            countriesData={countriesData}
+                            selectedCountries={selectedCountries}
+                            viewMode={mapViewMode}
+                            userLocation={userLocation}
+                        />
+                    </Suspense>
                 )}
 
                 <button
