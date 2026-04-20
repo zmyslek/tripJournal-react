@@ -2,7 +2,7 @@ import { lazy, Suspense, useEffect, useState } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import MainLayout from "./components/MainLayout.tsx";
 
-const Home = lazy(() => import("./pages/Home"));
+const Home = lazy(() => import("./pages/Home-codex"));
 const Gallery = lazy(() => import("./pages/Gallery"));
 const Profile = lazy(() => import("./pages/Profile"));
 const COUNTRY_STATUS_CACHE_KEY = "tripjournal:country-statuses:v1";
@@ -70,7 +70,9 @@ function App() {
         });
     };
 
-    const selectedCountries = Object.entries(countryStatuses)
+    // Temporary compatibility with Home-codex: this page expects `visitedCountries`.
+    // const selectedCountries = Object.entries(countryStatuses)
+    const visitedCountries = Object.entries(countryStatuses)
         .filter(([, status]) => status === "visited" || status === "want-to-visit-again")
         .map(([countryName]) => countryName);
 
@@ -82,7 +84,7 @@ function App() {
                     element={
                         <Suspense fallback={<RouteFallback />}>
                             <Home
-                                selectedCountries={selectedCountries}
+                                visitedCountries={visitedCountries}
                                 countryStatuses={countryStatuses}
                                 setCountryStatus={setCountryStatus}
                             />
@@ -112,7 +114,7 @@ function App() {
                 element={
                     <Suspense fallback={<RouteFallback />}>
                         <Home
-                            selectedCountries={selectedCountries}
+                            visitedCountries={visitedCountries}
                             countryStatuses={countryStatuses}
                             setCountryStatus={setCountryStatus}
                         />
