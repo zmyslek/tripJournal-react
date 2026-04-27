@@ -202,65 +202,21 @@ function Home({ countryStatuses, setCountryStatus, visitedCountries }: HomeProps
 
     return (
         <div className="mx-auto flex w-full max-w-[1380px] flex-col gap-8 px-4 pb-14 pt-6 sm:px-6 lg:px-8">
-            <section className="rounded-[1.4rem] border border-[#cf8d45]/45 bg-[linear-gradient(180deg,#fff8eef5,#f7dfcae8)] p-4 shadow-[0_14px_34px_#5a392b1f]" aria-label="Country filters">
-                <label className="block">
-                    <span className="mb-2 block font-[Adamina] text-[0.78rem] uppercase tracking-[0.22em] text-[#8f5a20]">Search countries</span>
-                    <input
-                        type="search"
-                        value={searchTerm}
-                        onChange={(event) => setSearchTerm(event.target.value)}
-                        placeholder="Search countries"
-                        className="w-full rounded-[0.75rem] border border-[#eab681] bg-[#fff9f1] px-[0.9rem] py-[0.7rem] font-[Cormorant_Garamond] text-[1.15rem] text-[#50300d] outline-none transition focus:border-[#cf8d45] focus:ring-2 focus:ring-[#eab681]/60"
-                    />
-                </label>
-
-                {searchTerm.trim().length > 0 && (
-                    <div
-                        className="mt-4 grid max-h-[220px] grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-y-2 gap-x-3 overflow-y-auto pr-1"
-                        role="group"
-                        aria-label="Countries to show on map"
-                    >
-                        {filteredCountryNames.length === 0 ? (
-                            <p className="m-0 font-[Cormorant_Garamond] text-[1.1rem] text-[#50300d]">No countries found.</p>
-                        ) : (
-                            filteredCountryNames.map((countryName) => {
-                                const status = countryStatuses[countryName] ?? null;
-                                const isChecked = status === "visited" || status === "want-to-visit-again";
-
-                                return (
-                                    <label
-                                        key={countryName}
-                                        className="inline-flex items-center gap-[0.45rem] font-[Cormorant_Garamond] text-[1.1rem] text-[#50300d]"
-                                    >
-                                        <input
-                                            type="checkbox"
-                                            checked={isChecked}
-                                            onChange={() => toggleCountryFromSearch(countryName)}
-                                        />
-                                        <span>{countryName}</span>
-                                    </label>
-                                );
-                            })
-                        )}
-                    </div>
-                )}
-            </section>
-
-            <section className="overflow-hidden rounded-[2rem] border border-[#cf8d45]/45 bg-[linear-gradient(135deg,#fff4e5f2,#f4debee0)] shadow-[0_24px_60px_#5a392b29]">
-                <div className="grid gap-10 px-6 py-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)] lg:px-10 lg:py-10">
+            <section className="overflow-hidden rounded-[2rem] border border-[#7a3f00]/18 bg-[linear-gradient(135deg,#fff4e5f2,#f4debee0)] shadow-[0_24px_60px_#5a392b29]" aria-label="Country filters">
+                <div className="grid gap-6 px-6 py-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)] lg:px-10 lg:py-8">
                     <div className="relative">
                         <div className="absolute left-0 top-0 h-20 w-20 rounded-full bg-[#eab681]/30 blur-3xl" aria-hidden="true" />
                         <div className="absolute bottom-4 left-20 h-24 w-24 rounded-full bg-[#7a3f00]/10 blur-3xl" aria-hidden="true" />
                         <div className="relative space-y-5">
                             <p className="inline-flex items-center rounded-full border border-[#7a3f00]/20 bg-white/55 px-4 py-1.5 font-[Adamina] text-[0.78rem] uppercase tracking-[0.28em] text-[#7a3f00]">
-                                Personal atlas
+                                Search atlas
                             </p>
                             <div className="space-y-4">
-                                <h1 className="max-w-3xl font-[Adamina] text-4xl leading-[1.05] text-[#50300d] sm:text-5xl">
-                                    Track every place that already feels like part of your story.
+                                <h1 className="max-w-3xl font-[Adamina] text-3xl leading-[1.05] text-[#50300d] sm:text-4xl">
+                                    Search the catalog, assign a status, and review your travel footprint.
                                 </h1>
-                                <p className="max-w-2xl font-[Cormorant_Garamond] text-[1.45rem] leading-[1.2] text-[#6a4630]">
-                                    Curate a warm, tactile record of where you&apos;ve been, where you&apos;re dreaming of next, and the countries you&apos;d happily return to again.
+                                <p className="max-w-2xl font-[Cormorant_Garamond] text-[1.25rem] leading-[1.2] text-[#6a4630]">
+                                    Use the search bar to find countries quickly, then mark them and watch the map update with the same warm brown palette.
                                 </p>
                             </div>
                         </div>
@@ -275,6 +231,50 @@ function Home({ countryStatuses, setCountryStatus, visitedCountries }: HomeProps
                                     Search the catalog, assign a status, and use the globe or flat map to review your travel footprint.
                                 </p>
                             </div>
+
+                            <div className="rounded-[1.4rem] border border-[#eab681]/25 bg-[#ffead414] p-4 shadow-[inset_0_1px_0_#ffffff2b]">
+                                <label className="block">
+                                    <span className="mb-2 block font-[Adamina] text-[0.72rem] uppercase tracking-[0.2em] text-[#f6d7b5]">Search countries</span>
+                                    <input
+                                        type="search"
+                                        value={searchTerm}
+                                        onChange={(event) => setSearchTerm(event.target.value)}
+                                        placeholder="Search countries"
+                                        className="w-full rounded-[0.75rem] border border-[#eab681]/70 bg-[#fff7ee] px-[0.9rem] py-[0.7rem] font-[Cormorant_Garamond] text-[1.15rem] text-[#50300d] outline-none transition focus:border-[#f6d7b5] focus:ring-2 focus:ring-[#eab681]/55"
+                                    />
+                                </label>
+
+                                {searchTerm.trim().length > 0 && (
+                                    <div
+                                        className="mt-4 grid max-h-[220px] grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-y-2 gap-x-3 overflow-y-auto pr-1"
+                                        role="group"
+                                        aria-label="Countries to show on map"
+                                    >
+                                        {filteredCountryNames.length === 0 ? (
+                                            <p className="m-0 font-[Cormorant_Garamond] text-[1.1rem] text-[#f7dfca]">No countries found.</p>
+                                        ) : (
+                                            filteredCountryNames.map((countryName) => {
+                                                const status = countryStatuses[countryName] ?? null;
+                                                const isChecked = status === "visited" || status === "want-to-visit-again";
+
+                                                return (
+                                                    <label
+                                                        key={countryName}
+                                                        className="inline-flex items-center gap-[0.45rem] font-[Cormorant_Garamond] text-[1.1rem] text-[#f7dfca]"
+                                                    >
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={isChecked}
+                                                            onChange={() => toggleCountryFromSearch(countryName)}
+                                                        />
+                                                        <span>{countryName}</span>
+                                                    </label>
+                                                );
+                                            })
+                                        )}
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </aside>
                 </div>
@@ -287,50 +287,50 @@ function Home({ countryStatuses, setCountryStatus, visitedCountries }: HomeProps
                 </section>
             )}
 
-            <section className="grid gap-6 xl:grid-cols-[minmax(0,1.65fr)_minmax(320px,0.75fr)]">
-                    <div className="mt-6 flex min-h-[420px] flex-col items-center justify-center gap-4">
-                        {isLoading || !countriesData ? (
-                            <div className="flex min-h-[420px] w-full max-w-[980px] items-center justify-center px-6 text-center font-[Cormorant_Garamond] text-[1.3rem] text-[#6a4630]">
-                                Loading map data...
-                            </div>
-                        ) : (
-                            <Suspense
-                                fallback={
-                                    <div className="flex min-h-[420px] w-full max-w-[980px] items-center justify-center px-6 text-center font-[Cormorant_Garamond] text-[1.3rem] text-[#6a4630]">
-                                        Loading map...
-                                    </div>
-                                }
-                            >
-                                <div className="w-full max-w-[980px]">
-                                    <Map
-                                        countriesData={countriesData}
-                                        selectedCountries={highlightedCountries}
-                                        viewMode={mapViewMode}
-                                        userLocation={userLocation}
-                                    />
+            <section className="grid gap-6 xl:grid-cols-[minmax(0,1.25fr)_minmax(360px,1fr)]">
+                <div className="mt-6 flex min-h-[420px] flex-col items-center justify-center gap-4">
+                    {isLoading || !countriesData ? (
+                        <div className="flex min-h-[420px] w-full max-w-[820px] items-center justify-center px-6 text-center font-[Cormorant_Garamond] text-[1.3rem] text-[#6a4630]">
+                            Loading map data...
+                        </div>
+                    ) : (
+                        <Suspense
+                            fallback={
+                                <div className="flex min-h-[420px] w-full max-w-[820px] items-center justify-center px-6 text-center font-[Cormorant_Garamond] text-[1.3rem] text-[#6a4630]">
+                                    Loading map...
                                 </div>
-                            </Suspense>
-                        )}
-
-                        <button
-                            type="button"
-                            onClick={() => setMapViewMode((previousViewMode) => (previousViewMode === "globe" ? "map" : "globe"))}
-                            className="inline-flex h-[3rem] w-[3rem] items-center justify-center rounded-full border border-[#50300d] bg-[#f6dfc1] text-[1.35rem] text-[#50300d] shadow-[0_3px_10px_#50300d2e] transition hover:bg-[#eab681]"
-                            aria-label="Switch between globe and flat map view"
+                            }
                         >
-                            {mapViewMode === "globe" ? (
-                                <svg viewBox="0 0 24 24" className="h-[1.35rem] w-[1.35rem]" fill="none" aria-hidden="true">
-                                    <path d="M3 6.5L9 4l6 2.5L21 4v13.5L15 20l-6-2.5L3 20V6.5Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
-                                    <path d="M9 4v13.5M15 6.5V20" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-                                </svg>
-                            ) : (
-                                <svg viewBox="0 0 24 24" className="h-[1.35rem] w-[1.35rem]" fill="none" aria-hidden="true">
-                                    <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
-                                    <path d="M3 12h18M12 3c2.6 2.4 4 5.5 4 9s-1.4 6.6-4 9c-2.6-2.4-4-5.5-4-9s1.4-6.6 4-9Z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                                </svg>
-                            )}
-                        </button>
-                    </div>
+                            <div className="w-full max-w-[820px]">
+                                <Map
+                                    countriesData={countriesData}
+                                    selectedCountries={highlightedCountries}
+                                    viewMode={mapViewMode}
+                                    userLocation={userLocation}
+                                />
+                            </div>
+                        </Suspense>
+                    )}
+
+                    <button
+                        type="button"
+                        onClick={() => setMapViewMode((previousViewMode) => (previousViewMode === "globe" ? "map" : "globe"))}
+                        className="inline-flex h-[3rem] w-[3rem] items-center justify-center rounded-full border border-[#50300d] bg-[#f6dfc1] text-[1.35rem] text-[#50300d] shadow-[0_3px_10px_#50300d2e] transition hover:bg-[#eab681]"
+                        aria-label="Switch between globe and flat map view"
+                    >
+                        {mapViewMode === "globe" ? (
+                            <svg viewBox="0 0 24 24" className="h-[1.35rem] w-[1.35rem]" fill="none" aria-hidden="true">
+                                <path d="M3 6.5L9 4l6 2.5L21 4v13.5L15 20l-6-2.5L3 20V6.5Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+                                <path d="M9 4v13.5M15 6.5V20" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                            </svg>
+                        ) : (
+                            <svg viewBox="0 0 24 24" className="h-[1.35rem] w-[1.35rem]" fill="none" aria-hidden="true">
+                                <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
+                                <path d="M3 12h18M12 3c2.6 2.4 4 5.5 4 9s-1.4 6.6-4 9c-2.6-2.4-4-5.5-4-9s1.4-6.6 4-9Z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                        )}
+                    </button>
+                </div>
 
                 <aside className="rounded-[2rem] border border-[#7a3f00]/15 bg-[#5c3722eb] p-5 text-[#ffead4] shadow-[0_24px_60px_#5a392b38]">
                     <p className="font-[Adamina] text-[0.78rem] uppercase tracking-[0.24em] text-[#f6d7b5]">Map status</p>
