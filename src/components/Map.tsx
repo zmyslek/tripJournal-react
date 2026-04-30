@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import * as maptilersdk from "@maptiler/sdk";
 import { type CountriesGeoJson } from "../types/countries";
+import type { CountryStatus } from "../pages/Home-codex";
 
 const ENV = (import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env;
 
@@ -102,6 +103,8 @@ type MapProps = {
   selectedCountries: string[];
   viewMode: "globe" | "map";
   userLocation?: { lng: number; lat: number } | null;
+  countryStatuses?: Record<string, CountryStatus>;
+  mapStatusFilters?: Set<CountryStatus | "not-explored">;
 };
 
 const EMPTY_FEATURE_COLLECTION: CountriesGeoJson = {
@@ -113,12 +116,15 @@ const Map: React.FC<MapProps> = ({
   countriesData,
   selectedCountries,
   viewMode,
-  userLocation
+  userLocation,
+  countryStatuses = {},
+  mapStatusFilters
 }) => {
   const mapContainer = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<maptilersdk.Map | null>(null);
   const countriesDataRef = useRef<CountriesGeoJson | null>(countriesData);
   const selectedCountriesRef = useRef<string[]>(selectedCountries);
+  const countryStatusesRef = useRef<Record<string, CountryStatus>>(countryStatuses);
   const viewModeRef = useRef<"globe" | "map">(viewMode);
   const userLocationRef = useRef<{ lng: number; lat: number } | null>(userLocation ?? null);
   const userLocationOverlayRef = useRef<HTMLDivElement | null>(null);
@@ -126,7 +132,7 @@ const Map: React.FC<MapProps> = ({
   const highlightRefreshFrameRef = useRef<number | null>(null);
 
   const globeSize = "min(82vw, 82vh)";
-  const flatMapWidth = "min(95vw, 1400px)";
+  const flatMapWidth = "min(100%, 800px)";
   const flatMapHeight = "min(48vh, 560px)";
 
   const applyTransparentBackdrop = (map: maptilersdk.Map) => {
@@ -222,7 +228,14 @@ const Map: React.FC<MapProps> = ({
         type: "fill",
         source: COUNTRY_SOURCE_ID,
         paint: {
-          "fill-color": "#e96f4a",
+          "fill-color": [
+            "match",
+            ["get", "status"],
+            "visited", "#CF8D45",
+            "want-to-visit-again", "#FABE7D",
+            "want-to-go", "#EAB681",
+            "#7a3f00"
+          ],
           "fill-opacity": 0.72,
           "fill-outline-color": "rgba(0, 0, 0, 0)"
         }
@@ -239,7 +252,14 @@ const Map: React.FC<MapProps> = ({
           "line-cap": "round"
         },
         paint: {
-          "line-color": "#ffd9b0",
+          "line-color": [
+            "match",
+            ["get", "status"],
+            "visited", "#7A3F00",
+            "want-to-visit-again", "#CF8D45",
+            "want-to-go", "#EAB681",
+            "#5A392B"
+          ],
           "line-width": ["interpolate", ["linear"], ["zoom"], 1, 0.9, 3, 1.4, 6, 2.2],
           "line-opacity": 0.95,
           "line-blur": 0.12
@@ -358,18 +378,30 @@ const Map: React.FC<MapProps> = ({
     );
 
     const highlightedFeatures =
-      countriesDataRef.current?.features.filter((feature) => {
-        if (!selectedCountrySet.has(feature.properties?.name?.trim() ?? "")) {
-          return false;
+      countriesDataRef.current?.features.map((feature) => {
+        const countryName = feature.properties?.name?.trim() ?? "";
+        if (!selectedCountrySet.has(countryName)) {
+          return null;
         }
 
         const geometry = feature.geometry;
         if (!geometry || (geometry.type !== "Polygon" && geometry.type !== "MultiPolygon")) {
-          return false;
+          return null;
         }
 
-        return Array.isArray(geometry.coordinates) && geometry.coordinates.length > 0;
-      }) ?? [];
+        if (!Array.isArray(geometry.coordinates) || geometry.coordinates.length === 0) {
+          return null;
+        }
+
+        const status = countryStatusesRef.current[countryName] ?? "not-explored";
+        return {
+          ...feature,
+          properties: {
+            ...feature.properties,
+            status
+          }
+        };
+      }).filter((feature): feature is typeof feature & object => feature !== null) ?? [];
 
     (source as { setData: (data: unknown) => void }).setData({
       type: "FeatureCollection",
@@ -436,6 +468,7 @@ const Map: React.FC<MapProps> = ({
   useEffect(() => {
     countriesDataRef.current = countriesData;
     selectedCountriesRef.current = selectedCountries;
+    countryStatusesRef.current = countryStatuses;
     scheduleHighlightRefresh();
 
     const map = mapRef.current;
