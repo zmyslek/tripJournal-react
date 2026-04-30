@@ -80,6 +80,7 @@ const findCountryAtCoordinates = (countriesData: CountriesGeoJson, lng: number, 
 function Home({ countryStatuses, setCountryStatus, visitedCountries }: HomeProps) {
     const [searchTerm, setSearchTerm] = useState("");
     const [mapViewMode, setMapViewMode] = useState<"globe" | "map">("globe");
+    const [mapFilterExpanded, setMapFilterExpanded] = useState(false);
     const [userLocation, setUserLocation] = useState<{ lng: number; lat: number } | null>(null);
     const [mapStatusFilters, setMapStatusFilters] = useState<Set<CountryStatus | "not-explored">>(
         new Set(["visited", "want-to-visit-again"])
@@ -212,6 +213,14 @@ function Home({ countryStatuses, setCountryStatus, visitedCountries }: HomeProps
         return "bg-white border-[#7a3f00]/40";
     };
 
+    const getStatusTextColor = (status: CountryStatus | "not-explored" | null): string => {
+        if (status === "visited" || status === "want-to-go" || status === "want-to-visit-again") {
+            return "text-[#fff4e7]";
+        }
+
+        return "text-[#50300d]";
+    };
+
     const toggleListStatusFilter = (status: CountryStatus | "not-explored") => {
         const newFilters = new Set(listStatusFilters);
         if (newFilters.has(status)) {
@@ -223,9 +232,10 @@ function Home({ countryStatuses, setCountryStatus, visitedCountries }: HomeProps
     };
 
     const filteredAndSortedCountries = useMemo(() => {
-        let filtered = countryNames.filter((countryName) => {
+        const query = searchTerm.trim().toLowerCase();
+        const filtered = countryNames.filter((countryName) => {
             const status = countryStatuses[countryName] ?? "not-explored";
-            return listStatusFilters.has(status);
+            return listStatusFilters.has(status) && (!query || countryName.toLowerCase().includes(query));
         });
 
         if (listSort === "z-a") {
@@ -243,27 +253,27 @@ function Home({ countryStatuses, setCountryStatus, visitedCountries }: HomeProps
         }
 
         return filtered.sort((a, b) => a.localeCompare(b));
-    }, [countryNames, countryStatuses, listStatusFilters, listSort]);
+    }, [countryNames, countryStatuses, listStatusFilters, listSort, searchTerm]);
 
     return (
         <div className="mx-auto flex w-full max-w-[1380px] flex-col gap-8 px-4 pb-14 pt-6 sm:px-6 lg:px-8">
-            <aside className="rounded-[1.8rem] border border-[#7a3f00]/15 bg-[#5c3722eb] p-5 text-[#ffead4] shadow-[0_20px_40px_#5a392b38]">
+            <aside className="rounded-[1.5rem] border border-[#7a3f00]/15 bg-[#5c3722eb] p-4 text-[#ffead4] shadow-[0_20px_40px_#5a392b38] sm:p-5">
                 <div className="flex h-full flex-col gap-5">
-                    <div className="rounded-[1.4rem] border border-[#eab681]/25 bg-[#ffead414] p-4 shadow-[inset_0_1px_0_#ffffff2b]">
+                    <div className="rounded-[1rem] border border-[#eab681]/25 bg-[#ffead414] p-4 shadow-[inset_0_1px_0_#ffffff2b]">
                         <label className="block">
                             <span className="mb-2 block font-[Adamina] text-[0.72rem] uppercase tracking-[0.2em] text-[#f6d7b5]">Search countries</span>
                             <input
                                 type="search"
                                 value={searchTerm}
                                 onChange={(event) => setSearchTerm(event.target.value)}
-                                placeholder="Search countries"
-                                className="w-full rounded-[0.75rem] border border-[#eab681]/70 bg-[#fff7ee] px-[0.9rem] py-[0.7rem] font-[Cormorant_Garamond] text-[1.15rem] text-[#50300d] outline-none transition focus:border-[#f6d7b5] focus:ring-2 focus:ring-[#eab681]/55"
+                                placeholder="Type a country name"
+                                className="h-12 w-full rounded-[0.75rem] border border-[#eab681]/70 bg-[#fff7ee] px-4 font-[Cormorant_Garamond] text-[1.1rem] text-[#50300d] outline-none transition placeholder:text-[#8a6a52] focus:border-[#f6d7b5] focus:ring-2 focus:ring-[#eab681]/55"
                             />
                         </label>
 
                         {searchTerm.trim().length > 0 && (
                             <div
-                                className="mt-4 grid max-h-[220px] grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-y-2 gap-x-3 overflow-y-auto pr-1"
+                                className="mt-4 space-y-2 max-h-[280px] overflow-y-auto pr-1"
                                 role="group"
                                 aria-label="Countries to show on map"
                             >
@@ -276,21 +286,24 @@ function Home({ countryStatuses, setCountryStatus, visitedCountries }: HomeProps
                                         return (
                                             <div
                                                 key={countryName}
-                                                className={`rounded-[0.8rem] border p-2 transition ${getStatusColor(status)}`}
+                                                className="flex items-center justify-between gap-3 rounded-[0.7rem] border border-[#eab681]/30 bg-[#ffead414] px-3 py-2.5 transition hover:bg-[#ffead41a]"
                                             >
+                                                <span className="font-[Cormorant_Garamond] text-[1rem] text-[#f7dfca] flex-1 truncate">
+                                                    {countryName}
+                                                </span>
                                                 <select
                                                     value={status ?? "null"}
                                                     onChange={(e) => {
                                                         const newStatus = e.target.value === "null" ? null : (e.target.value as CountryStatus);
                                                         setCountryStatus(countryName, newStatus);
                                                     }}
-                                                    className="w-full rounded-[0.6rem] border border-[#7a3f00]/40 bg-[#5a392b]/60 px-2 py-1 font-[Cormorant_Garamond] text-[0.85rem] text-[#fff4e7] outline-none transition hover:border-[#7a3f00]/60 focus:border-[#cf8d45] focus:ring-2 focus:ring-[#cf8d45]/40"
+                                                    className="rounded-[0.5rem] border border-[#7a3f00]/40 bg-[#5a392b]/75 px-2 py-1 font-[Cormorant_Garamond] text-[0.85rem] text-[#fff4e7] outline-none transition hover:border-[#7a3f00]/60 focus:border-[#cf8d45] focus:ring-2 focus:ring-[#cf8d45]/40 whitespace-nowrap"
                                                     aria-label={`Status for ${countryName}`}
                                                 >
-                                                    <option value="null">{countryName}</option>
-                                                    <option value="want-to-go">To be visited</option>
+                                                    <option value="null">—</option>
+                                                    <option value="want-to-go">To visit</option>
                                                     <option value="visited">Visited</option>
-                                                    <option value="want-to-visit-again">Want to return</option>
+                                                    <option value="want-to-visit-again">Return</option>
                                                 </select>
                                             </div>
                                         );
@@ -356,51 +369,76 @@ function Home({ countryStatuses, setCountryStatus, visitedCountries }: HomeProps
                             )}
                         </button>
 
-                        <div className="flex flex-wrap justify-center gap-2" role="group" aria-label="Filter map by country status">
+                        <div className="flex flex-col items-center gap-3 w-full">
                             <button
                                 type="button"
-                                onClick={() => toggleMapStatusFilter("visited")}
-                                className={`px-4 py-2 rounded-full text-sm font-[Cormorant_Garamond] transition ${
-                                    mapStatusFilters.has("visited")
-                                        ? "bg-[#CF8D45] text-[#ffead4] border border-[#CF8D45]"
-                                        : "bg-[#CF8D45]/20 text-[#6a4630] border border-[#CF8D45]/40 hover:bg-[#CF8D45]/30"
-                                }`}
+                                onClick={() => setMapFilterExpanded(!mapFilterExpanded)}
+                                className="inline-flex h-10 items-center justify-center rounded-full border border-[#7a3f00]/30 bg-[#ffead414] px-5 font-[Cormorant_Garamond] text-sm text-[#6a4630] transition hover:bg-[#ffead41a] hover:border-[#7a3f00]/50"
+                                aria-expanded={mapFilterExpanded}
+                                aria-label="Toggle map filters"
                             >
-                                Visited
+                                <span>Filter</span>
+                                <svg
+                                    className={`ml-2 h-4 w-4 transition-transform ${
+                                        mapFilterExpanded ? "rotate-180" : ""
+                                    }`}
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                    aria-hidden="true"
+                                >
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                                </svg>
                             </button>
-                            <button
-                                type="button"
-                                onClick={() => toggleMapStatusFilter("want-to-go")}
-                                className={`px-4 py-2 rounded-full text-sm font-[Cormorant_Garamond] transition ${
-                                    mapStatusFilters.has("want-to-go")
-                                        ? "bg-[#7A3F00] text-[#ffead4] border border-[#7A3F00]"
-                                        : "bg-[#7A3F00]/20 text-[#6a4630] border border-[#7A3F00]/40 hover:bg-[#7A3F00]/30"
-                                }`}
-                            >
-                                To be visited
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => toggleMapStatusFilter("want-to-visit-again")}
-                                className={`px-4 py-2 rounded-full text-sm font-[Cormorant_Garamond] transition ${
-                                    mapStatusFilters.has("want-to-visit-again")
-                                        ? "bg-[#FABE7D] text-[#50300d] border border-[#FABE7D]"
-                                        : "bg-[#FABE7D]/20 text-[#6a4630] border border-[#FABE7D]/40 hover:bg-[#FABE7D]/30"
-                                }`}
-                            >
-                                Want to return
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => toggleMapStatusFilter("not-explored")}
-                                className={`px-4 py-2 rounded-full text-sm font-[Cormorant_Garamond] transition ${
-                                    mapStatusFilters.has("not-explored")
-                                        ? "bg-[#7a3f00] text-[#ffead4] border border-[#7a3f00]"
-                                        : "bg-[#7a3f00]/20 text-[#6a4630] border border-[#7a3f00]/40 hover:bg-[#7a3f00]/30"
-                                }`}
-                            >
-                                Not explored
-                            </button>
+
+                            {mapFilterExpanded && (
+                                <div className="flex flex-wrap justify-center gap-2 w-full" role="group" aria-label="Filter map by country status">
+                                    <button
+                                        type="button"
+                                        onClick={() => toggleMapStatusFilter("visited")}
+                                        className={`px-4 py-2 rounded-full text-sm font-[Cormorant_Garamond] transition ${
+                                            mapStatusFilters.has("visited")
+                                                ? "bg-[#CF8D45] text-[#ffead4] border border-[#CF8D45]"
+                                                : "bg-[#CF8D45]/20 text-[#6a4630] border border-[#CF8D45]/40 hover:bg-[#CF8D45]/30"
+                                        }`}
+                                    >
+                                        Visited
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => toggleMapStatusFilter("want-to-go")}
+                                        className={`px-4 py-2 rounded-full text-sm font-[Cormorant_Garamond] transition ${
+                                            mapStatusFilters.has("want-to-go")
+                                                ? "bg-[#7A3F00] text-[#ffead4] border border-[#7A3F00]"
+                                                : "bg-[#7A3F00]/20 text-[#6a4630] border border-[#7A3F00]/40 hover:bg-[#7A3F00]/30"
+                                        }`}
+                                    >
+                                        To be visited
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => toggleMapStatusFilter("want-to-visit-again")}
+                                        className={`px-4 py-2 rounded-full text-sm font-[Cormorant_Garamond] transition ${
+                                            mapStatusFilters.has("want-to-visit-again")
+                                                ? "bg-[#FABE7D] text-[#50300d] border border-[#FABE7D]"
+                                                : "bg-[#FABE7D]/20 text-[#6a4630] border border-[#FABE7D]/40 hover:bg-[#FABE7D]/30"
+                                        }`}
+                                    >
+                                        Want to return
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => toggleMapStatusFilter("not-explored")}
+                                        className={`px-4 py-2 rounded-full text-sm font-[Cormorant_Garamond] transition ${
+                                            mapStatusFilters.has("not-explored")
+                                                ? "bg-[#7a3f00] text-[#ffead4] border border-[#7a3f00]"
+                                                : "bg-[#7a3f00]/20 text-[#6a4630] border border-[#7a3f00]/40 hover:bg-[#7a3f00]/30"
+                                        }`}
+                                    >
+                                        Not explored
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -449,16 +487,24 @@ function Home({ countryStatuses, setCountryStatus, visitedCountries }: HomeProps
                 </aside>
             </section>
 
-            <section className="rounded-[2rem] border border-[#7a3f00]/15 bg-[#5c3722eb] p-6 text-[#ffead4]">
-                <h2 className="font-[Adamina] text-[1.8rem] text-[#fff4e7]">All Countries</h2>
-                <p className="mt-1 font-[Cormorant_Garamond] text-[1.1rem] text-[#f7dfca]">Mark your travel status for each destination</p>
+            <section className="rounded-[1.5rem] border border-[#7a3f00]/15 bg-[#5c3722eb] p-4 text-[#ffead4] sm:p-6">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                    <div>
+                        <h2 className="font-[Adamina] text-[1.8rem] text-[#fff4e7]">All Countries</h2>
+                        <p className="mt-1 font-[Cormorant_Garamond] text-[1.1rem] text-[#f7dfca]">Mark your travel status for each destination</p>
+                    </div>
+
+                    <p className="font-[Cormorant_Garamond] text-[1rem] text-[#f7dfca]">
+                        Showing {filteredAndSortedCountries.length} of {countryNames.length}
+                    </p>
+                </div>
 
                 {isLoading || !countriesData ? (
                     <div className="mt-6 text-center font-[Cormorant_Garamond] text-[1.1rem] text-[#f7dfca]">Loading countries...</div>
                 ) : (
                     <>
-                        <div className="mt-6 space-y-4">
-                            <div>
+                        <div className="mt-6 grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+                            <div className="min-w-0">
                                 <p className="mb-3 font-[Adamina] text-[0.78rem] uppercase tracking-[0.24em] text-[#f6d7b5]">Filter by status</p>
                                 <div className="flex flex-wrap gap-2" role="group" aria-label="Filter countries by status">
                                     <button
@@ -492,13 +538,13 @@ function Home({ countryStatuses, setCountryStatus, visitedCountries }: HomeProps
                                 </div>
                             </div>
 
-                            <div>
+                            <div className="lg:justify-self-end">
                                 <label className="block">
                                     <span className="mb-3 block font-[Adamina] text-[0.78rem] uppercase tracking-[0.24em] text-[#f6d7b5]">Sort by</span>
                                     <select
                                         value={listSort}
                                         onChange={(e) => setListSort(e.target.value as "a-z" | "z-a" | "status")}
-                                        className="rounded-[0.8rem] border border-[#eab681]/50 bg-[#5a392b] px-4 py-2 font-[Cormorant_Garamond] text-[1rem] text-[#f7dfca] outline-none transition focus:border-[#f6d7b5] focus:ring-2 focus:ring-[#eab681]/40"
+                                        className="h-11 w-full rounded-[0.8rem] border border-[#eab681]/50 bg-[#5a392b] px-4 font-[Cormorant_Garamond] text-[1rem] text-[#f7dfca] outline-none transition focus:border-[#f6d7b5] focus:ring-2 focus:ring-[#eab681]/40 sm:w-[12rem]"
                                         aria-label="Sort countries"
                                     >
                                         <option value="a-z">A to Z</option>
@@ -509,37 +555,43 @@ function Home({ countryStatuses, setCountryStatus, visitedCountries }: HomeProps
                             </div>
                         </div>
 
-                        <div className="mt-6 grid gap-3 md:grid-cols-2 lg:grid-cols-4">
-                            {filteredAndSortedCountries.map((countryName) => {
-                                const status = countryStatuses[countryName] ?? null;
-                                return (
-                                    <div
-                                        key={countryName}
-                                        className={`rounded-[1.2rem] border p-4 transition ${getStatusColor(status)}`}
-                                    >
-                                        <div className="flex flex-col gap-3">
-                                            <span className="font-[Cormorant_Garamond] text-[1rem] text-[#fff4e7] line-clamp-2">
-                                                {countryName}
-                                            </span>
-                                            <select
-                                                value={status ?? "null"}
-                                                onChange={(e) => {
-                                                    const newStatus = e.target.value === "null" ? null : (e.target.value as CountryStatus);
-                                                    setCountryStatus(countryName, newStatus);
-                                                }}
-                                                className="w-full rounded-[0.8rem] border border-[#7a3f00]/40 bg-[#5a392b]/60 px-3 py-2 font-[Cormorant_Garamond] text-[0.9rem] text-[#fff4e7] outline-none transition hover:border-[#7a3f00]/60 focus:border-[#cf8d45] focus:ring-2 focus:ring-[#cf8d45]/40"
-                                                aria-label={`Status for ${countryName}`}
-                                            >
-                                                <option value="null">Not explored</option>
-                                                <option value="want-to-go">To be visited</option>
-                                                <option value="visited">Visited</option>
-                                                <option value="want-to-visit-again">Want to return</option>
-                                            </select>
+                        {filteredAndSortedCountries.length === 0 ? (
+                            <p className="mt-6 rounded-[1rem] border border-[#eab681]/25 bg-[#ffead414] px-4 py-5 text-center font-[Cormorant_Garamond] text-[1.1rem] text-[#f7dfca]">
+                                No countries match the current search and filters.
+                            </p>
+                        ) : (
+                            <div className="mt-6 grid grid-cols-[repeat(auto-fit,minmax(min(100%,220px),1fr))] gap-3">
+                                {filteredAndSortedCountries.map((countryName) => {
+                                    const status = countryStatuses[countryName] ?? null;
+                                    return (
+                                        <div
+                                            key={countryName}
+                                            className={`min-h-[8.5rem] rounded-[1rem] border p-4 transition ${getStatusColor(status)}`}
+                                        >
+                                            <div className="flex h-full flex-col justify-between gap-4">
+                                                <span className={`min-h-[2.6rem] font-[Cormorant_Garamond] text-[1.05rem] leading-tight ${getStatusTextColor(status)}`}>
+                                                    {countryName}
+                                                </span>
+                                                <select
+                                                    value={status ?? "null"}
+                                                    onChange={(e) => {
+                                                        const newStatus = e.target.value === "null" ? null : (e.target.value as CountryStatus);
+                                                        setCountryStatus(countryName, newStatus);
+                                                    }}
+                                                    className="h-10 w-full rounded-[0.7rem] border border-[#7a3f00]/40 bg-[#5a392b]/70 px-3 font-[Cormorant_Garamond] text-[0.9rem] text-[#fff4e7] outline-none transition hover:border-[#7a3f00]/60 focus:border-[#cf8d45] focus:ring-2 focus:ring-[#cf8d45]/40"
+                                                    aria-label={`Status for ${countryName}`}
+                                                >
+                                                    <option value="null">—</option>
+                                                    <option value="want-to-go">To visit</option>
+                                                    <option value="visited">Visited</option>
+                                                    <option value="want-to-visit-again">Return</option>
+                                                </select>
+                                            </div>
                                         </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
                     </>
                 )}
             </section>
