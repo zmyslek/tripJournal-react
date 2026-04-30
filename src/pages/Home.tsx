@@ -249,15 +249,15 @@ function Home({ countryStatuses, setCountryStatus, visitedCountries }: HomeProps
         <div className="mx-auto flex w-full max-w-[1380px] flex-col gap-8 px-4 pb-14 pt-6 sm:px-6 lg:px-8">
             <aside className="rounded-[1.8rem] border border-[#7a3f00]/15 bg-[#5c3722eb] p-5 text-[#ffead4] shadow-[0_20px_40px_#5a392b38]">
                 <div className="flex h-full flex-col gap-5">
-                    <div className="rounded-[1.4rem] border border-[#eab681]/25 bg-[#ffead414] p-4 shadow-[inset_0_1px_0_#ffffff2b]">
+                    <div className="rounded-[1.4rem] border border-[#eab681]/25 bg-[#ffead414] p-3 shadow-[inset_0_1px_0_#ffffff2b]">
                         <label className="block">
-                            <span className="mb-2 block font-[Adamina] text-[0.72rem] uppercase tracking-[0.2em] text-[#f6d7b5]">Search countries</span>
+                            <span className="mb-1 block font-[Adamina] text-[0.66rem] uppercase tracking-[0.2em] text-[#f6d7b5]">Search countries</span>
                             <input
                                 type="search"
                                 value={searchTerm}
                                 onChange={(event) => setSearchTerm(event.target.value)}
                                 placeholder="Search countries"
-                                className="w-full rounded-[0.75rem] border border-[#eab681]/70 bg-[#fff7ee] px-[0.9rem] py-[0.7rem] font-[Cormorant_Garamond] text-[1.15rem] text-[#50300d] outline-none transition focus:border-[#f6d7b5] focus:ring-2 focus:ring-[#eab681]/55"
+                                className="w-full rounded-[0.6rem] border border-[#eab681]/70 bg-[#fff7ee] px-3 py-1.5 font-[Cormorant_Garamond] text-[0.95rem] text-[#50300d] outline-none transition focus:border-[#f6d7b5] focus:ring-2 focus:ring-[#eab681]/55"
                             />
                         </label>
 
