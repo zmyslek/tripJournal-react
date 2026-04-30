@@ -125,7 +125,6 @@ const Map: React.FC<MapProps> = ({
   const countriesDataRef = useRef<CountriesGeoJson | null>(countriesData);
   const selectedCountriesRef = useRef<string[]>(selectedCountries);
   const countryStatusesRef = useRef<Record<string, CountryStatus>>(countryStatuses);
-  const mapStatusFiltersRef = useRef<Set<CountryStatus | "not-explored"> | undefined>(mapStatusFilters);
   const viewModeRef = useRef<"globe" | "map">(viewMode);
   const userLocationRef = useRef<{ lng: number; lat: number } | null>(userLocation ?? null);
   const userLocationOverlayRef = useRef<HTMLDivElement | null>(null);
@@ -405,10 +404,6 @@ const Map: React.FC<MapProps> = ({
         }
 
         const status = countryStatusesRef.current[countryName] ?? "not-explored";
-        if (mapStatusFiltersRef.current && !mapStatusFiltersRef.current.has(status)) {
-          return null;
-        }
-
         return {
           ...feature,
           properties: {
@@ -484,7 +479,6 @@ const Map: React.FC<MapProps> = ({
     countriesDataRef.current = countriesData;
     selectedCountriesRef.current = selectedCountries;
     countryStatusesRef.current = countryStatuses;
-    mapStatusFiltersRef.current = mapStatusFilters;
     scheduleHighlightRefresh();
 
     const map = mapRef.current;
@@ -492,7 +486,7 @@ const Map: React.FC<MapProps> = ({
       map.resize();
       map.triggerRepaint();
     }
-  }, [countriesData, selectedCountries, countryStatuses, mapStatusFilters]);
+  }, [countriesData, selectedCountries]);
 
   useEffect(() => {
     userLocationRef.current = userLocation ?? null;
