@@ -227,6 +227,30 @@ This section documents the visual direction and can be maintained as a living st
 - Built assets can be published from the generated output used in the docs flow.
 - Keep the countries dataset optimized to avoid heavy payload regressions.
 
+## Deploying to GitHub Pages (docs/ folder)
+
+This repository is configured to emit production builds into the `docs/` folder (see `vite.config.ts`). To publish to GitHub Pages from the `docs/` folder on the `main` branch, follow these steps:
+
+1. Build the site:
+
+```bash
+npm ci
+npm run build
+```
+
+2. Commit the generated `docs/` output (or let CI produce it) and push to GitHub `main` branch.
+
+3. In your repository settings on GitHub, go to **Pages** and set the source to:
+- Branch: `main`
+- Folder: `/docs`
+
+4. (Optional) If your site contains files that begin with an underscore, or to avoid Jekyll processing, keep the included `docs/.nojekyll` file (already added).
+
+Notes:
+- `vite.config.ts` uses `base: './'` and `build.outDir: 'docs'` which produce relative asset paths suitable for GitHub Pages.
+- If you prefer an automated workflow, consider a small GitHub Action that runs `npm run build` and commits the `docs/` output, or use the `gh-pages` package (note: adding new deps requires review).
+
+
 ## Roadmap
 
 - Add real content and media flows for Gallery page.
