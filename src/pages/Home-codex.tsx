@@ -81,6 +81,13 @@ function Home({ countryStatuses, setCountryStatus, visitedCountries }: HomeProps
     const [searchTerm, setSearchTerm] = useState("");
     const [mapViewMode, setMapViewMode] = useState<"globe" | "map">("globe");
     const [userLocation, setUserLocation] = useState<{ lng: number; lat: number } | null>(null);
+    const [mapStatusFilters, setMapStatusFilters] = useState<Set<CountryStatus | "not-explored">>(
+        new Set(["visited", "want-to-visit-again"])
+    );
+    const [listStatusFilters, setListStatusFilters] = useState<Set<CountryStatus | "not-explored">>(
+        new Set(["visited", "want-to-go", "want-to-visit-again", "not-explored"])
+    );
+    const [listSort, setListSort] = useState<"a-z" | "z-a" | "status">("a-z");
     const autoSelectedLocationKeyRef = useRef<string | null>(null);
     const hasRequestedGeolocationRef = useRef(false);
     const { countriesData, isLoading, error } = useCountriesData();
@@ -142,10 +149,10 @@ function Home({ countryStatuses, setCountryStatus, visitedCountries }: HomeProps
 
     const highlightedCountries = useMemo(() => {
         return countryNames.filter((countryName) => {
-            const status = countryStatuses[countryName];
-            return status === "visited" || status === "want-to-visit-again";
+            const status = countryStatuses[countryName] ?? "not-explored";
+            return mapStatusFilters.has(status);
         });
-    }, [countryNames, countryStatuses]);
+    }, [countryNames, countryStatuses, mapStatusFilters]);
 
     const filteredCountryNames = useMemo(() => {
         const query = searchTerm.trim().toLowerCase();
@@ -199,6 +206,63 @@ function Home({ countryStatuses, setCountryStatus, visitedCountries }: HomeProps
 
         setCountryStatus(countryName, "visited");
     };
+
+    const toggleMapStatusFilter = (status: CountryStatus | "not-explored") => {
+        const newFilters = new Set(mapStatusFilters);
+        if (newFilters.has(status)) {
+            newFilters.delete(status);
+        } else {
+            newFilters.add(status);
+        }
+        setMapStatusFilters(newFilters);
+    };
+
+    const getStatusColor = (status: CountryStatus | "not-explored" | null): string => {
+        if (status === "visited") return "bg-[#e96f4a]/15 border-[#e96f4a]/40";
+        if (status === "want-to-visit-again") return "bg-[#eab681]/15 border-[#eab681]/40";
+        if (status === "want-to-go") return "bg-[#cf8d45]/15 border-[#cf8d45]/40";
+        return "bg-[#7a3f00]/10 border-[#7a3f00]/25";
+    };
+
+    const getSelectBgColor = (status: CountryStatus | "not-explored" | null): string => {
+        if (status === "visited") return "bg-[#e96f4a]/20 border-[#e96f4a]";
+        if (status === "want-to-visit-again") return "bg-[#eab681]/20 border-[#eab681]";
+        if (status === "want-to-go") return "bg-[#cf8d45]/20 border-[#cf8d45]";
+        return "bg-[#7a3f00]/10 border-[#7a3f00]/50";
+    };
+
+    const toggleListStatusFilter = (status: CountryStatus | "not-explored") => {
+        const newFilters = new Set(listStatusFilters);
+        if (newFilters.has(status)) {
+            newFilters.delete(status);
+        } else {
+            newFilters.add(status);
+        }
+        setListStatusFilters(newFilters);
+    };
+
+    const filteredAndSortedCountries = useMemo(() => {
+        let filtered = countryNames.filter((countryName) => {
+            const status = countryStatuses[countryName] ?? "not-explored";
+            return listStatusFilters.has(status);
+        });
+
+        if (listSort === "z-a") {
+            return filtered.sort((a, b) => b.localeCompare(a));
+        }
+
+        if (listSort === "status") {
+            const statusOrder = { "visited": 0, "want-to-visit-again": 1, "want-to-go": 2, "not-explored": 3 };
+            return filtered.sort((a, b) => {
+                const statusA = countryStatuses[a] ?? "not-explored";
+                const statusB = countryStatuses[b] ?? "not-explored";
+                const orderDiff = (statusOrder[statusA] ?? 3) - (statusOrder[statusB] ?? 3);
+                return orderDiff !== 0 ? orderDiff : a.localeCompare(b);
+            });
+        }
+
+        return filtered.sort((a, b) => a.localeCompare(b));
+    }, [countryNames, countryStatuses, listStatusFilters, listSort]);
 
     return (
         <div className="mx-auto flex w-full max-w-[1380px] flex-col gap-8 px-4 pb-14 pt-6 sm:px-6 lg:px-8">
@@ -282,24 +346,73 @@ function Home({ countryStatuses, setCountryStatus, visitedCountries }: HomeProps
                         </Suspense>
                     )}
 
-                    <button
-                        type="button"
-                        onClick={() => setMapViewMode((previousViewMode) => (previousViewMode === "globe" ? "map" : "globe"))}
-                        className="inline-flex h-[3rem] w-[3rem] items-center justify-center rounded-full border border-[#50300d] bg-[#f6dfc1] text-[1.35rem] text-[#50300d] shadow-[0_3px_10px_#50300d2e] transition hover:bg-[#eab681]"
-                        aria-label="Switch between globe and flat map view"
-                    >
-                        {mapViewMode === "globe" ? (
-                            <svg viewBox="0 0 24 24" className="h-[1.35rem] w-[1.35rem]" fill="none" aria-hidden="true">
-                                <path d="M3 6.5L9 4l6 2.5L21 4v13.5L15 20l-6-2.5L3 20V6.5Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
-                                <path d="M9 4v13.5M15 6.5V20" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-                            </svg>
-                        ) : (
-                            <svg viewBox="0 0 24 24" className="h-[1.35rem] w-[1.35rem]" fill="none" aria-hidden="true">
-                                <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
-                                <path d="M3 12h18M12 3c2.6 2.4 4 5.5 4 9s-1.4 6.6-4 9c-2.6-2.4-4-5.5-4-9s1.4-6.6 4-9Z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
-                        )}
-                    </button>
+                    <div className="flex flex-col items-center gap-4">
+                        <button
+                            type="button"
+                            onClick={() => setMapViewMode((previousViewMode) => (previousViewMode === "globe" ? "map" : "globe"))}
+                            className="inline-flex h-[3rem] w-[3rem] items-center justify-center rounded-full border border-[#50300d] bg-[#f6dfc1] text-[1.35rem] text-[#50300d] shadow-[0_3px_10px_#50300d2e] transition hover:bg-[#eab681]"
+                            aria-label="Switch between globe and flat map view"
+                        >
+                            {mapViewMode === "globe" ? (
+                                <svg viewBox="0 0 24 24" className="h-[1.35rem] w-[1.35rem]" fill="none" aria-hidden="true">
+                                    <path d="M3 6.5L9 4l6 2.5L21 4v13.5L15 20l-6-2.5L3 20V6.5Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+                                    <path d="M9 4v13.5M15 6.5V20" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                                </svg>
+                            ) : (
+                                <svg viewBox="0 0 24 24" className="h-[1.35rem] w-[1.35rem]" fill="none" aria-hidden="true">
+                                    <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
+                                    <path d="M3 12h18M12 3c2.6 2.4 4 5.5 4 9s-1.4 6.6-4 9c-2.6-2.4-4-5.5-4-9s1.4-6.6 4-9Z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                            )}
+                        </button>
+
+                        <div className="flex flex-wrap justify-center gap-2" role="group" aria-label="Filter map by country status">
+                            <button
+                                type="button"
+                                onClick={() => toggleMapStatusFilter("visited")}
+                                className={`px-4 py-2 rounded-full text-sm font-[Cormorant_Garamond] transition ${
+                                    mapStatusFilters.has("visited")
+                                        ? "bg-[#e96f4a] text-[#ffead4] border border-[#e96f4a]"
+                                        : "bg-[#e96f4a]/20 text-[#6a4630] border border-[#e96f4a]/40 hover:bg-[#e96f4a]/30"
+                                }`}
+                            >
+                                Visited
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => toggleMapStatusFilter("want-to-go")}
+                                className={`px-4 py-2 rounded-full text-sm font-[Cormorant_Garamond] transition ${
+                                    mapStatusFilters.has("want-to-go")
+                                        ? "bg-[#cf8d45] text-[#ffead4] border border-[#cf8d45]"
+                                        : "bg-[#cf8d45]/20 text-[#6a4630] border border-[#cf8d45]/40 hover:bg-[#cf8d45]/30"
+                                }`}
+                            >
+                                To be visited
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => toggleMapStatusFilter("want-to-visit-again")}
+                                className={`px-4 py-2 rounded-full text-sm font-[Cormorant_Garamond] transition ${
+                                    mapStatusFilters.has("want-to-visit-again")
+                                        ? "bg-[#eab681] text-[#50300d] border border-[#eab681]"
+                                        : "bg-[#eab681]/20 text-[#6a4630] border border-[#eab681]/40 hover:bg-[#eab681]/30"
+                                }`}
+                            >
+                                Want to return
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => toggleMapStatusFilter("not-explored")}
+                                className={`px-4 py-2 rounded-full text-sm font-[Cormorant_Garamond] transition ${
+                                    mapStatusFilters.has("not-explored")
+                                        ? "bg-[#7a3f00] text-[#ffead4] border border-[#7a3f00]"
+                                        : "bg-[#7a3f00]/20 text-[#6a4630] border border-[#7a3f00]/40 hover:bg-[#7a3f00]/30"
+                                }`}
+                            >
+                                Not explored
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
                 <aside className="rounded-[2rem] border border-[#7a3f00]/15 bg-[#5c3722eb] p-5 text-[#ffead4] shadow-[0_24px_60px_#5a392b38]">
@@ -344,6 +457,101 @@ function Home({ countryStatuses, setCountryStatus, visitedCountries }: HomeProps
                         </p>
                     </div>
                 </aside>
+            </section>
+
+            <section className="rounded-[2rem] border border-[#7a3f00]/15 bg-[#5c3722eb] p-6 text-[#ffead4]">
+                <h2 className="font-[Adamina] text-[1.8rem] text-[#fff4e7]">All Countries</h2>
+                <p className="mt-1 font-[Cormorant_Garamond] text-[1.1rem] text-[#f7dfca]">Mark your travel status for each destination</p>
+
+                {isLoading || !countriesData ? (
+                    <div className="mt-6 text-center font-[Cormorant_Garamond] text-[1.1rem] text-[#f7dfca]">Loading countries...</div>
+                ) : (
+                    <>
+                        <div className="mt-6 space-y-4">
+                            <div>
+                                <p className="mb-3 font-[Adamina] text-[0.78rem] uppercase tracking-[0.24em] text-[#f6d7b5]">Filter by status</p>
+                                <div className="flex flex-wrap gap-2" role="group" aria-label="Filter countries by status">
+                                    <button
+                                        type="button"
+                                        onClick={() => toggleListStatusFilter("visited")}
+                                        className={`px-4 py-2 rounded-full text-sm font-[Cormorant_Garamond] transition ${listStatusFilters.has("visited") ? "bg-[#e96f4a] text-[#ffead4] border border-[#e96f4a]" : "bg-[#e96f4a]/20 text-[#6a4630] border border-[#e96f4a]/40 hover:bg-[#e96f4a]/30"}`}
+                                    >
+                                        Visited
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => toggleListStatusFilter("want-to-go")}
+                                        className={`px-4 py-2 rounded-full text-sm font-[Cormorant_Garamond] transition ${listStatusFilters.has("want-to-go") ? "bg-[#cf8d45] text-[#ffead4] border border-[#cf8d45]" : "bg-[#cf8d45]/20 text-[#6a4630] border border-[#cf8d45]/40 hover:bg-[#cf8d45]/30"}`}
+                                    >
+                                        To be visited
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => toggleListStatusFilter("want-to-visit-again")}
+                                        className={`px-4 py-2 rounded-full text-sm font-[Cormorant_Garamond] transition ${listStatusFilters.has("want-to-visit-again") ? "bg-[#eab681] text-[#50300d] border border-[#eab681]" : "bg-[#eab681]/20 text-[#6a4630] border border-[#eab681]/40 hover:bg-[#eab681]/30"}`}
+                                    >
+                                        Want to return
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => toggleListStatusFilter("not-explored")}
+                                        className={`px-4 py-2 rounded-full text-sm font-[Cormorant_Garamond] transition ${listStatusFilters.has("not-explored") ? "bg-[#7a3f00] text-[#ffead4] border border-[#7a3f00]" : "bg-[#7a3f00]/20 text-[#6a4630] border border-[#7a3f00]/40 hover:bg-[#7a3f00]/30"}`}
+                                    >
+                                        Not explored
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block">
+                                    <span className="mb-3 block font-[Adamina] text-[0.78rem] uppercase tracking-[0.24em] text-[#f6d7b5]">Sort by</span>
+                                    <select
+                                        value={listSort}
+                                        onChange={(e) => setListSort(e.target.value as "a-z" | "z-a" | "status")}
+                                        className="rounded-[0.8rem] border border-[#eab681]/50 bg-[#5a392b] px-4 py-2 font-[Cormorant_Garamond] text-[1rem] text-[#f7dfca] outline-none transition focus:border-[#f6d7b5] focus:ring-2 focus:ring-[#eab681]/40"
+                                        aria-label="Sort countries"
+                                    >
+                                        <option value="a-z">A to Z</option>
+                                        <option value="z-a">Z to A</option>
+                                        <option value="status">By status</option>
+                                    </select>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div className="mt-6 grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+                            {filteredAndSortedCountries.map((countryName) => {
+                                const status = countryStatuses[countryName] ?? null;
+                                return (
+                                    <div
+                                        key={countryName}
+                                        className={`rounded-[1.2rem] border p-4 transition ${getStatusColor(status)}`}
+                                    >
+                                        <div className="flex flex-col gap-3">
+                                            <span className="font-[Cormorant_Garamond] text-[1rem] text-[#fff4e7] line-clamp-2">
+                                                {countryName}
+                                            </span>
+                                            <select
+                                                value={status ?? "null"}
+                                                onChange={(e) => {
+                                                    const newStatus = e.target.value === "null" ? null : (e.target.value as CountryStatus);
+                                                    setCountryStatus(countryName, newStatus);
+                                                }}
+                                                className={`rounded-[0.6rem] border px-3 py-2 font-[Cormorant_Garamond] text-[0.9rem] text-[#fff4e7] outline-none transition focus:ring-2 focus:ring-[#eab681]/40 ${getSelectBgColor(status)}`}
+                                                aria-label={`Status for ${countryName}`}
+                                            >
+                                                <option value="null">Not explored</option>
+                                                <option value="want-to-go">To be visited</option>
+                                                <option value="visited">Visited</option>
+                                                <option value="want-to-visit-again">Want to return</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </>
+                )}
             </section>
         </div>
     );
