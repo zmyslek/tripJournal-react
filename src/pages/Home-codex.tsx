@@ -423,19 +423,19 @@ function Home({ countryStatuses, setCountryStatus, visitedCountries }: HomeProps
                         </article>
 
                         <article className="rounded-[1.2rem] border border-[#eab681]/25 bg-[#ffead414] p-4 shadow-[inset_0_1px_0_#ffffff2b]">
-                            <p className="font-[Adamina] text-[0.72rem] uppercase tracking-[0.2em] text-[#f6d7b5]">Wishlist</p>
+                            <p className="font-[Adamina] text-[0.72rem] uppercase tracking-[0.2em] text-[#f6d7b5]">Wishlist (want to visit)</p>
                             <p className="mt-2 font-[Adamina] text-3xl text-[#fff4e7]">{statusCounts.wantToGo}</p>
                             <p className="mt-1 font-[Cormorant_Garamond] text-[1.05rem] text-[#f7dfca]">Planned destinations.</p>
                         </article>
 
                         <article className="rounded-[1.2rem] border border-[#eab681]/25 bg-[#ffead414] p-4 shadow-[inset_0_1px_0_#ffffff2b]">
-                            <p className="font-[Adamina] text-[0.72rem] uppercase tracking-[0.2em] text-[#f6d7b5]">Want to re-visit</p>
+                            <p className="font-[Adamina] text-[0.72rem] uppercase tracking-[0.2em] text-[#f6d7b5]">Want to return to</p>
                             <p className="mt-2 font-[Adamina] text-3xl text-[#fff4e7]">{statusCounts.wantToVisitAgain}</p>
                             <p className="mt-1 font-[Cormorant_Garamond] text-[1.05rem] text-[#f7dfca]">Places worth another chapter.</p>
                         </article>
 
                         <article className="rounded-[1.2rem] border border-[#eab681]/25 bg-[#ffead414] p-4 shadow-[inset_0_1px_0_#ffffff2b]">
-                            <p className="font-[Adamina] text-[0.72rem] uppercase tracking-[0.2em] text-[#f6d7b5]">Nothing</p>
+                            <p className="font-[Adamina] text-[0.72rem] uppercase tracking-[0.2em] text-[#f6d7b5]">Not explored</p>
                             <p className="mt-2 font-[Adamina] text-3xl text-[#fff4e7]">{statusCounts.notInterested}</p>
                             <p className="mt-1 font-[Cormorant_Garamond] text-[1.05rem] text-[#f7dfca]">Countries not marked yet.</p>
                         </article>
