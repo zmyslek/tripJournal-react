@@ -202,83 +202,53 @@ function Home({ countryStatuses, setCountryStatus, visitedCountries }: HomeProps
 
     return (
         <div className="mx-auto flex w-full max-w-[1380px] flex-col gap-8 px-4 pb-14 pt-6 sm:px-6 lg:px-8">
-            <section className="overflow-hidden rounded-[2rem] border border-[#7a3f00]/18 bg-[linear-gradient(135deg,#fff4e5f2,#f4debee0)] shadow-[0_24px_60px_#5a392b29]" aria-label="Country filters">
-                <div className="grid gap-6 px-6 py-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)] lg:px-10 lg:py-8">
-                    <div className="relative">
-                        <div className="absolute left-0 top-0 h-20 w-20 rounded-full bg-[#eab681]/30 blur-3xl" aria-hidden="true" />
-                        <div className="absolute bottom-4 left-20 h-24 w-24 rounded-full bg-[#7a3f00]/10 blur-3xl" aria-hidden="true" />
-                        <div className="relative space-y-5">
-                            <p className="inline-flex items-center rounded-full border border-[#7a3f00]/20 bg-white/55 px-4 py-1.5 font-[Adamina] text-[0.78rem] uppercase tracking-[0.28em] text-[#7a3f00]">
-                                Search atlas
-                            </p>
-                            <div className="space-y-4">
-                                <h1 className="max-w-3xl font-[Adamina] text-3xl leading-[1.05] text-[#50300d] sm:text-4xl">
-                                    Search the catalog, assign a status, and review your travel footprint.
-                                </h1>
-                                <p className="max-w-2xl font-[Cormorant_Garamond] text-[1.25rem] leading-[1.2] text-[#6a4630]">
-                                    Use the search bar to find countries quickly, then mark them and watch the map update with the same warm brown palette.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
+            <aside className="rounded-[1.8rem] border border-[#7a3f00]/15 bg-[#5c3722eb] p-5 text-[#ffead4] shadow-[0_20px_40px_#5a392b38]">
+                <div className="flex h-full flex-col gap-5">
+                    <div className="rounded-[1.4rem] border border-[#eab681]/25 bg-[#ffead414] p-4 shadow-[inset_0_1px_0_#ffffff2b]">
+                        <label className="block">
+                            <span className="mb-2 block font-[Adamina] text-[0.72rem] uppercase tracking-[0.2em] text-[#f6d7b5]">Search countries</span>
+                            <input
+                                type="search"
+                                value={searchTerm}
+                                onChange={(event) => setSearchTerm(event.target.value)}
+                                placeholder="Search countries"
+                                className="w-full rounded-[0.75rem] border border-[#eab681]/70 bg-[#fff7ee] px-[0.9rem] py-[0.7rem] font-[Cormorant_Garamond] text-[1.15rem] text-[#50300d] outline-none transition focus:border-[#f6d7b5] focus:ring-2 focus:ring-[#eab681]/55"
+                            />
+                        </label>
 
-                    <aside className="rounded-[1.8rem] border border-[#7a3f00]/15 bg-[#5c3722eb] p-5 text-[#ffead4] shadow-[0_20px_40px_#5a392b38]">
-                        <div className="flex h-full flex-col gap-5">
-                            <div>
-                                <p className="font-[Adamina] text-[0.78rem] uppercase tracking-[0.22em] text-[#f6d7b5]">Trip setup</p>
-                                <h2 className="mt-3 font-[Adamina] text-[1.7rem] leading-tight text-[#fff4e7]">Sort countries quickly, then explore the map.</h2>
-                                <p className="mt-3 font-[Cormorant_Garamond] text-[1.18rem] leading-[1.2] text-[#f7dfca]">
-                                    Search the catalog, assign a status, and use the globe or flat map to review your travel footprint.
-                                </p>
-                            </div>
+                        {searchTerm.trim().length > 0 && (
+                            <div
+                                className="mt-4 grid max-h-[220px] grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-y-2 gap-x-3 overflow-y-auto pr-1"
+                                role="group"
+                                aria-label="Countries to show on map"
+                            >
+                                {filteredCountryNames.length === 0 ? (
+                                    <p className="m-0 font-[Cormorant_Garamond] text-[1.1rem] text-[#f7dfca]">No countries found.</p>
+                                ) : (
+                                    filteredCountryNames.map((countryName) => {
+                                        const status = countryStatuses[countryName] ?? null;
+                                        const isChecked = status === "visited" || status === "want-to-visit-again";
 
-                            <div className="rounded-[1.4rem] border border-[#eab681]/25 bg-[#ffead414] p-4 shadow-[inset_0_1px_0_#ffffff2b]">
-                                <label className="block">
-                                    <span className="mb-2 block font-[Adamina] text-[0.72rem] uppercase tracking-[0.2em] text-[#f6d7b5]">Search countries</span>
-                                    <input
-                                        type="search"
-                                        value={searchTerm}
-                                        onChange={(event) => setSearchTerm(event.target.value)}
-                                        placeholder="Search countries"
-                                        className="w-full rounded-[0.75rem] border border-[#eab681]/70 bg-[#fff7ee] px-[0.9rem] py-[0.7rem] font-[Cormorant_Garamond] text-[1.15rem] text-[#50300d] outline-none transition focus:border-[#f6d7b5] focus:ring-2 focus:ring-[#eab681]/55"
-                                    />
-                                </label>
-
-                                {searchTerm.trim().length > 0 && (
-                                    <div
-                                        className="mt-4 grid max-h-[220px] grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-y-2 gap-x-3 overflow-y-auto pr-1"
-                                        role="group"
-                                        aria-label="Countries to show on map"
-                                    >
-                                        {filteredCountryNames.length === 0 ? (
-                                            <p className="m-0 font-[Cormorant_Garamond] text-[1.1rem] text-[#f7dfca]">No countries found.</p>
-                                        ) : (
-                                            filteredCountryNames.map((countryName) => {
-                                                const status = countryStatuses[countryName] ?? null;
-                                                const isChecked = status === "visited" || status === "want-to-visit-again";
-
-                                                return (
-                                                    <label
-                                                        key={countryName}
-                                                        className="inline-flex items-center gap-[0.45rem] font-[Cormorant_Garamond] text-[1.1rem] text-[#f7dfca]"
-                                                    >
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={isChecked}
-                                                            onChange={() => toggleCountryFromSearch(countryName)}
-                                                        />
-                                                        <span>{countryName}</span>
-                                                    </label>
-                                                );
-                                            })
-                                        )}
-                                    </div>
+                                        return (
+                                            <label
+                                                key={countryName}
+                                                className="inline-flex items-center gap-[0.45rem] font-[Cormorant_Garamond] text-[1.1rem] text-[#f7dfca]"
+                                            >
+                                                <input
+                                                    type="checkbox"
+                                                    checked={isChecked}
+                                                    onChange={() => toggleCountryFromSearch(countryName)}
+                                                />
+                                                <span>{countryName}</span>
+                                            </label>
+                                        );
+                                    })
                                 )}
                             </div>
-                        </div>
-                    </aside>
+                        )}
+                    </div>
                 </div>
-            </section>
+            </aside>
 
             {error && (
                 <section className="rounded-[1.4rem] border border-[#cf8d45]/50 bg-[#f7dfca] px-5 py-4 shadow-[0_10px_24px_#5a392b14]" aria-label="Map error">
