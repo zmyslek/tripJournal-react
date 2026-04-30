@@ -218,17 +218,10 @@ function Home({ countryStatuses, setCountryStatus, visitedCountries }: HomeProps
     };
 
     const getStatusColor = (status: CountryStatus | "not-explored" | null): string => {
-        if (status === "visited") return "bg-[#e96f4a]/15 border-[#e96f4a]/40";
-        if (status === "want-to-visit-again") return "bg-[#eab681]/15 border-[#eab681]/40";
-        if (status === "want-to-go") return "bg-[#cf8d45]/15 border-[#cf8d45]/40";
-        return "bg-[#7a3f00]/10 border-[#7a3f00]/25";
-    };
-
-    const getSelectBgColor = (status: CountryStatus | "not-explored" | null): string => {
-        if (status === "visited") return "bg-[#e96f4a]/20 border-[#e96f4a]";
-        if (status === "want-to-visit-again") return "bg-[#eab681]/20 border-[#eab681]";
-        if (status === "want-to-go") return "bg-[#cf8d45]/20 border-[#cf8d45]";
-        return "bg-[#7a3f00]/10 border-[#7a3f00]/50";
+        if (status === "visited") return "bg-[#CF8D45]/20 border-[#CF8D45]/50";
+        if (status === "want-to-visit-again") return "bg-[#FABE7D]/20 border-[#FABE7D]/50";
+        if (status === "want-to-go") return "bg-[#EAB681]/20 border-[#EAB681]/50";
+        return "bg-[#FFEAD4]/20 border-[#7a3f00]/15";
     };
 
     const toggleListStatusFilter = (status: CountryStatus | "not-explored") => {
@@ -341,6 +334,8 @@ function Home({ countryStatuses, setCountryStatus, visitedCountries }: HomeProps
                                     selectedCountries={highlightedCountries}
                                     viewMode={mapViewMode}
                                     userLocation={userLocation}
+                                    countryStatuses={countryStatuses}
+                                    mapStatusFilters={mapStatusFilters}
                                 />
                             </div>
                         </Suspense>
@@ -372,8 +367,8 @@ function Home({ countryStatuses, setCountryStatus, visitedCountries }: HomeProps
                                 onClick={() => toggleMapStatusFilter("visited")}
                                 className={`px-4 py-2 rounded-full text-sm font-[Cormorant_Garamond] transition ${
                                     mapStatusFilters.has("visited")
-                                        ? "bg-[#e96f4a] text-[#ffead4] border border-[#e96f4a]"
-                                        : "bg-[#e96f4a]/20 text-[#6a4630] border border-[#e96f4a]/40 hover:bg-[#e96f4a]/30"
+                                        ? "bg-[#CF8D45] text-[#ffead4] border border-[#CF8D45]"
+                                        : "bg-[#CF8D45]/20 text-[#6a4630] border border-[#CF8D45]/40 hover:bg-[#CF8D45]/30"
                                 }`}
                             >
                                 Visited
@@ -474,7 +469,7 @@ function Home({ countryStatuses, setCountryStatus, visitedCountries }: HomeProps
                                     <button
                                         type="button"
                                         onClick={() => toggleListStatusFilter("visited")}
-                                        className={`px-4 py-2 rounded-full text-sm font-[Cormorant_Garamond] transition ${listStatusFilters.has("visited") ? "bg-[#e96f4a] text-[#ffead4] border border-[#e96f4a]" : "bg-[#e96f4a]/20 text-[#6a4630] border border-[#e96f4a]/40 hover:bg-[#e96f4a]/30"}`}
+                                        className={`px-4 py-2 rounded-full text-sm font-[Cormorant_Garamond] transition ${listStatusFilters.has("visited") ? "bg-[#CF8D45] text-[#ffead4] border border-[#CF8D45]" : "bg-[#CF8D45]/20 text-[#6a4630] border border-[#CF8D45]/40 hover:bg-[#CF8D45]/30"}`}
                                     >
                                         Visited
                                     </button>
@@ -537,7 +532,7 @@ function Home({ countryStatuses, setCountryStatus, visitedCountries }: HomeProps
                                                     const newStatus = e.target.value === "null" ? null : (e.target.value as CountryStatus);
                                                     setCountryStatus(countryName, newStatus);
                                                 }}
-                                                className={`rounded-[0.6rem] border px-3 py-2 font-[Cormorant_Garamond] text-[0.9rem] text-[#fff4e7] outline-none transition focus:ring-2 focus:ring-[#eab681]/40 ${getSelectBgColor(status)}`}
+                                                className="w-full rounded-[0.8rem] border border-[#7a3f00]/40 bg-[#5a392b]/60 px-3 py-2 font-[Cormorant_Garamond] text-[0.9rem] text-[#fff4e7] outline-none transition hover:border-[#7a3f00]/60 focus:border-[#cf8d45] focus:ring-2 focus:ring-[#cf8d45]/40"
                                                 aria-label={`Status for ${countryName}`}
                                             >
                                                 <option value="null">Not explored</option>
