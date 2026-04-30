@@ -195,18 +195,6 @@ function Home({ countryStatuses, setCountryStatus, visitedCountries }: HomeProps
         return counts;
     }, [countryNames, countryStatuses]);
 
-    const toggleCountryFromSearch = (countryName: string) => {
-        const status = countryStatuses[countryName] ?? null;
-        const isChecked = status === "visited" || status === "want-to-visit-again";
-
-        if (isChecked) {
-            setCountryStatus(countryName, null);
-            return;
-        }
-
-        setCountryStatus(countryName, "visited");
-    };
-
     const toggleMapStatusFilter = (status: CountryStatus | "not-explored") => {
         const newFilters = new Set(mapStatusFilters);
         if (newFilters.has(status)) {
@@ -218,10 +206,10 @@ function Home({ countryStatuses, setCountryStatus, visitedCountries }: HomeProps
     };
 
     const getStatusColor = (status: CountryStatus | "not-explored" | null): string => {
-        if (status === "visited") return "bg-[#CF8D45]/20 border-[#CF8D45]/50";
-        if (status === "want-to-visit-again") return "bg-[#FABE7D]/20 border-[#FABE7D]/50";
-        if (status === "want-to-go") return "bg-[#EAB681]/20 border-[#EAB681]/50";
-        return "bg-[#FFEAD4]/20 border-[#7a3f00]/15";
+        if (status === "visited") return "bg-[#CF8D45]/10 border-[#CF8D45]";
+        if (status === "want-to-visit-again") return "bg-[#FABE7D]/10 border-[#FABE7D]";
+        if (status === "want-to-go") return "bg-[#7A3F00]/10 border-[#7A3F00]";
+        return "bg-white border-[#7a3f00]/40";
     };
 
     const toggleListStatusFilter = (status: CountryStatus | "not-explored") => {
@@ -284,20 +272,27 @@ function Home({ countryStatuses, setCountryStatus, visitedCountries }: HomeProps
                                 ) : (
                                     filteredCountryNames.map((countryName) => {
                                         const status = countryStatuses[countryName] ?? null;
-                                        const isChecked = status === "visited" || status === "want-to-visit-again";
 
                                         return (
-                                            <label
+                                            <div
                                                 key={countryName}
-                                                className="inline-flex items-center gap-[0.45rem] font-[Cormorant_Garamond] text-[1.1rem] text-[#f7dfca]"
+                                                className={`rounded-[0.8rem] border p-2 transition ${getStatusColor(status)}`}
                                             >
-                                                <input
-                                                    type="checkbox"
-                                                    checked={isChecked}
-                                                    onChange={() => toggleCountryFromSearch(countryName)}
-                                                />
-                                                <span>{countryName}</span>
-                                            </label>
+                                                <select
+                                                    value={status ?? "null"}
+                                                    onChange={(e) => {
+                                                        const newStatus = e.target.value === "null" ? null : (e.target.value as CountryStatus);
+                                                        setCountryStatus(countryName, newStatus);
+                                                    }}
+                                                    className="w-full rounded-[0.6rem] border border-[#7a3f00]/40 bg-[#5a392b]/60 px-2 py-1 font-[Cormorant_Garamond] text-[0.85rem] text-[#fff4e7] outline-none transition hover:border-[#7a3f00]/60 focus:border-[#cf8d45] focus:ring-2 focus:ring-[#cf8d45]/40"
+                                                    aria-label={`Status for ${countryName}`}
+                                                >
+                                                    <option value="null">{countryName}</option>
+                                                    <option value="want-to-go">To be visited</option>
+                                                    <option value="visited">Visited</option>
+                                                    <option value="want-to-visit-again">Want to return</option>
+                                                </select>
+                                            </div>
                                         );
                                     })
                                 )}
@@ -378,8 +373,8 @@ function Home({ countryStatuses, setCountryStatus, visitedCountries }: HomeProps
                                 onClick={() => toggleMapStatusFilter("want-to-go")}
                                 className={`px-4 py-2 rounded-full text-sm font-[Cormorant_Garamond] transition ${
                                     mapStatusFilters.has("want-to-go")
-                                        ? "bg-[#cf8d45] text-[#ffead4] border border-[#cf8d45]"
-                                        : "bg-[#cf8d45]/20 text-[#6a4630] border border-[#cf8d45]/40 hover:bg-[#cf8d45]/30"
+                                        ? "bg-[#7A3F00] text-[#ffead4] border border-[#7A3F00]"
+                                        : "bg-[#7A3F00]/20 text-[#6a4630] border border-[#7A3F00]/40 hover:bg-[#7A3F00]/30"
                                 }`}
                             >
                                 To be visited
@@ -389,8 +384,8 @@ function Home({ countryStatuses, setCountryStatus, visitedCountries }: HomeProps
                                 onClick={() => toggleMapStatusFilter("want-to-visit-again")}
                                 className={`px-4 py-2 rounded-full text-sm font-[Cormorant_Garamond] transition ${
                                     mapStatusFilters.has("want-to-visit-again")
-                                        ? "bg-[#eab681] text-[#50300d] border border-[#eab681]"
-                                        : "bg-[#eab681]/20 text-[#6a4630] border border-[#eab681]/40 hover:bg-[#eab681]/30"
+                                        ? "bg-[#FABE7D] text-[#50300d] border border-[#FABE7D]"
+                                        : "bg-[#FABE7D]/20 text-[#6a4630] border border-[#FABE7D]/40 hover:bg-[#FABE7D]/30"
                                 }`}
                             >
                                 Want to return
@@ -476,14 +471,14 @@ function Home({ countryStatuses, setCountryStatus, visitedCountries }: HomeProps
                                     <button
                                         type="button"
                                         onClick={() => toggleListStatusFilter("want-to-go")}
-                                        className={`px-4 py-2 rounded-full text-sm font-[Cormorant_Garamond] transition ${listStatusFilters.has("want-to-go") ? "bg-[#cf8d45] text-[#ffead4] border border-[#cf8d45]" : "bg-[#cf8d45]/20 text-[#6a4630] border border-[#cf8d45]/40 hover:bg-[#cf8d45]/30"}`}
+                                        className={`px-4 py-2 rounded-full text-sm font-[Cormorant_Garamond] transition ${listStatusFilters.has("want-to-go") ? "bg-[#7A3F00] text-[#ffead4] border border-[#7A3F00]" : "bg-[#7A3F00]/20 text-[#6a4630] border border-[#7A3F00]/40 hover:bg-[#7A3F00]/30"}`}
                                     >
                                         To be visited
                                     </button>
                                     <button
                                         type="button"
                                         onClick={() => toggleListStatusFilter("want-to-visit-again")}
-                                        className={`px-4 py-2 rounded-full text-sm font-[Cormorant_Garamond] transition ${listStatusFilters.has("want-to-visit-again") ? "bg-[#eab681] text-[#50300d] border border-[#eab681]" : "bg-[#eab681]/20 text-[#6a4630] border border-[#eab681]/40 hover:bg-[#eab681]/30"}`}
+                                        className={`px-4 py-2 rounded-full text-sm font-[Cormorant_Garamond] transition ${listStatusFilters.has("want-to-visit-again") ? "bg-[#FABE7D] text-[#50300d] border border-[#FABE7D]" : "bg-[#FABE7D]/20 text-[#6a4630] border border-[#FABE7D]/40 hover:bg-[#FABE7D]/30"}`}
                                     >
                                         Want to return
                                     </button>

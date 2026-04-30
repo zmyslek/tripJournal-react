@@ -222,6 +222,16 @@ const Map: React.FC<MapProps> = ({
       });
     }
 
+    // Find the first label layer to insert country layers before it
+    const layers = map.getStyle().layers || [];
+    let beforeId: string | undefined;
+    for (const layer of layers) {
+      if (layer.type === "symbol" || (layer.id && layer.id.toLowerCase().includes("label"))) {
+        beforeId = layer.id;
+        break;
+      }
+    }
+
     if (!map.getLayer(COUNTRY_LAYER_ID)) {
       map.addLayer({
         id: COUNTRY_LAYER_ID,
@@ -233,13 +243,13 @@ const Map: React.FC<MapProps> = ({
             ["get", "status"],
             "visited", "#CF8D45",
             "want-to-visit-again", "#FABE7D",
-            "want-to-go", "#EAB681",
-            "#7a3f00"
+            "want-to-go", "#7A3F00",
+            "#FFEAD4"
           ],
           "fill-opacity": 0.72,
           "fill-outline-color": "rgba(0, 0, 0, 0)"
         }
-      });
+      }, beforeId);
     }
 
     if (!map.getLayer(COUNTRY_OUTLINE_LAYER_ID)) {
@@ -257,14 +267,14 @@ const Map: React.FC<MapProps> = ({
             ["get", "status"],
             "visited", "#7A3F00",
             "want-to-visit-again", "#CF8D45",
-            "want-to-go", "#EAB681",
+            "want-to-go", "#5A392B",
             "#5A392B"
           ],
           "line-width": ["interpolate", ["linear"], ["zoom"], 1, 0.9, 3, 1.4, 6, 2.2],
           "line-opacity": 0.95,
           "line-blur": 0.12
         }
-      });
+      }, beforeId);
     }
   };
 
