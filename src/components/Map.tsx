@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import * as maptilersdk from "@maptiler/sdk";
 import { type CountriesGeoJson } from "../types/countries";
-import type { CountryStatus } from "../pages/Home-codex";
+import type { CountryStatus } from "../pages/Home";
 
 const ENV = (import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env;
 

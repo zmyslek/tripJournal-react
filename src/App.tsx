@@ -2,7 +2,7 @@ import { lazy, Suspense, useEffect, useState } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import MainLayout from "./components/MainLayout.tsx";
 
-const Home = lazy(() => import("./pages/Home-codex"));
+const Home = lazy(() => import("./pages/Home.tsx"));
 const Gallery = lazy(() => import("./pages/Gallery"));
 const Profile = lazy(() => import("./pages/Profile"));
 const COUNTRY_STATUS_CACHE_KEY = "tripjournal:country-statuses:v1";
