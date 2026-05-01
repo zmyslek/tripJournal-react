@@ -476,8 +476,8 @@ class Media {
         this.plane.program.uniforms.uViewportSizes.value = [this.viewport.width, this.viewport.height];
       }
     }
-    const widthFactor = sizing?.widthFactor ?? 0.336;
-    const heightFactor = sizing?.heightFactor ?? 0.552;
+    const widthFactor = sizing?.widthFactor ?? 0.4032;
+    const heightFactor = sizing?.heightFactor ?? 0.6624;
     const scaleY = this.viewport.height * heightFactor;
     const scaleX = Math.min(this.viewport.width * widthFactor, scaleY * 0.68);
     // store base scales and apply currentScale multiplier for hover effect
@@ -741,8 +741,8 @@ class App {
     const width = height * this.camera.aspect;
     this.viewport = { width, height };
     const isMobile = this.screen.width < 768;
-    const widthFactor = isMobile ? 0.264 : 0.336;
-    const heightFactor = isMobile ? 0.432 : 0.552;
+    const widthFactor = isMobile ? 0.3168 : 0.4032;
+    const heightFactor = isMobile ? 0.5184 : 0.6624;
     if (this.medias) {
       this.medias.forEach(media => media.onResize({ screen: this.screen, viewport: this.viewport, sizing: { widthFactor, heightFactor } }));
     }
