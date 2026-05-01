@@ -301,6 +301,19 @@ const Map: React.FC<MapProps> = ({
     return marker;
   };
 
+  const isLocationOnVisibleSide = (center: { lng: number; lat: number }, loc: { lng: number; lat: number }) => {
+    const toRad = (d: number) => (d * Math.PI) / 180;
+    const phi1 = toRad(center.lat);
+    const phi2 = toRad(loc.lat);
+    const deltaLambda = toRad(loc.lng - center.lng);
+
+    const cosAngle = Math.sin(phi1) * Math.sin(phi2) + Math.cos(phi1) * Math.cos(phi2) * Math.cos(deltaLambda);
+    const clamped = Math.max(-1, Math.min(1, cosAngle));
+    const angle = Math.acos(clamped);
+
+    return angle <= Math.PI / 2 + 1e-6;
+  };
+
   const ensureUserLocationOverlay = () => {
     if (userLocationOverlayRef.current || !mapContainer.current) {
       return;
@@ -322,6 +335,24 @@ const Map: React.FC<MapProps> = ({
 
     if (!location || !map.isStyleLoaded()) {
       overlay.style.opacity = "0";
+      overlay.dataset.visible = "false";
+      return;
+    }
+
+    // If we're in globe view, hide the overlay when the location is on the far side of the globe.
+    let visible = true;
+    try {
+      if (viewModeRef.current === "globe") {
+        const center = map.getCenter();
+        visible = isLocationOnVisibleSide({ lng: center.lng, lat: center.lat }, location);
+      }
+    } catch {
+      visible = true;
+    }
+
+    if (!visible) {
+      overlay.style.opacity = "0";
+      overlay.dataset.visible = "false";
       return;
     }
 
