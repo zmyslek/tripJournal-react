@@ -321,7 +321,7 @@ class Media {
 
     img.onload = () => {
       try {
-        const MAX_DIM = 1280;
+        const MAX_DIM = 960;
         let w = img.naturalWidth;
         let h = img.naturalHeight;
         let scale = 1;
@@ -402,7 +402,7 @@ class Media {
       return;
     }
 
-    if (Math.abs(this.plane.position.x) <= viewportWidth * 1.4) {
+    if (Math.abs(this.plane.position.x) <= viewportWidth * 0.85) {
       this.loadImage();
     }
   }
@@ -476,10 +476,10 @@ class Media {
         this.plane.program.uniforms.uViewportSizes.value = [this.viewport.width, this.viewport.height];
       }
     }
-    const widthFactor = sizing?.widthFactor ?? 0.28;
-    const heightFactor = sizing?.heightFactor ?? 0.46;
+    const widthFactor = sizing?.widthFactor ?? 0.336;
+    const heightFactor = sizing?.heightFactor ?? 0.552;
     const scaleY = this.viewport.height * heightFactor;
-    const scaleX = this.viewport.width * widthFactor;
+    const scaleX = Math.min(this.viewport.width * widthFactor, scaleY * 0.68);
     // store base scales and apply currentScale multiplier for hover effect
     this.baseScaleX = scaleX;
     this.baseScaleY = scaleY;
@@ -631,7 +631,7 @@ class App {
     font: string
   ) {
     const galleryItems = items ?? [];
-    const preloadCount = this.screen.width < 768 ? 4 : 6;
+    const preloadCount = this.screen.width < 768 ? 2 : 3;
     this.mediasImages = galleryItems;
     this.medias = this.mediasImages.map((data, index) => {
       return new Media({
@@ -741,8 +741,8 @@ class App {
     const width = height * this.camera.aspect;
     this.viewport = { width, height };
     const isMobile = this.screen.width < 768;
-    const widthFactor = isMobile ? 0.22 : 0.28;
-    const heightFactor = isMobile ? 0.36 : 0.46;
+    const widthFactor = isMobile ? 0.264 : 0.336;
+    const heightFactor = isMobile ? 0.432 : 0.552;
     if (this.medias) {
       this.medias.forEach(media => media.onResize({ screen: this.screen, viewport: this.viewport, sizing: { widthFactor, heightFactor } }));
     }

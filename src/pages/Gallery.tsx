@@ -83,42 +83,44 @@ function Gallery() {
                     onClick={handleCloseModal}
                 >
                     <div
-                        className="relative flex max-h-[88svh] max-w-[94vw] items-center justify-center overflow-visible rounded-[1.2rem]"
+                        className="flex max-h-[92svh] max-w-[96vw] flex-col items-center gap-5 overflow-visible"
                         onClick={e => e.stopPropagation()}
                     >
                         <button
-                            onClick={handlePrevious}
-                            className="absolute left-[-clamp(3.4rem,6.4vw,4.4rem)] top-1/2 flex h-[clamp(2.8rem,5.8vw,3.6rem)] w-[clamp(2.8rem,5.8vw,3.6rem)] -translate-y-1/2 items-center justify-center rounded-full border border-[#ffead4]/55 bg-[#5a392b]/92 text-[clamp(1rem,2vw,1.3rem)] font-semibold text-[#ffead4] shadow-[0_0.75rem_1.6rem_rgba(0,0,0,0.32)] transition-all hover:border-[#ffead4]/85 hover:bg-[#5a392b]"
-                            aria-label="Previous image"
-                        >
-                            &lt;
-                        </button>
-
-                        <div className="relative flex max-h-[88svh] max-w-[94vw] items-center justify-center overflow-hidden rounded-[1rem]">
-                            <img
-                                src={galleryItems[selectedIndex]?.image}
-                                alt={galleryItems[selectedIndex]?.text || 'Gallery item'}
-                                className="max-h-[88svh] max-w-[94vw] object-contain"
-                            />
-                        </div>
-
-                        <button
-                            onClick={handleNext}
-                            className="absolute right-[-clamp(3.4rem,6.4vw,4.4rem)] top-1/2 flex h-[clamp(2.8rem,5.8vw,3.6rem)] w-[clamp(2.8rem,5.8vw,3.6rem)] -translate-y-1/2 items-center justify-center rounded-full border border-[#ffead4]/55 bg-[#5a392b]/92 text-[clamp(1rem,2vw,1.3rem)] font-semibold text-[#ffead4] shadow-[0_0.75rem_1.6rem_rgba(0,0,0,0.32)] transition-all hover:border-[#ffead4]/85 hover:bg-[#5a392b]"
-                            aria-label="Next image"
-                        >
-                            &gt;
-                        </button>
-
-                        <button
                             onClick={handleCloseModal}
-                            className="absolute right-[-clamp(3.4rem,6.4vw,4.4rem)] top-[clamp(0.1rem,1.5vw,0.8rem)] flex h-[clamp(2.8rem,5.8vw,3.6rem)] w-[clamp(2.8rem,5.8vw,3.6rem)] items-center justify-center rounded-full border border-[#ffead4]/55 bg-[#5a392b]/92 text-[clamp(1rem,2vw,1.3rem)] font-semibold text-[#ffead4] shadow-[0_0.75rem_1.6rem_rgba(0,0,0,0.32)] transition-all hover:border-[#ffead4]/85 hover:bg-[#5a392b]"
+                            className="flex h-[clamp(2.6rem,5.4vw,3.4rem)] w-[clamp(2.6rem,5.4vw,3.4rem)] items-center justify-center self-end rounded-full border border-[#ffead4]/55 bg-[#5a392b]/92 text-[clamp(1rem,2vw,1.3rem)] font-semibold text-[#ffead4] shadow-[0_0.75rem_1.6rem_rgba(0,0,0,0.32)] transition-all hover:border-[#ffead4]/85 hover:bg-[#5a392b]"
                             aria-label="Close modal"
                         >
                             x
                         </button>
 
-                        <div className="absolute bottom-[2.5vw] left-1/2 -translate-x-1/2 rounded-full bg-[#5a392b]/55 px-[3vw] py-[1.2vw] text-[clamp(0.72rem,1.6vw,0.95rem)] text-[#ffead4]">
+                        <div className="flex max-w-full items-center justify-center gap-5">
+                            <button
+                                onClick={handlePrevious}
+                                className="flex h-[clamp(2.6rem,5.4vw,3.4rem)] w-[clamp(2.6rem,5.4vw,3.4rem)] shrink-0 items-center justify-center rounded-full border border-[#ffead4]/55 bg-[#5a392b]/92 text-[clamp(1rem,2vw,1.3rem)] font-semibold text-[#ffead4] shadow-[0_0.75rem_1.6rem_rgba(0,0,0,0.32)] transition-all hover:border-[#ffead4]/85 hover:bg-[#5a392b]"
+                                aria-label="Previous image"
+                            >
+                                &lt;
+                            </button>
+
+                            <div className="flex max-h-[calc(92svh-8.5rem)] max-w-[calc(96vw-8.5rem)] items-center justify-center overflow-hidden rounded-[1rem]">
+                                <img
+                                    src={galleryItems[selectedIndex]?.image}
+                                    alt={galleryItems[selectedIndex]?.text || 'Gallery item'}
+                                    className="max-h-[calc(92svh-8.5rem)] max-w-[calc(96vw-8.5rem)] object-contain"
+                                />
+                            </div>
+
+                            <button
+                                onClick={handleNext}
+                                className="flex h-[clamp(2.6rem,5.4vw,3.4rem)] w-[clamp(2.6rem,5.4vw,3.4rem)] shrink-0 items-center justify-center rounded-full border border-[#ffead4]/55 bg-[#5a392b]/92 text-[clamp(1rem,2vw,1.3rem)] font-semibold text-[#ffead4] shadow-[0_0.75rem_1.6rem_rgba(0,0,0,0.32)] transition-all hover:border-[#ffead4]/85 hover:bg-[#5a392b]"
+                                aria-label="Next image"
+                            >
+                                &gt;
+                            </button>
+                        </div>
+
+                        <div className="rounded-full bg-[#5a392b]/75 px-4 py-2 text-[clamp(0.72rem,1.6vw,0.95rem)] text-[#ffead4]">
                             {selectedIndex + 1} / {galleryItems.length}
                         </div>
                     </div>
