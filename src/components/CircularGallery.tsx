@@ -147,6 +147,7 @@ interface MediaProps {
   textColor: string;
   borderRadius?: number;
   font?: string;
+  loadImmediately?: boolean;
 }
 
 class Media {
@@ -169,6 +170,7 @@ class Media {
   textColor: string;
   borderRadius: number;
   font?: string;
+  texture!: Texture;
   program!: Program;
   plane!: Mesh;
   title?: Title;
@@ -180,6 +182,9 @@ class Media {
   speed: number = 0;
   isBefore: boolean = false;
   isAfter: boolean = false;
+  imageLoaded: boolean = false;
+  imageLoading: boolean = false;
+  loadImmediately: boolean = false;
 
   constructor({
     geometry,
@@ -195,7 +200,8 @@ class Media {
     bend,
     textColor,
     borderRadius = 0,
-    font
+    font,
+    loadImmediately = false
   }: MediaProps) {
     this.geometry = geometry;
     this.gl = gl;
@@ -211,6 +217,7 @@ class Media {
     this.textColor = textColor;
     this.borderRadius = borderRadius;
     this.font = font;
+    this.loadImmediately = loadImmediately;
     this.createShader();
     this.createMesh();
     if (this.text.trim()) {
@@ -220,16 +227,16 @@ class Media {
   }
 
   createShader() {
-    const texture = new Texture(this.gl, {
+    this.texture = new Texture(this.gl, {
       generateMipmaps: false
     });
     // set safe sampling parameters for NPOT images
     try {
       const glConst = this.gl as WebGLRenderingContext;
-      (texture as any).minFilter = glConst.LINEAR;
-      (texture as any).magFilter = glConst.LINEAR;
-      (texture as any).wrapS = glConst.CLAMP_TO_EDGE;
-      (texture as any).wrapT = glConst.CLAMP_TO_EDGE;
+      (this.texture as any).minFilter = glConst.LINEAR;
+      (this.texture as any).magFilter = glConst.LINEAR;
+      (this.texture as any).wrapS = glConst.CLAMP_TO_EDGE;
+      (this.texture as any).wrapT = glConst.CLAMP_TO_EDGE;
     } catch (e) {
       // ignore if OGL build does not expose gl constants here
     }
@@ -282,13 +289,24 @@ class Media {
         }
       `,
       uniforms: {
-        tMap: { value: texture },
+        tMap: { value: this.texture },
         uPlaneSizes: { value: [0, 0] },
         uImageSizes: { value: [1, 1] },
         uBorderRadius: { value: this.borderRadius }
       },
       transparent: true
     });
+    if (this.loadImmediately) {
+      this.loadImage();
+    }
+  }
+
+  loadImage() {
+    if (this.imageLoaded || this.imageLoading) {
+      return;
+    }
+
+    this.imageLoading = true;
     const img = new Image();
     if (/^https?:\/\//i.test(this.image)) {
       img.crossOrigin = 'anonymous';
@@ -319,60 +337,74 @@ class Media {
           const ctx = canvas.getContext('2d');
           if (ctx) {
             ctx.drawImage(img, 0, 0, w, h);
-            texture.image = canvas;
+            this.texture.image = canvas;
           } else {
-            texture.image = img;
+            this.texture.image = img;
           }
         } else {
-          texture.image = img;
+          this.texture.image = img;
         }
       } catch (e) {
-        texture.image = img;
+        this.texture.image = img;
       }
       try {
-        const actualWidth = (texture.image && (texture.image as HTMLImageElement | HTMLCanvasElement).width) || img.naturalWidth;
-        const actualHeight = (texture.image && (texture.image as HTMLImageElement | HTMLCanvasElement).height) || img.naturalHeight;
+        const actualWidth = (this.texture.image && (this.texture.image as HTMLImageElement | HTMLCanvasElement).width) || img.naturalWidth;
+        const actualHeight = (this.texture.image && (this.texture.image as HTMLImageElement | HTMLCanvasElement).height) || img.naturalHeight;
         const isPOT = (v: number) => (v & (v - 1)) === 0;
         const pot = isPOT(actualWidth) && isPOT(actualHeight);
-        texture.generateMipmaps = pot;
+        this.texture.generateMipmaps = pot;
         try {
           const glConst = this.gl as WebGLRenderingContext;
           if (!pot) {
-            (texture as any).minFilter = glConst.LINEAR;
-            (texture as any).magFilter = glConst.LINEAR;
-            (texture as any).wrapS = glConst.CLAMP_TO_EDGE;
-            (texture as any).wrapT = glConst.CLAMP_TO_EDGE;
+            (this.texture as any).minFilter = glConst.LINEAR;
+            (this.texture as any).magFilter = glConst.LINEAR;
+            (this.texture as any).wrapS = glConst.CLAMP_TO_EDGE;
+            (this.texture as any).wrapT = glConst.CLAMP_TO_EDGE;
           } else {
-            (texture as any).minFilter = glConst.LINEAR_MIPMAP_LINEAR || glConst.LINEAR;
-            (texture as any).magFilter = glConst.LINEAR;
+            (this.texture as any).minFilter = glConst.LINEAR_MIPMAP_LINEAR || glConst.LINEAR;
+            (this.texture as any).magFilter = glConst.LINEAR;
           }
         } catch (inner) {
           // ignore
         }
 
         try {
-          if ((texture as any).update) (texture as any).update();
-          else (texture as any).needsUpdate = true;
+          if ((this.texture as any).update) (this.texture as any).update();
+          else (this.texture as any).needsUpdate = true;
         } catch (e) {
-          (texture as any).needsUpdate = true;
+          (this.texture as any).needsUpdate = true;
         }
         this.program.uniforms.uImageSizes.value = [actualWidth, actualHeight];
+        this.imageLoaded = true;
       } catch (e) {
         try {
-          if ((texture as any).update) (texture as any).update();
-          else (texture as any).needsUpdate = true;
+          if ((this.texture as any).update) (this.texture as any).update();
+          else (this.texture as any).needsUpdate = true;
         } catch (err) {
-          (texture as any).needsUpdate = true;
+          (this.texture as any).needsUpdate = true;
         }
         this.program.uniforms.uImageSizes.value = [img.naturalWidth, img.naturalHeight];
+        this.imageLoaded = true;
       }
+      this.imageLoading = false;
     };
 
     img.onerror = () => {
       console.error('[CircularGallery] image load error', this.image);
+      this.imageLoading = false;
     };
 
     img.src = this.image;
+  }
+
+  ensureLoaded(viewportWidth: number) {
+    if (this.imageLoaded || this.imageLoading) {
+      return;
+    }
+
+    if (Math.abs(this.plane.position.x) <= viewportWidth * 1.4) {
+      this.loadImage();
+    }
   }
 
   createMesh() {
@@ -432,7 +464,11 @@ class Media {
     }
   }
 
-  onResize({ screen, viewport }: { screen?: ScreenSize; viewport?: Viewport } = {}) {
+  onResize({
+    screen,
+    viewport,
+    sizing
+  }: { screen?: ScreenSize; viewport?: Viewport; sizing?: { widthFactor: number; heightFactor: number } } = {}) {
     if (screen) this.screen = screen;
     if (viewport) {
       this.viewport = viewport;
@@ -440,9 +476,10 @@ class Media {
         this.plane.program.uniforms.uViewportSizes.value = [this.viewport.width, this.viewport.height];
       }
     }
-    this.scale = this.screen.height / 1500;
-    const scaleY = (this.viewport.height * (900 * this.scale)) / this.screen.height;
-    const scaleX = (this.viewport.width * (700 * this.scale)) / this.screen.width;
+    const widthFactor = sizing?.widthFactor ?? 0.38;
+    const heightFactor = sizing?.heightFactor ?? 0.34;
+    const scaleY = this.viewport.height * heightFactor;
+    const scaleX = this.viewport.width * widthFactor;
     // store base scales and apply currentScale multiplier for hover effect
     this.baseScaleX = scaleX;
     this.baseScaleY = scaleY;
@@ -594,6 +631,7 @@ class App {
     font: string
   ) {
     const galleryItems = items ?? [];
+    const preloadCount = this.screen.width < 768 ? 4 : 6;
     this.mediasImages = galleryItems;
     this.medias = this.mediasImages.map((data, index) => {
       return new Media({
@@ -610,7 +648,8 @@ class App {
         bend,
         textColor,
         borderRadius,
-        font
+        font,
+        loadImmediately: index < preloadCount
       });
     });
   }
@@ -701,8 +740,11 @@ class App {
     const height = 2 * Math.tan(fov / 2) * this.camera.position.z;
     const width = height * this.camera.aspect;
     this.viewport = { width, height };
+    const isMobile = this.screen.width < 768;
+    const widthFactor = isMobile ? 0.28 : 0.38;
+    const heightFactor = isMobile ? 0.24 : 0.34;
     if (this.medias) {
-      this.medias.forEach(media => media.onResize({ screen: this.screen, viewport: this.viewport }));
+      this.medias.forEach(media => media.onResize({ screen: this.screen, viewport: this.viewport, sizing: { widthFactor, heightFactor } }));
     }
   }
 
@@ -795,6 +837,7 @@ class App {
       this.medias.forEach(media => {
         media.update(this.scroll, direction);
         media.applyScaleInterpolation();
+        media.ensureLoaded(this.viewport.width);
       });
     }
     this.renderer.render({ scene: this.scene, camera: this.camera });
