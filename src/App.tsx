@@ -5,6 +5,7 @@ import MainLayout from "./components/MainLayout.tsx";
 const Home = lazy(() => import("./pages/Home.tsx"));
 const Gallery = lazy(() => import("./pages/Gallery"));
 const Profile = lazy(() => import("./pages/Profile"));
+const HelpCenter = lazy(() => import("./pages/HelpCenter"));
 const Policies = lazy(() => import("./pages/Policies"));
 const COUNTRY_STATUS_CACHE_KEY = "tripjournal:country-statuses:v1";
 
@@ -105,6 +106,14 @@ function App() {
                     element={
                         <Suspense fallback={<RouteFallback />}>
                             <Profile />
+                        </Suspense>
+                    }
+                />
+                <Route
+                    path="/help-center"
+                    element={
+                        <Suspense fallback={<RouteFallback />}>
+                            <HelpCenter />
                         </Suspense>
                     }
                 />

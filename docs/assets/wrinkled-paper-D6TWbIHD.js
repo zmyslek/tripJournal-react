@@ -1,0 +1,1 @@
+var e=``+new URL(`wrinkled-paper-B0jXmNkr.png`,import.meta.url).href;export{e as t};

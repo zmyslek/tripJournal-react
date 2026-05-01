@@ -45,7 +45,7 @@ function MainLayout() {
                 <NavLink to="/" className="col-start-2 text-center font-[Adamina] text-[1.875rem] leading-none font-normal text-[#ffead4] no-underline" aria-label="Home">
                     TripJournal
                 </NavLink>
-                <div className="col-start-3 flex items-center justify-self-end gap-5">
+                <div className="col-start-3 flex items-center justify-self-end gap-4">
                     <NavLink
                         to="/gallery"
                         className={({ isActive }) =>
@@ -61,7 +61,17 @@ function MainLayout() {
                         }
                         aria-label="Profile"
                     >
-                        TJ
+                        JD
+                    </NavLink>
+                    <NavLink
+                        to="/help-center"
+                        className={({ isActive }) =>
+                            `inline-flex h-[1.7rem] w-[1.7rem] items-center justify-center rounded-full border border-[#ffead4]/70 font-[Adamina] text-[0.78rem] text-[#ffead4] no-underline transition hover:bg-[#ffead4]/12 ${isActive ? "bg-[#ffead4]/18 outline outline-2 outline-offset-2 outline-[#ffead4]" : ""}`
+                        }
+                        aria-label="Help Center"
+                        title="Help Center"
+                    >
+                        ?
                     </NavLink>
                 </div>
             </nav>
@@ -119,7 +129,17 @@ function MainLayout() {
                     </p>
                 </div>
                 <nav className="flex min-w-[10rem] flex-col items-end gap-1 max-sm:items-start" aria-label="Policies">
-                    <p className="mb-1 m-0 font-[Adamina] text-[0.58rem] uppercase tracking-[0.2em] text-[#f6d7b5]">Policies</p>
+                    <div className="mb-1 flex items-center gap-2">
+                        <p className="m-0 font-[Adamina] text-[0.58rem] uppercase tracking-[0.2em] text-[#f6d7b5]">Policies</p>
+                        <Link
+                            to="/help-center"
+                            className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-[#ffead4]/65 font-[Adamina] text-[0.76rem] text-[#ffead4] no-underline transition hover:bg-[#ffead4]/12"
+                            aria-label="Help Center"
+                            title="Help Center"
+                        >
+                            ?
+                        </Link>
+                    </div>
                     {policyLinks.map((link) => (
                         <Link
                             key={link.to}
