@@ -31,18 +31,20 @@ function HelpCenter() {
         return helpFaqSections.find((section) => section.id === activeSectionId) ?? allCategoriesSection;
     }, [activeSectionId, allCategoriesSection]);
 
-    // Filter FAQs based on search term
+    // Filter FAQs based on search term for single-section views; per-section filtering handled in render for "all"
     const filteredFaqs = useMemo(() => {
         if (!searchTerm.trim()) {
             return activeSection?.faqs ?? [];
         }
         const lowerSearch = searchTerm.toLowerCase();
-        return activeSection?.faqs.filter(
-            (faq) =>
-                faq.question.toLowerCase().includes(lowerSearch) ||
-                faq.answer.toLowerCase().includes(lowerSearch)
-        ) ?? [];
+        return (
+            activeSection?.faqs.filter(
+                (faq) => faq.question.toLowerCase().includes(lowerSearch) || faq.answer.toLowerCase().includes(lowerSearch)
+            ) ?? []
+        );
     }, [activeSection, searchTerm]);
+
+    const lowerSearch = searchTerm.toLowerCase();
 
     // Check scroll position of categories for arrow visibility
     const checkCategoryScroll = () => {
@@ -155,7 +157,7 @@ function HelpCenter() {
                 style={{ backgroundImage: `linear-gradient(rgb(255 234 212 / 0.9), rgb(255 234 212 / 0.9)), url(${paperBackground})`, backgroundSize: "cover" }}
             >
                 <div
-                    className="rounded-b-[2.4rem] bg-[#5a392b]/95 px-6 py-7 text-[#ffead4] sm:px-9"
+                    className="bg-[#5a392b]/95 px-6 py-7 text-[#ffead4] sm:px-9"
                     style={{ backgroundImage: `linear-gradient(rgb(90 57 43 / 0.9), rgb(90 57 43 / 0.9)), url(${paperBackground})`, backgroundSize: "cover" }}
                 >
                     <p className="m-0 font-[Adamina] text-[0.7rem] uppercase tracking-[0.24em] text-[#f6d7b5]">TripJournal support</p>
@@ -174,7 +176,7 @@ function HelpCenter() {
                     </div>
                 </div>
 
-                <div className="grid gap-7 px-6 py-7 sm:px-9 lg:grid-cols-[minmax(0,1fr)_24rem]">
+                <div className="grid gap-7 px-4 py-7 sm:px-9 lg:grid-cols-[minmax(0,1fr)_24rem]">
                     <div>
                         {/* Full-width search bar */}
                         <div className="mb-6">
@@ -266,41 +268,90 @@ function HelpCenter() {
                             </div>
                         </div>
 
-                        {/* Section description */}
-                        <div className="mt-5 rounded-[0.9rem] border border-[#cf8d45]/35 bg-[#fff4e7]/55 px-5 py-4">
-                            <h2 className="font-[Adamina] text-[1.25rem] text-[#50300d]">{activeSection?.title}</h2>
-                            <p className="mt-1 font-[Cormorant_Garamond] text-[1.12rem] leading-[1.35] text-[#5a392b]">{activeSection?.description}</p>
-                        </div>
+                        {activeSectionId === "all" ? (
+                            <div className="mt-5 grid gap-6">
+                                {helpFaqSections.map((section) => {
+                                    const sectionFaqs = !searchTerm.trim()
+                                        ? section.faqs
+                                        : section.faqs.filter(
+                                              (faq) =>
+                                                  faq.question.toLowerCase().includes(lowerSearch) ||
+                                                  faq.answer.toLowerCase().includes(lowerSearch)
+                                          );
 
-                        {filteredFaqs.length === 0 ? (
-                            <div className="mt-5 rounded-[0.9rem] border border-[#cf8d45]/45 bg-[#fff4e7]/72 px-5 py-8 text-center">
-                                <p className="font-[Cormorant_Garamond] text-[1.05rem] text-[#5a392b]">
-                                    No questions match "<span className="font-bold">{searchTerm}</span>". Try different keywords or browse other sections.
-                                </p>
+                                    if (sectionFaqs.length === 0) return null;
+
+                                    return (
+                                        <section key={section.id}>
+                                            <div className="rounded-[0.9rem] border border-[#cf8d45]/35 bg-[#7A3F00]/60 px-5 py-3 shadow-[0_6px_12px_rgba(90,57,43,0.06)] ring-1 ring-[#eab681]/20">
+                                                <h3 className="font-[Adamina] text-[1.05rem] text-[#FFEAD4]">{section.title}</h3>
+                                                {section.description && (
+                                                    <p className="mt-1 font-[Cormorant_Garamond] text-[1rem] leading-[1.3] text-[#5a392b]">
+                                                        {section.description}
+                                                    </p>
+                                                )}
+                                            </div>
+
+                                            <div className="mt-3 grid gap-3">
+                                                {sectionFaqs.map((faq) => (
+                                                    <details key={faq.id} className="group rounded-[0.9rem] border border-[#cf8d45]/45 bg-[#fff4e7]/72 px-5 py-4 shadow-[inset_0_0_16px_rgb(143_90_32_/_7%)]">
+                                                        <summary className="cursor-pointer list-none font-[Adamina] text-[1rem] text-[#50300d] marker:hidden">
+                                                            <span className="flex items-center justify-between gap-4">
+                                                                {faq.question}
+                                                                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[#cf8d45]/70 text-[#7a3f00] transition group-open:rotate-45">
+                                                                    +
+                                                                </span>
+                                                            </span>
+                                                        </summary>
+                                                        <p className="mt-3 max-w-[68ch] font-[Cormorant_Garamond] text-[1.13rem] leading-[1.42] text-[#5a392b]">
+                                                            {faq.answer}
+                                                        </p>
+                                                    </details>
+                                                ))}
+                                            </div>
+                                        </section>
+                                    );
+                                })}
                             </div>
                         ) : (
-                            <div className="mt-5 grid gap-3">
-                                {filteredFaqs.map((faq) => (
-                                    <details key={faq.id} className="group rounded-[0.9rem] border border-[#cf8d45]/45 bg-[#fff4e7]/72 px-5 py-4 shadow-[inset_0_0_16px_rgb(143_90_32_/_7%)]">
-                                        <summary className="cursor-pointer list-none font-[Adamina] text-[1rem] text-[#50300d] marker:hidden">
-                                            <span className="flex items-center justify-between gap-4">
-                                                {faq.question}
-                                                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[#cf8d45]/70 text-[#7a3f00] transition group-open:rotate-45">
-                                                    +
-                                                </span>
-                                            </span>
-                                        </summary>
-                                        <p className="mt-3 max-w-[68ch] font-[Cormorant_Garamond] text-[1.13rem] leading-[1.42] text-[#5a392b]">
-                                            {faq.answer}
+                            <>
+                                {/* Section description */}
+                                <div className="mt-5 rounded-[0.9rem] border border-[#cf8d45]/35 bg-[#fff4e7]/55 px-5 py-4">
+                                    <h2 className="font-[Adamina] text-[1.25rem] text-[#50300d]">{activeSection?.title}</h2>
+                                    <p className="mt-1 font-[Cormorant_Garamond] text-[1.12rem] leading-[1.35] text-[#5a392b]">{activeSection?.description}</p>
+                                </div>
+
+                                {filteredFaqs.length === 0 ? (
+                                    <div className="mt-5 rounded-[0.9rem] border border-[#cf8d45]/45 bg-[#fff4e7]/72 px-5 py-8 text-center">
+                                        <p className="font-[Cormorant_Garamond] text-[1.05rem] text-[#5a392b]">
+                                            No questions match "<span className="font-bold">{searchTerm}</span>". Try different keywords or browse other sections.
                                         </p>
-                                    </details>
-                                ))}
-                            </div>
+                                    </div>
+                                ) : (
+                                    <div className="mt-5 grid gap-3">
+                                        {filteredFaqs.map((faq) => (
+                                            <details key={faq.id} className="group rounded-[0.9rem] border border-[#cf8d45]/45 bg-[#fff4e7]/72 px-5 py-4 shadow-[inset_0_0_16px_rgb(143_90_32_/_7%)]">
+                                                <summary className="cursor-pointer list-none font-[Adamina] text-[1rem] text-[#50300d] marker:hidden">
+                                                    <span className="flex items-center justify-between gap-4">
+                                                        {faq.question}
+                                                        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[#cf8d45]/70 text-[#7a3f00] transition group-open:rotate-45">
+                                                            +
+                                                        </span>
+                                                    </span>
+                                                </summary>
+                                                <p className="mt-3 max-w-[68ch] font-[Cormorant_Garamond] text-[1.13rem] leading-[1.42] text-[#5a392b]">
+                                                    {faq.answer}
+                                                </p>
+                                            </details>
+                                        ))}
+                                    </div>
+                                )}
+                            </>
                         )}
                     </div>
 
                     <aside className="flex justify-center lg:justify-end">
-                        <div className="sticky top-24 w-max max-w-[18rem] rounded-[0.9rem] border border-[#7a3f00]/12 bg-[#5c3722] p-4 text-[#ffead4] shadow-[inset_0_0_18px_rgb(0_0_0_/_10%)]">
+                        <div className="sticky top-24 w-max max-w-[28rem] h-100% max-h-[calc(100vh-10rem)] rounded-[0.9rem] border border-[#7a3f00]/12 bg-[#5c3722] p-4 text-[#ffead4] shadow-[inset_0_0_18px_rgb(0_0_0_/_10%)]">
                             <p className="font-[Adamina] text-[0.72rem] uppercase tracking-[0.22em] text-[#f6d7b5]">Need more help?</p>
                             <h2 className="mt-2 font-[Adamina] text-[1.55rem] leading-tight text-[#fff4e7]">Contact support</h2>
                             <p className="mt-3 font-[Cormorant_Garamond] text-[1.1rem] leading-[1.35] text-[#f7dfca]">
