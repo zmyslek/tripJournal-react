@@ -89,6 +89,7 @@ function Home({ countryStatuses, setCountryStatus, visitedCountries }: HomeProps
         new Set(["visited", "want-to-go", "want-to-visit-again", "not-explored"])
     );
     const [listSort, setListSort] = useState<"a-z" | "z-a" | "status">("a-z");
+    const [scrollBtnBottom, setScrollBtnBottom] = useState(window.innerHeight * 0.02);
     const autoSelectedLocationKeyRef = useRef<string | null>(null);
     const hasRequestedGeolocationRef = useRef(false);
     const { countriesData, isLoading, error } = useCountriesData();
@@ -136,6 +137,35 @@ function Home({ countryStatuses, setCountryStatus, visitedCountries }: HomeProps
             setCountryStatus(countryName, "visited");
         }
     }, [countriesData, setCountryStatus, userLocation, visitedCountries]);
+
+    // Adjust scroll-to-top button so it doesn't overlap the footer
+    useEffect(() => {
+        function adjustScrollButton() {
+            const footer = document.querySelector("footer");
+            const baseBottom = window.innerHeight * 0.02;
+            if (!footer) {
+                setScrollBtnBottom(baseBottom);
+                return;
+            }
+
+            const rect = footer.getBoundingClientRect();
+            const overlap = Math.max(0, window.innerHeight - rect.top);
+            const padding = window.innerHeight * 0.01;
+            if (overlap > 0) {
+                setScrollBtnBottom(baseBottom + overlap + padding);
+            } else {
+                setScrollBtnBottom(baseBottom);
+            }
+        }
+
+        adjustScrollButton();
+        window.addEventListener("scroll", adjustScrollButton, { passive: true });
+        window.addEventListener("resize", adjustScrollButton);
+        return () => {
+            window.removeEventListener("scroll", adjustScrollButton);
+            window.removeEventListener("resize", adjustScrollButton);
+        };
+    }, []);
 
     const countryNames = useMemo(() => {
         if (!countriesData) {
@@ -248,7 +278,7 @@ function Home({ countryStatuses, setCountryStatus, visitedCountries }: HomeProps
     }, [countryNames, countryStatuses, listStatusFilters, listSort]);
 
     return (
-        <div className="mx-auto flex w-full max-w-[1380px] flex-col gap-8 px-4 pb-14 pt-6 sm:px-6 lg:px-8">
+        <div className="mx-auto flex w-full max-w-[min(95vw,1380px)] flex-col gap-[max(2rem,8%)] px-[max(1rem,4%)] pb-[max(3.5rem,10vh)] pt-[max(1.5rem,4vh)] animate-fade-in">
             <aside className="rounded-[1.8rem] border border-[#7a3f00]/15 bg-[#5c3722eb] p-5 text-[#ffead4] shadow-[0_20px_40px_#5a392b38]">
                 <div className="flex h-full flex-col gap-5">
                     <div className="rounded-[1.4rem] border border-[#eab681]/25 bg-[#ffead414] p-3 shadow-[inset_0_1px_0_#ffffff2b]">
@@ -344,7 +374,7 @@ function Home({ countryStatuses, setCountryStatus, visitedCountries }: HomeProps
                         <button
                             type="button"
                             onClick={() => setMapViewMode((previousViewMode) => (previousViewMode === "globe" ? "map" : "globe"))}
-                            className="inline-flex h-[3rem] w-[3rem] items-center justify-center rounded-full border border-[#50300d] bg-[#f6dfc1] text-[1.35rem] text-[#50300d] shadow-[0_3px_10px_#50300d2e] transition hover:bg-[#eab681]"
+                            className="inline-flex h-[3rem] w-[3rem] items-center justify-center rounded-full border border-[#50300d] bg-[#f6dfc1] text-[1.35rem] text-[#50300d] shadow-[0_3px_10px_#50300d2e] interactive-transition hover:bg-[#eab681] hover:shadow-[0_6px_16px_#50300d3d] hover:-translate-y-0.5 active:scale-95"
                             aria-label="Switch between globe and flat map view"
                         >
                             {mapViewMode === "globe" ? (
@@ -417,25 +447,25 @@ function Home({ countryStatuses, setCountryStatus, visitedCountries }: HomeProps
                     </p>
 
                     <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                        <article className="rounded-[1.2rem] border border-[#eab681]/25 bg-[#ffead414] p-4 shadow-[inset_0_1px_0_#ffffff2b]">
+                        <article className="rounded-[1.2rem] border border-[#eab681]/25 bg-[#ffead414] p-4 shadow-[inset_0_1px_0_#ffffff2b] interactive-transition hover:shadow-[inset_0_1px_0_#ffffff2b,0_8px_20px_rgb(122_63_0_/_15%)] hover:-translate-y-0.5">
                             <p className="font-[Adamina] text-[0.72rem] uppercase tracking-[0.2em] text-[#f6d7b5]">Visited</p>
                             <p className="mt-2 font-[Adamina] text-3xl text-[#fff4e7]">{statusCounts.visited}</p>
                             <p className="mt-1 font-[Cormorant_Garamond] text-[1.05rem] text-[#f7dfca]">Countries marked as explored.</p>
                         </article>
 
-                        <article className="rounded-[1.2rem] border border-[#eab681]/25 bg-[#ffead414] p-4 shadow-[inset_0_1px_0_#ffffff2b]">
+                        <article className="rounded-[1.2rem] border border-[#eab681]/25 bg-[#ffead414] p-4 shadow-[inset_0_1px_0_#ffffff2b] interactive-transition hover:shadow-[inset_0_1px_0_#ffffff2b,0_8px_20px_rgb(122_63_0_/_15%)] hover:-translate-y-0.5">
                             <p className="font-[Adamina] text-[0.72rem] uppercase tracking-[0.2em] text-[#f6d7b5]">Wishlist (want to visit)</p>
                             <p className="mt-2 font-[Adamina] text-3xl text-[#fff4e7]">{statusCounts.wantToGo}</p>
                             <p className="mt-1 font-[Cormorant_Garamond] text-[1.05rem] text-[#f7dfca]">Planned destinations.</p>
                         </article>
 
-                        <article className="rounded-[1.2rem] border border-[#eab681]/25 bg-[#ffead414] p-4 shadow-[inset_0_1px_0_#ffffff2b]">
+                        <article className="rounded-[1.2rem] border border-[#eab681]/25 bg-[#ffead414] p-4 shadow-[inset_0_1px_0_#ffffff2b] interactive-transition hover:shadow-[inset_0_1px_0_#ffffff2b,0_8px_20px_rgb(122_63_0_/_15%)] hover:-translate-y-0.5">
                             <p className="font-[Adamina] text-[0.72rem] uppercase tracking-[0.2em] text-[#f6d7b5]">Want to return to</p>
                             <p className="mt-2 font-[Adamina] text-3xl text-[#fff4e7]">{statusCounts.wantToVisitAgain}</p>
                             <p className="mt-1 font-[Cormorant_Garamond] text-[1.05rem] text-[#f7dfca]">Places worth another chapter.</p>
                         </article>
 
-                        <article className="rounded-[1.2rem] border border-[#eab681]/25 bg-[#ffead414] p-4 shadow-[inset_0_1px_0_#ffffff2b]">
+                        <article className="rounded-[1.2rem] border border-[#eab681]/25 bg-[#ffead414] p-4 shadow-[inset_0_1px_0_#ffffff2b] interactive-transition hover:shadow-[inset_0_1px_0_#ffffff2b,0_8px_20px_rgb(122_63_0_/_15%)] hover:-translate-y-0.5">
                             <p className="font-[Adamina] text-[0.72rem] uppercase tracking-[0.2em] text-[#f6d7b5]">Not explored</p>
                             <p className="mt-2 font-[Adamina] text-3xl text-[#fff4e7]">{statusCounts.notInterested}</p>
                             <p className="mt-1 font-[Cormorant_Garamond] text-[1.05rem] text-[#f7dfca]">Countries not marked yet.</p>
@@ -552,7 +582,8 @@ function Home({ countryStatuses, setCountryStatus, visitedCountries }: HomeProps
             {showScrollTop && (
                 <button
                     onClick={scrollToTop}
-                    className="fixed bottom-8 right-8 flex h-12 w-12 items-center justify-center rounded-full border border-[#cf8d45] bg-[#5a392b] text-[#ffead4] shadow-[0_8px_24px_rgb(122_63_0_/_30%)] transition hover:bg-[#7a3f00] hover:-translate-y-1"
+                    style={{ bottom: `${scrollBtnBottom}px` }}
+                    className="fixed right-[max(2rem,5%)] flex h-[clamp(2.5rem,8vw,3rem)] w-[clamp(2.5rem,8vw,3rem)] items-center justify-center rounded-full border border-[#cf8d45] bg-[#5a392b] text-[#ffead4] shadow-[0_8px_24px_rgb(122_63_0_/_30%)] transition hover:bg-[#7a3f00] hover:-translate-y-1"
                     aria-label="Scroll to top"
                     title="Back to top"
                 >

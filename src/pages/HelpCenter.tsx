@@ -91,7 +91,7 @@ function HelpCenter() {
     useEffect(() => {
         function adjustScrollButton() {
             const footer = document.querySelector("footer");
-            const baseBottom = 32; // default bottom offset in px
+            const baseBottom = window.innerHeight * 0.02; // 2% of viewport height
             if (!footer) {
                 setScrollBtnBottom(baseBottom);
                 return;
@@ -99,7 +99,7 @@ function HelpCenter() {
 
             const rect = footer.getBoundingClientRect();
             const overlap = Math.max(0, window.innerHeight - rect.top);
-            const padding = 16; // extra padding above footer
+            const padding = window.innerHeight * 0.01; // 1% of viewport height as padding
             if (overlap > 0) {
                 setScrollBtnBottom(baseBottom + overlap + padding);
             } else {
@@ -149,7 +149,7 @@ function HelpCenter() {
 
     return (
         <section
-            className="mx-auto w-full max-w-[1380px] px-5 py-8 text-[#50300d] sm:px-6 lg:px-8"
+            className="mx-auto w-full max-w-[min(95vw,1380px)] px-[max(1.25rem,5%)] py-[max(2rem,6vh)] text-[#50300d]"
             aria-labelledby="help-title"
         >
             <div
@@ -157,43 +157,40 @@ function HelpCenter() {
                 style={{ backgroundImage: `linear-gradient(rgb(255 234 212 / 0.9), rgb(255 234 212 / 0.9)), url(${paperBackground})`, backgroundSize: "cover" }}
             >
                 <div
-                    className="bg-[#5a392b]/95 px-6 py-7 text-[#ffead4] sm:px-9"
+                    className="rounded-b-[2.4rem] bg-[#5a392b]/95 px-6 py-7 text-[#ffead4] sm:px-9"
                     style={{ backgroundImage: `linear-gradient(rgb(90 57 43 / 0.9), rgb(90 57 43 / 0.9)), url(${paperBackground})`, backgroundSize: "cover" }}
                 >
-                    <p className="m-0 font-[Adamina] text-[0.7rem] uppercase tracking-[0.24em] text-[#f6d7b5]">TripJournal support</p>
-                    <div className="mt-3 flex flex-wrap items-end justify-between gap-4">
+                    <div className="relative flex flex-wrap items-start justify-between gap-6">
                         <div>
-                            <h1 id="help-title" className="font-[Adamina] text-[clamp(2rem,5vw,3.5rem)] leading-tight text-[#fff4e7]">
+                            <p className="m-0 font-[Adamina] text-[0.7rem] uppercase tracking-[0.24em] text-[#f6d7b5]">TripJournal support</p>
+                            <h1 id="help-title" className="mt-3 font-[Adamina] text-[clamp(2.2rem,5vw,3.8rem)] leading-none text-[#fff4e7]">
                                 Help Center
                             </h1>
-                            <p className="mt-3 max-w-[42rem] font-[Cormorant_Garamond] text-[1.25rem] leading-[1.35] text-[#f6d7b5]">
+                            <p className="mt-4 max-w-[42rem] font-[Cormorant_Garamond] text-[1.25rem] leading-[1.35] text-[#f7dfca]">
                                 Answers for the map, saved countries, gallery, and the little browser-side details that keep your journal feeling personal.
                             </p>
-                        </div>
-                        <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-[#f6d7b5]/70 bg-[#cf8d45] font-[Adamina] text-[1.9rem] text-[#fff4e7] shadow-[inset_0_0_18px_rgb(80_48_13_/_18%)]" aria-hidden="true">
-                            ?
                         </div>
                     </div>
                 </div>
 
-                <div className="grid gap-7 px-4 py-7 sm:px-9 lg:grid-cols-[minmax(0,1fr)_24rem]">
+                <div className="grid gap-[max(1.75rem,5%)] px-[max(1.5rem,6%)] py-[max(1.75rem,5%)] lg:grid-cols-[minmax(0,1fr)_min(20rem,22%)]">
                     <div>
                         {/* Full-width search bar */}
-                        <div className="mb-6">
-                            <p className="mb-3 font-[Adamina] text-[0.72rem] uppercase tracking-[0.2em] text-[#7a3f00]">Search questions</p>
+                        <div className="mb-[max(1.5rem,4%)]">
+                            <p className="mb-[max(0.75rem,2%)] font-[Adamina] text-[clamp(0.65rem,1.5vw,0.72rem)] uppercase tracking-[0.2em] text-[#7a3f00]">Search questions</p>
                             <input
                                 type="text"
                                 placeholder="Type keywords..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full rounded-full border border-[#cf8d45]/55 bg-[#fff7ee] px-5 py-3 font-[Cormorant_Garamond] text-[1rem] text-[#50300d] outline-none placeholder:text-[#7a3f00]/60 focus:border-[#cf8d45] focus:ring-2 focus:ring-[#cf8d45]/35"
+                                className="w-full rounded-full border border-[#cf8d45]/55 bg-[#fff7ee] px-[max(1.25rem,4%)] py-[max(0.75rem,2%)] font-[Cormorant_Garamond] text-[clamp(0.9rem,2vw,1rem)] text-[#50300d] outline-none placeholder:text-[#7a3f00]/60 focus:border-[#cf8d45] focus:ring-2 focus:ring-[#cf8d45]/35"
                                 aria-label="Search FAQ questions"
                             />
                         </div>
 
                         {/* Categories with horizontal scroll */}
                         <div>
-                            <p className="mb-3 font-[Adamina] text-[0.72rem] uppercase tracking-[0.2em] text-[#7a3f00]">Frequently asked questions</p>
+                            <p className="mb-[max(0.75rem,2%)] font-[Adamina] text-[clamp(0.65rem,1.5vw,0.72rem)] uppercase tracking-[0.2em] text-[#7a3f00]">Frequently asked questions</p>
                             <div className="relative flex items-center gap-2">
                                 {/* Left arrow */}
                                 {showLeftArrow && (
@@ -294,11 +291,11 @@ function HelpCenter() {
 
                                             <div className="mt-3 grid gap-3">
                                                 {sectionFaqs.map((faq) => (
-                                                    <details key={faq.id} className="group rounded-[0.9rem] border border-[#cf8d45]/45 bg-[#fff4e7]/72 px-5 py-4 shadow-[inset_0_0_16px_rgb(143_90_32_/_7%)]">
+                                                    <details key={faq.id} className="group rounded-[0.9rem] border border-[#cf8d45]/45 bg-[#fff4e7]/72 px-5 py-4 shadow-[inset_0_0_16px_rgb(143_90_32_/_7%)] transition-all hover:shadow-[inset_0_0_16px_rgb(143_90_32_/_12%),0_4px_12px_rgb(122_63_0_/_20%)]">
                                                         <summary className="cursor-pointer list-none font-[Adamina] text-[1rem] text-[#50300d] marker:hidden">
                                                             <span className="flex items-center justify-between gap-4">
                                                                 {faq.question}
-                                                                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[#cf8d45]/70 text-[#7a3f00] transition group-open:rotate-45">
+                                                                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[#cf8d45]/70 text-[#7a3f00] transition-transform group-open:rotate-45">
                                                                     +
                                                                 </span>
                                                             </span>
@@ -316,19 +313,23 @@ function HelpCenter() {
                         ) : (
                             <>
                                 {/* Section description */}
-                                <div className="mt-5 rounded-[0.9rem] border border-[#cf8d45]/35 bg-[#fff4e7]/55 px-5 py-4">
-                                    <h2 className="font-[Adamina] text-[1.25rem] text-[#50300d]">{activeSection?.title}</h2>
-                                    <p className="mt-1 font-[Cormorant_Garamond] text-[1.12rem] leading-[1.35] text-[#5a392b]">{activeSection?.description}</p>
+                                <div className="rounded-[0.9rem] border border-[#cf8d45]/35 bg-[#7A3F00]/60 px-5 py-3 shadow-[0_6px_12px_rgba(90,57,43,0.06)] ring-1 ring-[#eab681]/20">
+                                    <h2 className="font-[Adamina] text-[1.05rem] text-[#FFEAD4]">{activeSection?.title}</h2>
+                                    {activeSection?.description && (
+                                        <p className="mt-1 font-[Cormorant_Garamond] text-[1rem] leading-[1.3] text-[#5a392b]">
+                                            {activeSection?.description}
+                                        </p>
+                                    )}
                                 </div>
 
                                 {filteredFaqs.length === 0 ? (
-                                    <div className="mt-5 rounded-[0.9rem] border border-[#cf8d45]/45 bg-[#fff4e7]/72 px-5 py-8 text-center">
+                                    <div className="mt-3 rounded-[0.9rem] border border-[#cf8d45]/45 bg-[#fff4e7]/72 px-[5%] py-[8%] text-center">
                                         <p className="font-[Cormorant_Garamond] text-[1.05rem] text-[#5a392b]">
                                             No questions match "<span className="font-bold">{searchTerm}</span>". Try different keywords or browse other sections.
                                         </p>
                                     </div>
                                 ) : (
-                                    <div className="mt-5 grid gap-3">
+                                    <div className="mt-3 grid gap-3">
                                         {filteredFaqs.map((faq) => (
                                             <details key={faq.id} className="group rounded-[0.9rem] border border-[#cf8d45]/45 bg-[#fff4e7]/72 px-5 py-4 shadow-[inset_0_0_16px_rgb(143_90_32_/_7%)]">
                                                 <summary className="cursor-pointer list-none font-[Adamina] text-[1rem] text-[#50300d] marker:hidden">
@@ -351,24 +352,24 @@ function HelpCenter() {
                     </div>
 
                     <aside className="flex justify-center lg:justify-end">
-                        <div className="sticky top-24 w-max max-w-[28rem] h-100% max-h-[calc(100vh-10rem)] rounded-[0.9rem] border border-[#7a3f00]/12 bg-[#5c3722] p-4 text-[#ffead4] shadow-[inset_0_0_18px_rgb(0_0_0_/_10%)]">
-                            <p className="font-[Adamina] text-[0.72rem] uppercase tracking-[0.22em] text-[#f6d7b5]">Need more help?</p>
-                            <h2 className="mt-2 font-[Adamina] text-[1.55rem] leading-tight text-[#fff4e7]">Contact support</h2>
-                            <p className="mt-3 font-[Cormorant_Garamond] text-[1.1rem] leading-[1.35] text-[#f7dfca]">
+                        <div className="sticky top-[max(6rem,15vh)] w-max max-w-[min(18rem,90vw)] rounded-[0.9rem] border border-[#7a3f00]/12 bg-[#5c3722] p-[max(1rem,3%)] text-[#ffead4] shadow-[inset_0_0_18px_rgb(0_0_0_/_10%)]">
+                            <p className="font-[Adamina] text-[clamp(0.65rem,1.5vw,0.72rem)] uppercase tracking-[0.22em] text-[#f6d7b5]\">Need more help?</p>
+                            <h2 className="mt-[max(0.5rem,1%)] font-[Adamina] text-[clamp(1rem,2.5vw,1.55rem)] leading-tight text-[#fff4e7]\">Contact support</h2>
+                            <p className="mt-[max(0.75rem,2%)] font-[Cormorant_Garamond] text-[clamp(0.9rem,2vw,1.1rem)] leading-[1.35] text-[#f7dfca]\">
                                 Send the team a note with what happened, where you saw it, and which browser you are using.
                             </p>
 
                             {contactSubmitted && (
-                                <div className="mt-4 rounded-[0.7rem] border border-[#eab681]/60 bg-[#eab681]/25 px-4 py-3">
-                                    <p className="font-[Cormorant_Garamond] text-[0.95rem] text-[#fff4e7]">
+                                <div className="mt-[max(1rem,3%)] rounded-[0.7rem] border border-[#eab681]/60 bg-[#eab681]/25 px-[max(1rem,3%)] py-[max(0.75rem,2%)]">
+                                    <p className="font-[Cormorant_Garamond] text-[clamp(0.85rem,2vw,0.95rem)] text-[#fff4e7]">
                                         ✓ Message sent! Our team will get back to you soon.
                                     </p>
                                 </div>
                             )}
 
-                            <form onSubmit={handleContactSubmit} className="mt-4 space-y-3 w-full">
+                            <form onSubmit={handleContactSubmit} className="mt-[max(1rem,3%)] space-y-[max(0.75rem,2%)] w-full" style={{ width: '100%' }}>
                                 <label className="block">
-                                    <span className="mb-1.5 block font-[Adamina] text-[0.72rem] uppercase tracking-[0.18em] text-[#f6d7b5]">Email</span>
+                                    <span className="mb-[max(0.375rem,1%)] block font-[Adamina] text-[clamp(0.65rem,1.5vw,0.72rem)] uppercase tracking-[0.18em] text-[#f6d7b5]">Email</span>
                                     <input
                                         type="email"
                                         name="email"
@@ -376,12 +377,12 @@ function HelpCenter() {
                                         value={contactForm.email}
                                         onChange={handleContactChange}
                                         required
-                                        className="w-full rounded-[0.6rem] border border-[#eab681]/60 bg-[#fff7ee] px-3 py-2 font-[Cormorant_Garamond] text-[1rem] text-[#50300d] outline-none focus:border-[#f6d7b5] focus:ring-2 focus:ring-[#eab681]/45"
+                                        className="w-full rounded-[0.6rem] border border-[#eab681]/60 bg-[#fff7ee] px-[max(0.75rem,2%)] py-[max(0.5rem,1%)] font-[Cormorant_Garamond] text-[clamp(0.9rem,2vw,1rem)] text-[#50300d] outline-none interactive-transition hover:border-[#eab681]/80 focus:border-[#f6d7b5] focus:ring-2 focus:ring-[#eab681]/45 focus:shadow-[0_0_12px_rgb(234_182_129_/_25%)]"
                                         aria-label="Contact email"
                                     />
                                 </label>
                                 <label className="block">
-                                    <span className="mb-1.5 block font-[Adamina] text-[0.72rem] uppercase tracking-[0.18em] text-[#f6d7b5]">Message</span>
+                                    <span className="mb-[max(0.375rem,1%)] block font-[Adamina] text-[clamp(0.65rem,1.5vw,0.72rem)] uppercase tracking-[0.18em] text-[#f6d7b5]">Message</span>
                                     <textarea
                                         name="message"
                                         rows={5}
@@ -389,13 +390,13 @@ function HelpCenter() {
                                         value={contactForm.message}
                                         onChange={handleContactChange}
                                         required
-                                        className="w-full resize-y rounded-[0.6rem] border border-[#eab681]/60 bg-[#fff7ee] px-3 py-2 font-[Cormorant_Garamond] text-[1rem] text-[#50300d] outline-none focus:border-[#f6d7b5] focus:ring-2 focus:ring-[#eab681]/45"
+                                        className="w-full resize-y rounded-[0.6rem] border border-[#eab681]/60 bg-[#fff7ee] px-[max(0.75rem,2%)] py-[max(0.5rem,1%)] font-[Cormorant_Garamond] text-[clamp(0.9rem,2vw,1rem)] text-[#50300d] outline-none interactive-transition hover:border-[#eab681]/80 focus:border-[#f6d7b5] focus:ring-2 focus:ring-[#eab681]/45 focus:shadow-[0_0_12px_rgb(234_182_129_/_25%)]"
                                         aria-label="Contact message"
                                     />
                                 </label>
                                 <button
                                     type="submit"
-                                    className="w-full rounded-full border border-[#eab681] bg-[#cf8d45] px-4 py-2.5 font-[Adamina] text-[0.95rem] text-[#fff4e7] shadow-[0_8px_18px_rgb(0_0_0_/_16%)] transition hover:-translate-y-px hover:bg-[#b97731] active:translate-y-px"
+                                    className="w-full rounded-full border border-[#eab681] bg-[#cf8d45] px-[max(1rem,3%)] py-[max(0.625rem,1.5%)] font-[Adamina] text-[clamp(0.85rem,1.8vw,0.95rem)] text-[#fff4e7] shadow-[0_8px_18px_rgb(0_0_0_/_16%)] interactive-transition hover:-translate-y-px hover:bg-[#b97731] hover:shadow-[0_12px_24px_rgb(0_0_0_/_24%)] active:translate-y-px active:shadow-[0_2px_6px_rgb(0_0_0_/_12%)]"
                                 >
                                     Send message
                                 </button>
@@ -410,7 +411,7 @@ function HelpCenter() {
                 <button
                     onClick={scrollToTop}
                     style={{ bottom: `${scrollBtnBottom}px` }}
-                    className="fixed right-8 flex h-12 w-12 items-center justify-center rounded-full border border-[#cf8d45] bg-[#5a392b] text-[#ffead4] shadow-[0_8px_24px_rgb(122_63_0_/_30%)] transition hover:bg-[#7a3f00] hover:-translate-y-1"
+                    className="fixed right-[max(2rem,5%)] flex h-[clamp(2.5rem,8vw,3rem)] w-[clamp(2.5rem,8vw,3rem)] items-center justify-center rounded-full border border-[#cf8d45] bg-[#5a392b] text-[#ffead4] shadow-[0_8px_24px_rgb(122_63_0_/_30%)] transition hover:bg-[#7a3f00] hover:-translate-y-1"
                     aria-label="Scroll to top"
                     title="Back to top"
                 >

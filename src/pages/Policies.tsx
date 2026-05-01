@@ -1,5 +1,7 @@
+import { useEffect, useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 import { useScrollToTop } from "../hooks/useScrollToTop";
+import paperBackground from "../assets/wrinkled-paper.png";
 
 type PolicySection = {
     heading: string;
@@ -168,41 +170,88 @@ function Policies() {
     const currentSlug = policySlug ?? "privacy";
     const policy = policies[currentSlug];
     const { showScrollTop, scrollToTop } = useScrollToTop();
+    const [scrollBtnBottom, setScrollBtnBottom] = useState(window.innerHeight * 0.02);
+
+    // Adjust scroll-to-top button so it doesn't overlap the footer
+    useEffect(() => {
+        function adjustScrollButton() {
+            const footer = document.querySelector("footer");
+            const baseBottom = window.innerHeight * 0.02;
+            if (!footer) {
+                setScrollBtnBottom(baseBottom);
+                return;
+            }
+
+            const rect = footer.getBoundingClientRect();
+            const overlap = Math.max(0, window.innerHeight - rect.top);
+            const padding = window.innerHeight * 0.01;
+            if (overlap > 0) {
+                setScrollBtnBottom(baseBottom + overlap + padding);
+            } else {
+                setScrollBtnBottom(baseBottom);
+            }
+        }
+
+        adjustScrollButton();
+        window.addEventListener("scroll", adjustScrollButton, { passive: true });
+        window.addEventListener("resize", adjustScrollButton);
+        return () => {
+            window.removeEventListener("scroll", adjustScrollButton);
+            window.removeEventListener("resize", adjustScrollButton);
+        };
+    }, []);
 
     if (!policy) {
         return <Navigate to="/policies/privacy" replace />;
     }
 
     return (
-        <section className="mx-auto w-full max-w-[1120px] px-5 py-10 text-[#50300d] sm:px-6 lg:px-8" aria-labelledby="policy-title">
-            <div className="grid overflow-hidden rounded-[0.9rem] bg-[#ffead4]/95 shadow-[0_18px_46px_rgb(80_48_13_/_20%)] lg:grid-cols-[17rem_minmax(0,1fr)]">
-                <aside className="bg-[#5a392b]/95 px-6 py-7 text-[#ffead4] lg:min-h-[34rem]">
-                    <p className="m-0 font-[Adamina] text-[0.68rem] uppercase tracking-[0.22em] text-[#f6d7b5]">TripJournal</p>
-                    <h2 className="mt-3 font-[Adamina] text-[1.75rem] leading-tight text-[#fff4e7]">Policy center</h2>
-                    <p className="mt-3 m-0 font-[Cormorant_Garamond] text-[1.08rem] leading-[1.32] text-[#f6d7b5]">
-                        Practical notes about privacy, cookies, terms, and accessibility.
-                    </p>
+        <section className="mx-auto w-full max-w-[min(95vw,1120px)] px-[max(1.25rem,5%)] py-[max(2rem,6vh)] text-[#50300d]" aria-labelledby="policy-title">
+            <div className="overflow-hidden rounded-[1.35rem] border border-[#8f5a20]/35 bg-[#ffead4]/95 shadow-[0_18px_42px_rgb(80_48_13_/_20%),inset_0_0_0_1px_rgb(255_244_231_/_55%)]">
+                <div
+                    className="relative min-h-[11rem] bg-[#5a392b] px-6 py-7 text-[#ffead4] sm:px-9"
+                    style={{ backgroundImage: `linear-gradient(rgb(90 57 43 / 0.9), rgb(90 57 43 / 0.9)), url(${paperBackground})`, backgroundSize: "cover" }}
+                >
+                    <div className="relative flex flex-wrap items-start justify-between gap-6">
+                        <div>
+                            <p className="m-0 font-[Adamina] text-[0.7rem] uppercase tracking-[0.24em] text-[#f6d7b5]">Legal information</p>
+                            <h1 id="policy-title" className="mt-3 font-[Adamina] text-[clamp(2.2rem,5vw,3.8rem)] leading-none text-[#fff4e7]">
+                                {policy.title}
+                            </h1>
+                            <p className="mt-4 max-w-[42rem] font-[Cormorant_Garamond] text-[1.25rem] leading-[1.35] text-[#f7dfca]">
+                                {policy.intro}
+                            </p>
+                        </div>
+                    </div>
+                </div>
 
-                    <nav className="mt-8 flex flex-col gap-1" aria-label="Policy pages">
-                        {policyLinks.map((link) => (
-                            <Link
-                                key={link.slug}
-                                to={`/policies/${link.slug}`}
-                                className={`px-0 py-2 font-[Adamina] text-[0.95rem] no-underline transition ${
-                                    link.slug === currentSlug
-                                        ? "text-[#fff4e7] underline underline-offset-[0.35em]"
-                                        : "text-[#f6d7b5] opacity-82 hover:text-[#fff4e7] hover:opacity-100"
-                                }`}
-                            >
-                                {link.label}
-                            </Link>
-                        ))}
-                    </nav>
-                </aside>
+                <div className="grid gap-7 px-6 py-7 sm:px-9 lg:grid-cols-[minmax(0,1fr)_20rem]">
+                    <aside>
+                        <h2 className="mt-3 font-[Adamina] text-[1.75rem] leading-tight text-[#fff4e7]">Policy center</h2>
+                        <p className="mt-3 m-0 font-[Cormorant_Garamond] text-[1.08rem] leading-[1.32] text-[#f6d7b5]">
+                            Practical notes about privacy, cookies, terms, and accessibility.
+                        </p>
+
+                        <nav className="mt-8 flex flex-col gap-1" aria-label="Policy pages">
+                            {policyLinks.map((link) => (
+                                <Link
+                                    key={link.slug}
+                                    to={`/policies/${link.slug}`}
+                                    className={`px-0 py-2 font-[Adamina] text-[0.95rem] no-underline transition ${
+                                        link.slug === currentSlug
+                                            ? "text-[#fff4e7] underline underline-offset-[0.35em]"
+                                            : "text-[#f6d7b5] opacity-82 hover:text-[#fff4e7] hover:opacity-100"
+                                        }`}
+                                >
+                                    {link.label}
+                                </Link>
+                            ))}
+                        </nav>
+                    </aside>
 
                 <article className="px-6 py-7 sm:px-9 sm:py-9">
                     <p className="m-0 font-[Adamina] text-[0.72rem] uppercase tracking-[0.2em] text-[#7a3f00]">Last updated {policy.updated}</p>
-                    <h1 id="policy-title" className="mt-3 max-w-[15ch] font-[Adamina] text-[clamp(2rem,5vw,3.35rem)] leading-tight text-[#50300d]">
+                    <h1 id="policy-title" className="mt-3 max-w-[15ch] font-[Adamina] text-[clamp(2.2rem,5vw,3.8rem)] leading-none text-[#50300d]">
                         {policy.title}
                     </h1>
                     <p className="mt-4 max-w-[70ch] font-[Cormorant_Garamond] text-[1.32rem] leading-[1.36] text-[#5a392b]">{policy.intro}</p>
@@ -229,12 +278,14 @@ function Policies() {
                     </div>
                 </article>
             </div>
+            </div>
 
             {/* Scroll to top button */}
             {showScrollTop && (
                 <button
                     onClick={scrollToTop}
-                    className="fixed bottom-8 right-8 flex h-12 w-12 items-center justify-center rounded-full border border-[#cf8d45] bg-[#5a392b] text-[#ffead4] shadow-[0_8px_24px_rgb(122_63_0_/_30%)] transition hover:bg-[#7a3f00] hover:-translate-y-1"
+                    style={{ bottom: `${scrollBtnBottom}px` }}
+                    className="fixed right-[max(2rem,5%)] flex h-[clamp(2.5rem,8vw,3rem)] w-[clamp(2.5rem,8vw,3rem)] items-center justify-center rounded-full border border-[#cf8d45] bg-[#5a392b] text-[#ffead4] shadow-[0_8px_24px_rgb(122_63_0_/_30%)] transition hover:bg-[#7a3f00] hover:-translate-y-1"
                     aria-label="Scroll to top"
                     title="Back to top"
                 >
