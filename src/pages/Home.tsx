@@ -497,7 +497,7 @@ function Home({ countryStatuses, setCountryStatus, visitedCountries }: HomeProps
                     {/* Top section - Darker brown (5A392B) */}
                     <div
                         className="bg-[#5a392b] px-6 py-5 sm:px-8"
-                        style={{ backgroundImage: `linear-gradient(rgb(90 57 43 / 0.95), rgb(90 57 43 / 0.95)), url(${paperBackground})`, backgroundSize: "cover" }}
+                        style={{ backgroundImage: `linear-gradient(rgb(90 57 43), rgb(90 57 43)), url(${paperBackground})`, backgroundSize: "cover" }}
                     >
                         <p className="font-[Adamina] text-[0.7rem] uppercase tracking-[0.24em] text-[#f6d7b5]">Complete directory</p>
                         <h2 className="mt-2 font-[Adamina] text-[clamp(1.8rem,4vw,2.5rem)] leading-none text-[#fff4e7]">All Countries</h2>
@@ -574,7 +574,7 @@ function Home({ countryStatuses, setCountryStatus, visitedCountries }: HomeProps
                     </div>
 
                     {/* Bottom section - Countries list */}
-                    <div className="bg-[#7A3F00]/80 p-6">
+                    <div className="bg-[#5a392b]/95 p-6">
                         {isLoading || !countriesData ? (
                             <div className="text-center font-[Cormorant_Garamond] text-[1.1rem] text-[#6a4630]">Loading countries...</div>
                         ) : (
