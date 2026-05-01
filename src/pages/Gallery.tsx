@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import CircularGallery from '../components/CircularGallery';
 import { useScrollToTop } from '../hooks/useScrollToTop';
+import paperBackground from '../assets/wrinkled-paper.png';
 
 interface GalleryItem {
     image: string;
@@ -34,6 +35,36 @@ function Gallery() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedIndex, setSelectedIndex] = useState(0);
     const { showScrollTop, scrollToTop } = useScrollToTop();
+    const [scrollBtnBottom, setScrollBtnBottom] = useState(window.innerHeight * 0.02);
+
+    // Adjust scroll-to-top button so it doesn't overlap the footer
+    useEffect(() => {
+        function adjustScrollButton() {
+            const footer = document.querySelector("footer");
+            const baseBottom = window.innerHeight * 0.02;
+            if (!footer) {
+                setScrollBtnBottom(baseBottom);
+                return;
+            }
+
+            const rect = footer.getBoundingClientRect();
+            const overlap = Math.max(0, window.innerHeight - rect.top);
+            const padding = window.innerHeight * 0.01;
+            if (overlap > 0) {
+                setScrollBtnBottom(baseBottom + overlap + padding);
+            } else {
+                setScrollBtnBottom(baseBottom);
+            }
+        }
+
+        adjustScrollButton();
+        window.addEventListener("scroll", adjustScrollButton, { passive: true });
+        window.addEventListener("resize", adjustScrollButton);
+        return () => {
+            window.removeEventListener("scroll", adjustScrollButton);
+            window.removeEventListener("resize", adjustScrollButton);
+        };
+    }, []);
 
     const handleItemClick = (item: GalleryItem) => {
         const index = galleryItems.findIndex(i => i.image === item.image);
@@ -54,28 +85,43 @@ function Gallery() {
     };
 
     return (
-        <section className="flex min-h-[calc(100svh-8.75rem)] w-full max-w-none flex-col overflow-x-hidden py-[3vh] sm:py-[4vh]" aria-label="Gallery page">
-            <div className="mx-auto w-full max-w-[92vw] px-[4vw] sm:max-w-[88vw] sm:px-[3vw] lg:max-w-[84vw] lg:px-[2vw]">
-                <p className="font-[Adamina] text-[clamp(0.68rem,1.15vw,0.85rem)] uppercase tracking-[0.28em] text-[#7a3f00]">
-                    Temporary gallery
-                </p>
-                <h2 className="mt-[0.8vh] font-[Adamina] text-[clamp(2.2rem,5.2vw,3.6rem)] leading-none text-[#5a392b]">
-                    Gallery
-                </h2>
+        <section className="flex min-h-[calc(100svh-8.75rem)] w-full max-w-none flex-col overflow-x-hidden" aria-label="Gallery page">
+            <div
+                className="overflow-hidden rounded-none border-none bg-[#ffead4]/95 shadow-none"
+                style={{ backgroundImage: `linear-gradient(rgb(255 234 212 / 0.9), rgb(255 234 212 / 0.9)), url(${paperBackground})`, backgroundSize: "cover" }}
+            >
+                <div
+                    className="relative min-h-[11rem] bg-[#5a392b] px-6 py-7 text-[#ffead4] sm:px-9"
+                    style={{ backgroundImage: `linear-gradient(rgb(90 57 43 / 0.9), rgb(90 57 43 / 0.9)), url(${paperBackground})`, backgroundSize: "cover" }}
+                >
+                    <div className="relative flex flex-wrap items-start justify-between gap-6">
+                        <div>
+                            <p className="m-0 font-[Adamina] text-[0.7rem] uppercase tracking-[0.24em] text-[#f6d7b5]">Travel moments</p>
+                            <h1 className="mt-3 font-[Adamina] text-[clamp(2.2rem,5vw,3.8rem)] leading-none text-[#fff4e7]">
+                                Gallery
+                            </h1>
+                            <p className="mt-4 max-w-[42rem] font-[Cormorant_Garamond] text-[1.25rem] leading-[1.35] text-[#f7dfca]">
+                                Explore your travel photographs and moments from around the world.
+                            </p>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div className="group relative mx-auto mt-[3vh] h-[clamp(19rem,60svh,44rem)] w-[100vw] max-w-[100vw] overflow-hidden sm:h-[clamp(22rem,64svh,48rem)] lg:w-[96vw] lg:max-w-[96vw]">
-                <div className="h-full w-full origin-center transform-gpu transition-transform duration-300 sm:group-hover:scale-[1.01]">
-                    <CircularGallery
-                        items={galleryItems}
-                        bend={1.1}
-                        textColor="#ffead4"
-                        borderRadius={0.05}
-                        scrollSpeed={1.35}
-                        scrollEase={0.06}
-                        font="bold clamp(1rem,2.4vw,1.75rem) Adamina"
-                        onItemClick={handleItemClick}
-                    />
+            <div className="flex flex-1 flex-col">
+                <div className="group relative mx-auto h-[clamp(19rem,60svh,44rem)] w-[100vw] max-w-[100vw] overflow-hidden sm:h-[clamp(22rem,64svh,48rem)] lg:w-[96vw] lg:max-w-[96vw]">
+                    <div className="h-full w-full origin-center transform-gpu transition-transform duration-300 sm:group-hover:scale-[1.01]">
+                        <CircularGallery
+                            items={galleryItems}
+                            bend={1.1}
+                            textColor="#ffead4"
+                            borderRadius={0.05}
+                            scrollSpeed={1.35}
+                            scrollEase={0.06}
+                            font="bold clamp(1rem,2.4vw,1.75rem) Adamina"
+                            onItemClick={handleItemClick}
+                        />
+                    </div>
                 </div>
             </div>
 
@@ -133,7 +179,8 @@ function Gallery() {
             {showScrollTop && (
                 <button
                     onClick={scrollToTop}
-                    className="fixed bottom-8 right-8 flex h-12 w-12 items-center justify-center rounded-full border border-[#cf8d45] bg-[#5a392b] text-[#ffead4] shadow-[0_8px_24px_rgb(122_63_0_/_30%)] transition hover:bg-[#7a3f00] hover:-translate-y-1"
+                    style={{ bottom: `${scrollBtnBottom}px` }}
+                    className="fixed right-[max(2rem,5%)] flex h-[clamp(2.5rem,8vw,3rem)] w-[clamp(2.5rem,8vw,3rem)] items-center justify-center rounded-full border border-[#cf8d45] bg-[#5a392b] text-[#ffead4] shadow-[0_8px_24px_rgb(122_63_0_/_30%)] transition hover:bg-[#7a3f00] hover:-translate-y-1"
                     aria-label="Scroll to top"
                     title="Back to top"
                 >

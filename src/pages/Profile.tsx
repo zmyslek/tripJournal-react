@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import type { ChangeEvent } from "react";
 import { Link } from "react-router-dom";
 import { useScrollToTop } from "../hooks/useScrollToTop";
@@ -71,8 +71,36 @@ function Profile() {
     const [profile, setProfile] = useState<ProfileForm>(() => getCachedProfile());
     const [draftProfile, setDraftProfile] = useState<ProfileForm>(() => getCachedProfile());
     const [isEditing, setIsEditing] = useState(false);
-    const { showScrollTop, scrollToTop } = useScrollToTop();
+    const { showScrollTop, scrollToTop } = useScrollToTop();    const [scrollBtnBottom, setScrollBtnBottom] = useState(window.innerHeight * 0.02);
 
+    // Adjust scroll-to-top button so it doesn't overlap the footer
+    useEffect(() => {
+        function adjustScrollButton() {
+            const footer = document.querySelector("footer");
+            const baseBottom = window.innerHeight * 0.02;
+            if (!footer) {
+                setScrollBtnBottom(baseBottom);
+                return;
+            }
+
+            const rect = footer.getBoundingClientRect();
+            const overlap = Math.max(0, window.innerHeight - rect.top);
+            const padding = window.innerHeight * 0.01;
+            if (overlap > 0) {
+                setScrollBtnBottom(baseBottom + overlap + padding);
+            } else {
+                setScrollBtnBottom(baseBottom);
+            }
+        }
+
+        adjustScrollButton();
+        window.addEventListener("scroll", adjustScrollButton, { passive: true });
+        window.addEventListener("resize", adjustScrollButton);
+        return () => {
+            window.removeEventListener("scroll", adjustScrollButton);
+            window.removeEventListener("resize", adjustScrollButton);
+        };
+    }, []);
     const initials = useMemo(() => {
         return profile.name
             .split(" ")
@@ -120,13 +148,13 @@ function Profile() {
     };
 
     return (
-        <section className="mx-auto w-full max-w-[1380px] px-5 py-8 text-[#50300d] sm:px-6 lg:px-8" aria-labelledby="profile-title">
+        <section className="mx-auto w-full max-w-[min(95vw,1380px)] px-[max(1.25rem,5%)] py-[max(2rem,6vh)] text-[#50300d]" aria-labelledby="profile-title">
             <div
-                className="overflow-hidden rounded-[1.35rem] border border-[#8f5a20]/35 bg-[#ffead4]/95 shadow-[0_18px_42px_rgb(80_48_13_/_20%),inset_0_0_0_1px_rgb(255_244_231_/_55%)]"
+                className="overflow-hidden rounded-[1.35rem] border border-[#8f5a20]/35 bg-[#ffead4]/95 shadow-[0_18px_42px_rgb(80_48_13_/_20%),inset_0_0_0_1px_rgb(255_244_231_/_55%)] transition-all"
                 style={{ backgroundImage: `linear-gradient(rgb(255 234 212 / 0.9), rgb(255 234 212 / 0.9)), url(${paperBackground})`, backgroundSize: "cover" }}
             >
                 <div
-                    className="relative min-h-[11rem] rounded-b-[2.4rem] bg-[#5a392b] px-6 py-7 text-[#ffead4] sm:px-9"
+                    className="relative min-h-[11rem] bg-[#5a392b] px-6 py-7 text-[#ffead4] sm:px-9"
                     style={{ backgroundImage: `linear-gradient(rgb(90 57 43 / 0.9), rgb(90 57 43 / 0.9)), url(${paperBackground})`, backgroundSize: "cover" }}
                 >
                     <div className="relative flex flex-wrap items-start justify-between gap-6">
@@ -139,7 +167,7 @@ function Profile() {
                                 A personal overview for the places you have visited, the routes you are planning, and the memories you keep coming back to.
                             </p>
                         </div>
-                        <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[#f6d7b5]/70 bg-[#cf8d45] font-[Adamina] text-[1.9rem] text-[#fff4e7]">
+                        <div className="flex h-40 w-40 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[#f6d7b5]/70 bg-[#cf8d45] font-[Adamina] text-[1.9rem] text-[#fff4e7]">
                             {profile.avatar ? <img src={profile.avatar} alt="" className="h-full w-full object-cover" /> : initials}
                         </div>
                     </div>
@@ -170,7 +198,7 @@ function Profile() {
 
                         <div className="mt-7 grid gap-3 sm:grid-cols-3">
                             {profileStats.map((stat) => (
-                                <article key={stat.label} className="rounded-[0.9rem] border border-[#cf8d45]/35 bg-[#fff4e7]/72 p-4 shadow-[inset_0_0_16px_rgb(143_90_32_/_7%)]">
+                                <article key={stat.label} className="rounded-[0.9rem] border border-[#cf8d45]/35 bg-[#fff4e7]/72 p-4 shadow-[inset_0_0_16px_rgb(143_90_32_/_7%)] interactive-transition hover:shadow-[inset_0_0_16px_rgb(143_90_32_/_12%),0_4px_12px_rgb(122_63_0_/_15%)] hover:-translate-y-0.5">
                                     <p className="font-[Adamina] text-[0.72rem] uppercase tracking-[0.18em] text-[#7a3f00]">{stat.label}</p>
                                     <p className="mt-2 font-[Adamina] text-[2rem] leading-none text-[#50300d]">{stat.value}</p>
                                 </article>
@@ -178,16 +206,16 @@ function Profile() {
                         </div>
                     </div>
 
-                    <aside className="flex flex-col gap-3 rounded-[1rem] border border-[#cf8d45]/35 bg-[#fff4e7]/52 p-4 shadow-[inset_0_0_24px_rgb(143_90_32_/_8%)]">
+                    <aside className="flex flex-col gap-3 rounded-[1rem] p-4">
                         <Link
                             to="/help-center"
-                            className="rounded-full border border-[#cf8d45] bg-[#fff7ee] px-4 py-2.5 text-center font-[Adamina] text-[0.92rem] text-[#50300d] no-underline transition hover:-translate-y-px hover:bg-[#f6dfc1]"
+                            className="rounded-full border border-[#cf8d45] bg-[#fff7ee] px-4 py-2.5 text-center font-[Adamina] text-[0.92rem] text-[#50300d] no-underline interactive-transition hover:-translate-y-px hover:bg-[#f6dfc1] hover:shadow-[0_4px_12px_rgb(122_63_0_/_15%)]"
                         >
                             Help center
                         </Link>
                         <button
                             type="button"
-                            className="rounded-full border border-[#7a3f00] bg-[#5a392b] px-4 py-2.5 font-[Adamina] text-[0.92rem] text-[#ffead4] transition hover:-translate-y-px hover:bg-[#7a3f00]"
+                            className="rounded-full border border-[#7a3f00] bg-[#5a392b] px-4 py-2.5 font-[Adamina] text-[0.92rem] text-[#ffead4] interactive-transition hover:-translate-y-px hover:bg-[#7a3f00] hover:shadow-[0_4px_12px_rgb(122_63_0_/_20%)] active:translate-y-px"
                             onClick={openEditor}
                         >
                             Edit profile
@@ -226,7 +254,7 @@ function Profile() {
                                         <button
                                             key={avatar.id}
                                             type="button"
-                                            className={`overflow-hidden rounded-full border bg-[#fff4e7] p-1 transition hover:-translate-y-px ${draftProfile.avatar === avatar.src ? "border-[#7a3f00] ring-2 ring-[#cf8d45]" : "border-[#cf8d45]/45"}`}
+                                            className={`overflow-hidden rounded-full border bg-[#fff4e7] p-1 interactive-transition hover:-translate-y-px hover:shadow-[0_4px_12px_rgb(122_63_0_/_20%)] ${draftProfile.avatar === avatar.src ? "border-[#7a3f00] ring-2 ring-[#cf8d45] shadow-[0_0_8px_rgb(199_141_69_/_30%)]" : "border-[#cf8d45]/45 hover:border-[#cf8d45]/70"}`}
                                             onClick={() => updateDraft("avatar", avatar.src)}
                                             aria-label={`Use ${avatar.label} avatar`}
                                         >
@@ -247,21 +275,21 @@ function Profile() {
                                 </label>
                                 <label className="block">
                                     <span className="mb-1.5 block font-[Adamina] text-[0.72rem] uppercase tracking-[0.18em] text-[#7a3f00]">Email</span>
-                                    <input type="email" value={draftProfile.email} onChange={(event) => updateDraft("email", event.target.value)} className="w-full rounded-[0.7rem] border border-[#cf8d45]/55 bg-[#fff7ee] px-3 py-2 font-[Cormorant_Garamond] text-[1.1rem] text-[#50300d] outline-none focus:border-[#7a3f00] focus:ring-2 focus:ring-[#cf8d45]/35" />
+                                    <input type="email" value={draftProfile.email} onChange={(event) => updateDraft("email", event.target.value)} className="w-full rounded-[0.7rem] border border-[#cf8d45]/55 bg-[#fff7ee] px-3 py-2 font-[Cormorant_Garamond] text-[1.1rem] text-[#50300d] outline-none interactive-transition hover:border-[#cf8d45]/70 focus:border-[#7a3f00] focus:ring-2 focus:ring-[#cf8d45]/35 focus:shadow-[0_0_8px_rgb(199_141_69_/_20%)]" />
                                 </label>
                                 <label className="block">
                                     <span className="mb-1.5 block font-[Adamina] text-[0.72rem] uppercase tracking-[0.18em] text-[#7a3f00]">Favorite travel style</span>
-                                    <input value={draftProfile.travelStyle} onChange={(event) => updateDraft("travelStyle", event.target.value)} className="w-full rounded-[0.7rem] border border-[#cf8d45]/55 bg-[#fff7ee] px-3 py-2 font-[Cormorant_Garamond] text-[1.1rem] text-[#50300d] outline-none focus:border-[#7a3f00] focus:ring-2 focus:ring-[#cf8d45]/35" />
+                                    <input value={draftProfile.travelStyle} onChange={(event) => updateDraft("travelStyle", event.target.value)} className="w-full rounded-[0.7rem] border border-[#cf8d45]/55 bg-[#fff7ee] px-3 py-2 font-[Cormorant_Garamond] text-[1.1rem] text-[#50300d] outline-none interactive-transition hover:border-[#cf8d45]/70 focus:border-[#7a3f00] focus:ring-2 focus:ring-[#cf8d45]/35 focus:shadow-[0_0_8px_rgb(199_141_69_/_20%)]" />
                                 </label>
                                 <label className="block">
                                     <span className="mb-1.5 block font-[Adamina] text-[0.72rem] uppercase tracking-[0.18em] text-[#7a3f00]">Current focus</span>
-                                    <input value={draftProfile.currentFocus} onChange={(event) => updateDraft("currentFocus", event.target.value)} className="w-full rounded-[0.7rem] border border-[#cf8d45]/55 bg-[#fff7ee] px-3 py-2 font-[Cormorant_Garamond] text-[1.1rem] text-[#50300d] outline-none focus:border-[#7a3f00] focus:ring-2 focus:ring-[#cf8d45]/35" />
+                                    <input value={draftProfile.currentFocus} onChange={(event) => updateDraft("currentFocus", event.target.value)} className="w-full rounded-[0.7rem] border border-[#cf8d45]/55 bg-[#fff7ee] px-3 py-2 font-[Cormorant_Garamond] text-[1.1rem] text-[#50300d] outline-none interactive-transition hover:border-[#cf8d45]/70 focus:border-[#7a3f00] focus:ring-2 focus:ring-[#cf8d45]/35 focus:shadow-[0_0_8px_rgb(199_141_69_/_20%)]" />
                                 </label>
                                 <div className="flex flex-wrap justify-end gap-3 pt-2">
-                                    <button type="button" className="rounded-full border border-[#cf8d45] bg-[#fff7ee] px-5 py-2.5 font-[Adamina] text-[0.92rem] text-[#50300d]" onClick={() => setIsEditing(false)}>
+                                    <button type="button" className="rounded-full border border-[#cf8d45] bg-[#fff7ee] px-5 py-2.5 font-[Adamina] text-[0.92rem] text-[#50300d] interactive-transition hover:-translate-y-px hover:bg-[#f6dfc1] hover:shadow-[0_4px_12px_rgb(122_63_0_/_15%)] active:translate-y-px" onClick={() => setIsEditing(false)}>
                                         Cancel
                                     </button>
-                                    <button type="submit" className="rounded-full border border-[#7a3f00] bg-[#5a392b] px-5 py-2.5 font-[Adamina] text-[0.92rem] text-[#ffead4]">
+                                    <button type="submit" className="rounded-full border border-[#7a3f00] bg-[#5a392b] px-5 py-2.5 font-[Adamina] text-[0.92rem] text-[#ffead4] interactive-transition hover:-translate-y-px hover:bg-[#7a3f00] hover:shadow-[0_4px_12px_rgb(122_63_0_/_20%)] active:translate-y-px">
                                         Save profile
                                     </button>
                                 </div>
@@ -275,7 +303,8 @@ function Profile() {
             {showScrollTop && (
                 <button
                     onClick={scrollToTop}
-                    className="fixed bottom-8 right-8 flex h-12 w-12 items-center justify-center rounded-full border border-[#cf8d45] bg-[#5a392b] text-[#ffead4] shadow-[0_8px_24px_rgb(122_63_0_/_30%)] transition hover:bg-[#7a3f00] hover:-translate-y-1"
+                    style={{ bottom: `${scrollBtnBottom}px` }}
+                    className="fixed right-[max(2rem,5%)] flex h-[clamp(2.5rem,8vw,3rem)] w-[clamp(2.5rem,8vw,3rem)] items-center justify-center rounded-full border border-[#cf8d45] bg-[#5a392b] text-[#ffead4] shadow-[0_8px_24px_rgb(122_63_0_/_30%)] transition hover:bg-[#7a3f00] hover:-translate-y-1"
                     aria-label="Scroll to top"
                     title="Back to top"
                 >

@@ -23,3 +23,136 @@ body {
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(1rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-1rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-1rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(1rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-0.5rem);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes shimmer {
+  0%, 100% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+@layer utilities {
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-out;
+  }
+  .animate-slide-in-up {
+    animation: slideInUp 0.6s ease-out;
+  }
+  .animate-slide-in-down {
+    animation: slideInDown 0.6s ease-out;
+  }
+  .animate-slide-in-left {
+    animation: slideInLeft 0.6s ease-out;
+  }
+  .animate-slide-in-right {
+    animation: slideInRight 0.6s ease-out;
+  }
+  .animate-bounce-subtle {
+    animation: bounce 2s infinite;
+  }
+  .animate-pulse-subtle {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  .transition-hover {
+    @apply transition-all duration-300 ease-out;
+  }
+  .hover-lift {
+    @apply hover:-translate-y-1 hover:shadow-lg;
+  }
+
+  /* Interactive element transitions */
+  .interactive-transition {
+    @apply transition-all duration-200 ease-out;
+  }
+
+  /* Button and card hover effects */
+  .btn-hover-effect {
+    @apply transition-all duration-250 ease-out hover:scale-105 active:scale-95;
+  }
+
+  .card-hover-effect {
+    @apply transition-all duration-300 ease-out hover:shadow-[0_12px_32px_rgb(122_63_0_/_25%)] hover:-translate-y-1;
+  }
+
+  .subtle-glow {
+    @apply transition-shadow duration-300 ease-out;
+  }
+
+  .subtle-glow:hover {
+    box-shadow: 0 0 20px rgba(199, 141, 69, 0.3);
+  }
+}
