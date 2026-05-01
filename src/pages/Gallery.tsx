@@ -7,9 +7,8 @@ interface GalleryItem {
 }
 
 const galleryImageModules = import.meta.glob('../assets/temporary-gallery/*.{jpeg,jpg,png,webp}', {
-    eager: true,
-    import: 'default'
-}) as Record<string, string>;
+    eager: true
+}) as Record<string, { default: string }>;
 
 function shuffle<T>(items: T[]): T[] {
     const copy = [...items];
@@ -24,8 +23,8 @@ function shuffle<T>(items: T[]): T[] {
 const galleryItems: GalleryItem[] = shuffle(
     Object.entries(galleryImageModules)
         .sort(([pathA], [pathB]) => pathA.localeCompare(pathB))
-        .map(([, image]) => ({
-            image,
+        .map(([, moduleData]) => ({
+            image: moduleData.default,
             text: ''
         }))
 );
@@ -76,14 +75,13 @@ function Gallery() {
                         scrollEase={0.055}
                         font="bold 28px Adamina"
                         onItemClick={handleItemClick}
-                        paused={isModalOpen}
                     />
                 </div>
             </div>
 
             {isModalOpen && (
                 <div
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-[#5a392b]/35 p-4 backdrop-blur-sm"
                     onClick={handleCloseModal}
                 >
                     <div
@@ -98,7 +96,7 @@ function Gallery() {
 
                         <button
                             onClick={handleCloseModal}
-                            className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-white transition-all hover:bg-black/75"
+                            className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-[#5a392b]/55 text-[#ffead4] transition-all hover:bg-[#5a392b]/80"
                             aria-label="Close modal"
                         >
                             x
@@ -106,7 +104,7 @@ function Gallery() {
 
                         <button
                             onClick={handlePrevious}
-                            className="absolute left-4 top-1/2 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-black/50 text-white transition-all hover:bg-black/75"
+                            className="absolute left-4 top-1/2 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-[#5a392b]/55 text-[#ffead4] transition-all hover:bg-[#5a392b]/80"
                             aria-label="Previous image"
                         >
                             &lt;
@@ -114,13 +112,13 @@ function Gallery() {
 
                         <button
                             onClick={handleNext}
-                            className="absolute right-4 top-1/2 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-black/50 text-white transition-all hover:bg-black/75"
+                            className="absolute right-4 top-1/2 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-[#5a392b]/55 text-[#ffead4] transition-all hover:bg-[#5a392b]/80"
                             aria-label="Next image"
                         >
                             &gt;
                         </button>
 
-                        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-black/50 px-4 py-2 text-sm text-white">
+                        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-[#5a392b]/55 px-4 py-2 text-sm text-[#ffead4]">
                             {selectedIndex + 1} / {galleryItems.length}
                         </div>
                     </div>
