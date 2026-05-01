@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import CircularGallery from '../components/CircularGallery';
+import { useScrollToTop } from '../hooks/useScrollToTop';
 
 interface GalleryItem {
     image: string;
@@ -32,6 +33,7 @@ const galleryItems: GalleryItem[] = shuffle(
 function Gallery() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedIndex, setSelectedIndex] = useState(0);
+    const { showScrollTop, scrollToTop } = useScrollToTop();
 
     const handleItemClick = (item: GalleryItem) => {
         const index = galleryItems.findIndex(i => i.image === item.image);
@@ -125,6 +127,18 @@ function Gallery() {
                         </div>
                     </div>
                 </div>
+            )}
+
+            {/* Scroll to top button */}
+            {showScrollTop && (
+                <button
+                    onClick={scrollToTop}
+                    className="fixed bottom-8 right-8 flex h-12 w-12 items-center justify-center rounded-full border border-[#cf8d45] bg-[#5a392b] text-[#ffead4] shadow-[0_8px_24px_rgb(122_63_0_/_30%)] transition hover:bg-[#7a3f00] hover:-translate-y-1"
+                    aria-label="Scroll to top"
+                    title="Back to top"
+                >
+                    <span className="text-xl">↑</span>
+                </button>
             )}
         </section>
     );

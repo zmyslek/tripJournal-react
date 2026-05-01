@@ -20,7 +20,7 @@ export const helpFaqSections: HelpFaqSection[] = [
             {
                 id: "save-map",
                 question: "How does TripJournal save my map?",
-                answer: "Country statuses are saved in this browser using local storage. If you return on the same device and browser, your visited and wishlist countries should still be there."
+                answer: "If you are logged in, your country statuses are saved to your account and will appear on any device you sign in from. If you are not logged in, they are saved in this browser using local storage only."
             },
             {
                 id: "change-status",
@@ -66,13 +66,43 @@ export const helpFaqSections: HelpFaqSection[] = [
                 id: "map-accuracy",
                 question: "Are the country borders and names official travel guidance?",
                 answer: "No. The map is for journaling and planning only. Do not rely on it for border, visa, legal, safety, or emergency decisions."
+            },
+            {
+                id: "sync-across-devices",
+                question: "Will my country data sync across devices?",
+                answer: "Yes, once you are logged in. Your country statuses are tied to your account and will appear on any device or browser you sign into. Without an account, data stays in local storage on that device only."
+            },
+            {
+                id: "export-countries",
+                question: "Can I export my visited countries list?",
+                answer: "Not yet, but exporting your country list as a file or shareable format is planned for a future update."
+            },
+            {
+                id: "region-territories",
+                question: "Does TripJournal include territories and regions?",
+                answer: "The map focuses on internationally recognized countries. Some dependent territories are included based on the map data source, but not all regions are separately countable."
+            },
+            {
+                id: "country-name-dispute",
+                question: "Why is a country named differently on your map?",
+                answer: "TripJournal uses country names from its map data source. Names may vary for disputed regions or territories. The app is for personal journaling and not a source of official geopolitical claims."
+            },
+            {
+                id: "visited-definition",
+                question: "What counts as 'visited'?",
+                answer: "That is up to you. Some travelers mark a layover as visited, while others only mark places where they spent time. Use the status that matches your personal travel definition."
+            },
+            {
+                id: "time-tracking",
+                question: "Can I track how long I spent in each country?",
+                answer: "Not built-in yet, but you can add that detail to your country notes. If you log each visit date in your notes, you can review your travel timeline from there."
             }
         ]
     },
     {
         id: "gallery",
         title: "Gallery",
-        description: "Opening, browsing, and understanding the temporary travel gallery.",
+        description: "Opening, browsing, uploading, and managing your travel gallery.",
         faqs: [
             {
                 id: "gallery-open",
@@ -87,25 +117,75 @@ export const helpFaqSections: HelpFaqSection[] = [
             {
                 id: "gallery",
                 question: "Can I add my own gallery photos?",
-                answer: "The current gallery uses bundled placeholder travel photos. Uploads are not connected yet, but the page is structured so personal photos can be added later."
+                answer: "Yes. Once you are logged in, you can upload your own travel photos and they will appear in your personal gallery. The current placeholder photos are replaced once you start adding your own."
+            },
+            {
+                id: "photo-upload-limits",
+                question: "Is there a photo size or file type limit?",
+                answer: "Photos must be in JPG, PNG, or WEBP format. Individual files should be under 10MB for the best upload experience. Very large files may take longer to process depending on your connection."
+            },
+            {
+                id: "delete-photo",
+                question: "Can I delete a photo I uploaded?",
+                answer: "Yes. Open the photo in the gallery and use the delete option. Deleted photos are permanently removed from your account and cannot be recovered."
             },
             {
                 id: "gallery-captions",
-                question: "Why do the gallery photos not have captions yet?",
-                answer: "The gallery is currently using temporary bundled photos. Final captions can be added when the gallery content is replaced with real journal entries."
+                question: "Can I add captions or dates to my photos?",
+                answer: "Yes. When uploading a photo or editing an existing one, you can add a caption and a travel date. These appear with the photo in the gallery view."
+            },
+            {
+                id: "photos-private",
+                question: "Are my photos private?",
+                answer: "Yes. Your uploaded photos are only visible to you when you are logged in. TripJournal does not make your gallery public or share it with other users."
             },
             {
                 id: "photos-not-loading",
                 question: "Why are gallery photos slow to load?",
-                answer: "The temporary gallery uses full travel images, so slower connections may need a moment. The page still keeps each image bundled with the app."
+                answer: "Photo load times depend on your connection speed and the size of the images. If photos are consistently slow, try refreshing the page or checking your connection."
+            },
+            {
+                id: "gallery-editing",
+                question: "Can I edit a photo after uploading it?",
+                answer: "You can edit the caption and date associated with a photo. To make changes to the image itself (crop, rotate, filter), save your edits in another app first, then re-upload a new version."
+            },
+            {
+                id: "gallery-organizing",
+                question: "Can I organize photos by country or date?",
+                answer: "Photos are organized by upload date by default. You can also sort by country if you add location metadata to each photo when uploading."
+            },
+            {
+                id: "photo-storage-limit",
+                question: "How many photos can I store?",
+                answer: "Premium accounts can store up to 1,000 photos. Free accounts can store up to 100 photos. Contact support if you need a higher limit."
+            },
+            {
+                id: "download-photos",
+                question: "Can I download or backup my photos?",
+                answer: "Yes. You can download individual photos from the gallery view. Bulk download and automatic backup options are planned for a future update."
             }
         ]
     },
     {
         id: "profile",
         title: "Profile",
-        description: "Profile editing, avatar choices, uploads, and what is stored locally.",
+        description: "Account creation, profile editing, avatar choices, and cross-device sync.",
         faqs: [
+            {
+                id: "create-account",
+                question: "How do I create an account?",
+                answer: "Open the Profile page and choose Sign up. Enter your email and a password to create your account. You can also continue without an account and use TripJournal with local storage only."
+            },
+            {
+                id: "login-logout",
+                question: "How do I log in or log out?",
+                answer: "Use the Sign in button on the Profile page to log in with your email and password. To log out, open the Profile page and choose Sign out. Your data stays saved to your account."
+            },
+            {
+                id: "reset-password",
+                question: "How do I reset my password?",
+                answer: "On the Sign in page, choose Forgot password and enter your email address. You will receive a reset link. Follow the link to set a new password and sign back in."
+            },
             {
                 id: "edit-profile",
                 question: "How do I edit my profile information?",
@@ -114,22 +194,116 @@ export const helpFaqSections: HelpFaqSection[] = [
             {
                 id: "avatar-upload",
                 question: "Can I upload my own avatar?",
-                answer: "Yes. In Edit profile, choose Upload your own and select an image from your device. The uploaded image is previewed in the profile editor."
+                answer: "Yes. In Edit profile, choose Upload your own and select an image from your device. The uploaded image is saved to your account and will appear across devices."
             },
             {
                 id: "avatar-save",
                 question: "Will my uploaded avatar stay after I refresh?",
-                answer: "Yes for now. Profile details and uploaded avatar previews are saved in this browser's local storage until you clear site data."
+                answer: "Yes. If you are logged in, your avatar is saved to your account permanently. If you are not logged in, it is saved in local storage for that browser session only."
             },
             {
                 id: "different-device",
                 question: "Will my profile appear on another device?",
-                answer: "Not yet. Profile details are saved locally in this browser, so another phone, laptop, or browser will start with the default profile."
+                answer: "Yes, once you are logged in. Your profile details, avatar, country statuses, notes, and photos are all tied to your account and sync across any device you sign into."
+            },
+            {
+                id: "delete-account",
+                question: "Can I delete my account and all my data?",
+                answer: "Yes. Go to Profile, open account settings, and choose Delete account. This permanently removes your account, country statuses, notes, photos, and all other stored data. This action cannot be undone."
             },
             {
                 id: "profile-backend",
                 question: "Is there an account backend already?",
-                answer: "No. The profile editor is browser-side for now, which keeps it simple until a backend is added later."
+                answer: "Yes. TripJournal uses a backend to store your account, country data, notes, and photos securely. Local storage is only used as a fallback when you are not logged in."
+            }
+        ]
+    },
+    {
+        id: "notes",
+        title: "Notes & Journal",
+        description: "Adding, editing, and managing notes and journal entries for your travels.",
+        faqs: [
+            {
+                id: "add-note",
+                question: "How do I add a note to a country?",
+                answer: "Open a country from the map or the All Countries list and choose Add note. You can write free-form text, add a travel date, and attach photos to that entry."
+            },
+            {
+                id: "note-photos",
+                question: "Can I attach photos to a note?",
+                answer: "Yes. When creating or editing a note, use the attach photo option to link one or more photos from your gallery or upload new ones directly to that note."
+            },
+            {
+                id: "notes-private",
+                question: "Are my notes private?",
+                answer: "Yes. Your journal notes are only visible to you when you are logged in. They are never shared publicly or with other users."
+            },
+            {
+                id: "edit-delete-note",
+                question: "Can I edit or delete a note?",
+                answer: "Yes. Open the note from the country page or your journal and choose Edit to update it or Delete to remove it permanently. Deleted notes cannot be recovered."
+            },
+            {
+                id: "notes-offline",
+                question: "Can I write notes without an internet connection?",
+                answer: "TripJournal is not a full offline app yet. Notes require a connection to save to your account. Writing notes offline with local sync is planned for a future update."
+            },
+            {
+                id: "note-character-limit",
+                question: "Is there a character limit for notes?",
+                answer: "No hard limit, but very long notes may load more slowly. For best performance, keep individual notes under 10,000 characters."
+            },
+            {
+                id: "format-notes",
+                question: "Can I format my notes with bold, italic, or links?",
+                answer: "Basic formatting is not yet available. Notes are stored as plain text. Rich text formatting and inline media are planned for a future update."
+            },
+            {
+                id: "share-note",
+                question: "Can I share a note with others?",
+                answer: "Not yet. Your journal notes are private to your account. Sharing individual notes or diary entries is planned for a future update."
+            },
+            {
+                id: "note-reminder",
+                question: "Can I set reminders for notes?",
+                answer: "Reminders are not yet available. You can add reminders in your device's calendar if you want to revisit a specific country or note."
+            }
+        ]
+    },
+    {
+        id: "account-security",
+        title: "Account & Security",
+        description: "API keys, data encryption, account safety, and what is stored on our servers.",
+        faqs: [
+            {
+                id: "api-keys-storage",
+                question: "How do I store my API keys safely?",
+                answer: "API keys you save in TripJournal are stored encrypted in our database. They are never exposed in plain text and are only decrypted server-side when needed. Never share your TripJournal password with anyone."
+            },
+            {
+                id: "api-keys-visible",
+                question: "Who can see my API keys?",
+                answer: "Only you can access your stored API keys through your account. TripJournal staff do not have access to your decrypted keys. Keys are stored with encryption at rest."
+            },
+            {
+                id: "data-on-delete",
+                question: "What happens to my data if I delete my account?",
+                answer: "All your data is permanently deleted from our servers, including your profile, country statuses, notes, photos, and any stored API keys. This process is irreversible."
+            },
+            {
+                id: "data-encrypted",
+                question: "Is my data encrypted?",
+                answer: "Yes. All data is transmitted over HTTPS and sensitive fields such as API keys are encrypted at rest in the database. Your password is never stored in plain text."
+            },
+            {
+                id: "account-security-tips",
+                question: "How do I keep my account secure?",
+                answer: "Use a strong unique password for your TripJournal account, do not share your login with others, and sign out on shared devices. If you suspect unauthorized access, reset your password immediately."
+            },
+            {
+                id: "session-expiry",
+                question: "How long does my login session last?",
+                answer: "Your session stays active for a reasonable period of inactivity. On shared or public devices, always sign out manually after use to protect your account."
             }
         ]
     },
@@ -141,27 +315,27 @@ export const helpFaqSections: HelpFaqSection[] = [
             {
                 id: "location",
                 question: "Why did the app ask for my location?",
-                answer: "If you allow location access, TripJournal can mark the country you appear to be in as visited. Your coordinates are only used in the current session."
+                answer: "If you allow location access, TripJournal can mark the country you appear to be in as visited. Your coordinates are only used in the current session and are never stored on our servers."
             },
             {
                 id: "privacy",
                 question: "Is my travel list public?",
-                answer: "No. The current app does not publish profiles, galleries, or country lists. Your saved country statuses stay in local browser storage."
+                answer: "No. Your country statuses, notes, and gallery are private to your account. TripJournal does not publish or share any of your travel data with other users."
             },
             {
                 id: "cookie-notice",
                 question: "What happens when I accept or reject the cookie notice?",
-                answer: "TripJournal saves only that choice in local storage so the notice does not keep appearing. Rejecting it does not erase your country selections."
+                answer: "TripJournal saves only that choice in local storage so the notice does not keep appearing. Rejecting it does not erase your country selections or account data."
             },
             {
                 id: "reset",
                 question: "Can I reset my saved travel data?",
-                answer: "For now, reset saved choices by clearing this site's local storage in your browser settings. A built-in reset action can be added when account settings are expanded."
+                answer: "Yes. If you are logged in, you can reset your country statuses from your account settings. If you are using local storage only, clear this site's local storage from your browser settings."
             },
             {
                 id: "clear-browser-data",
                 question: "What data should I clear if something looks stuck?",
-                answer: "Clear this site's local storage in your browser settings. That can remove saved country statuses, profile details, cookie choice, and cached country outline data."
+                answer: "Clear this site's local storage in your browser settings. That can remove cached country statuses, profile details, cookie choice, and country outline data. Your account data on the server is not affected."
             },
             {
                 id: "policies",
@@ -188,17 +362,42 @@ export const helpFaqSections: HelpFaqSection[] = [
             {
                 id: "contact-form",
                 question: "Does the contact form send a real message?",
-                answer: "The contact form is a designed support area, but it is not connected to a backend yet. It can be wired to email or a support service later."
+                answer: "Yes. The contact form sends your message directly to our support team. You should receive a confirmation email after submitting. If you do not, check your spam folder or try again."
             },
             {
                 id: "offline-use",
                 question: "Can I use TripJournal offline?",
-                answer: "Some bundled pages and images may remain available after loading, but the app is not designed as a full offline app yet. Maps and fonts may need network access."
+                answer: "Some bundled pages and images may remain available after loading, but the app is not designed as a full offline app yet. Maps, photos, and notes require a network connection to load and save."
             },
             {
                 id: "changes-not-saving",
                 question: "Why are my changes not saving?",
-                answer: "Make sure local storage is enabled for this site. Private browsing modes, strict browser settings, or storage cleanup tools can remove saved app data."
+                answer: "If you are logged in, check your internet connection as changes need to reach our servers. If you are not logged in, make sure local storage is enabled for this site. Private browsing modes or strict browser settings can prevent saving."
+            },
+            {
+                id: "lost-data",
+                question: "I lost my country data after switching browsers. What happened?",
+                answer: "If you were not logged in, your data was stored in local storage which is specific to that browser. Log in to your account to access your data from any browser or device going forward."
+            },
+            {
+                id: "mobile-performance",
+                question: "Does TripJournal work well on mobile?",
+                answer: "Yes. TripJournal is optimized for mobile and tablet devices. If the map feels slow, try closing other apps or refreshing the page."
+            },
+            {
+                id: "pale-colors",
+                question: "Why do the colors on my screen look different?",
+                answer: "Your browser color profile or display settings may affect how TripJournal looks. Try adjusting your device's display settings. Different screens and devices may render colors slightly differently."
+            },
+            {
+                id: "report-bug",
+                question: "How do I report a bug?",
+                answer: "Use the contact form in the Help Center and describe what happened, what you expected, and which browser and device you are using. Our team will investigate and follow up with you."
+            },
+            {
+                id: "feature-request",
+                question: "Can I suggest a new feature?",
+                answer: "Yes. Use the contact form to send your feature idea to the team. Include why you think it would be useful. We review all suggestions carefully."
             }
         ]
     }

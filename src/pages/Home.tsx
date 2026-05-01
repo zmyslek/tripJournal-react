@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useCountriesData } from "../hooks/useCountriesData.ts";
+import { useScrollToTop } from "../hooks/useScrollToTop.ts";
 import { getCountryName, type CountriesGeoJson, type CountryFeature } from "../types/countries.ts";
 
 const Map = lazy(() => import("../components/Map.tsx"));
@@ -91,6 +92,7 @@ function Home({ countryStatuses, setCountryStatus, visitedCountries }: HomeProps
     const autoSelectedLocationKeyRef = useRef<string | null>(null);
     const hasRequestedGeolocationRef = useRef(false);
     const { countriesData, isLoading, error } = useCountriesData();
+    const { showScrollTop, scrollToTop } = useScrollToTop();
 
     useEffect(() => {
         if (hasRequestedGeolocationRef.current || !navigator.geolocation) {
@@ -545,6 +547,18 @@ function Home({ countryStatuses, setCountryStatus, visitedCountries }: HomeProps
                     </>
                 )}
             </section>
+
+            {/* Scroll to top button */}
+            {showScrollTop && (
+                <button
+                    onClick={scrollToTop}
+                    className="fixed bottom-8 right-8 flex h-12 w-12 items-center justify-center rounded-full border border-[#cf8d45] bg-[#5a392b] text-[#ffead4] shadow-[0_8px_24px_rgb(122_63_0_/_30%)] transition hover:bg-[#7a3f00] hover:-translate-y-1"
+                    aria-label="Scroll to top"
+                    title="Back to top"
+                >
+                    <span className="text-xl">↑</span>
+                </button>
+            )}
         </div>
     );
 }

@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import type { ChangeEvent } from "react";
 import { Link } from "react-router-dom";
+import { useScrollToTop } from "../hooks/useScrollToTop";
 import compassAvatar from "../assets/avatars/compass.png";
 import globeAvatar from "../assets/avatars/globe.png";
 import mountainsAvatar from "../assets/avatars/mountains.png";
@@ -70,6 +71,7 @@ function Profile() {
     const [profile, setProfile] = useState<ProfileForm>(() => getCachedProfile());
     const [draftProfile, setDraftProfile] = useState<ProfileForm>(() => getCachedProfile());
     const [isEditing, setIsEditing] = useState(false);
+    const { showScrollTop, scrollToTop } = useScrollToTop();
 
     const initials = useMemo(() => {
         return profile.name
@@ -267,6 +269,18 @@ function Profile() {
                         </div>
                     </div>
                 </div>
+            )}
+
+            {/* Scroll to top button */}
+            {showScrollTop && (
+                <button
+                    onClick={scrollToTop}
+                    className="fixed bottom-8 right-8 flex h-12 w-12 items-center justify-center rounded-full border border-[#cf8d45] bg-[#5a392b] text-[#ffead4] shadow-[0_8px_24px_rgb(122_63_0_/_30%)] transition hover:bg-[#7a3f00] hover:-translate-y-1"
+                    aria-label="Scroll to top"
+                    title="Back to top"
+                >
+                    <span className="text-xl">↑</span>
+                </button>
             )}
         </section>
     );
