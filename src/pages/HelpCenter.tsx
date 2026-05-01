@@ -12,7 +12,7 @@ function HelpCenter() {
     const [showRightArrow, setShowRightArrow] = useState(true);
     const categoriesContainerRef = useRef<HTMLDivElement>(null);
     const { showScrollTop, scrollToTop } = useScrollToTop();
-    const [scrollBtnBottom, setScrollBtnBottom] = useState(32);
+    const [scrollBtnBottom, setScrollBtnBottom] = useState(window.innerHeight * 0.02);
 
     // Create virtual "all categories" section
     const allCategoriesSection = useMemo(() => {
@@ -91,7 +91,7 @@ function HelpCenter() {
     useEffect(() => {
         function adjustScrollButton() {
             const footer = document.querySelector("footer");
-            const baseBottom = window.innerHeight * 0.02; // 2% of viewport height
+            const baseBottom = window.innerHeight * 0.02;
             if (!footer) {
                 setScrollBtnBottom(baseBottom);
                 return;
@@ -99,7 +99,7 @@ function HelpCenter() {
 
             const rect = footer.getBoundingClientRect();
             const overlap = Math.max(0, window.innerHeight - rect.top);
-            const padding = window.innerHeight * 0.01; // 1% of viewport height as padding
+            const padding = window.innerHeight * 0.01;
             if (overlap > 0) {
                 setScrollBtnBottom(baseBottom + overlap + padding);
             } else {
@@ -157,7 +157,7 @@ function HelpCenter() {
                 style={{ backgroundImage: `linear-gradient(rgb(255 234 212 / 0.9), rgb(255 234 212 / 0.9)), url(${paperBackground})`, backgroundSize: "cover" }}
             >
                 <div
-                    className="rounded-b-[2.4rem] bg-[#5a392b]/95 px-6 py-7 text-[#ffead4] sm:px-9"
+                    className="relative min-h-[11rem] bg-[#5a392b] px-6 py-7 text-[#ffead4] sm:px-9"
                     style={{ backgroundImage: `linear-gradient(rgb(90 57 43 / 0.9), rgb(90 57 43 / 0.9)), url(${paperBackground})`, backgroundSize: "cover" }}
                 >
                     <div className="relative flex flex-wrap items-start justify-between gap-6">
@@ -173,7 +173,7 @@ function HelpCenter() {
                     </div>
                 </div>
 
-                <div className="grid gap-[max(1.75rem,5%)] px-[max(1.5rem,6%)] py-[max(1.75rem,5%)] lg:grid-cols-[minmax(0,1fr)_min(20rem,22%)]">
+                <div className="grid gap-[max(1.75rem,2%)] px-[max(1rem,2%)] py-[max(1.75rem,5%)] lg:grid-cols-[1fr_auto]">
                     <div>
                         {/* Full-width search bar */}
                         <div className="mb-[max(1.5rem,4%)]">
@@ -256,7 +256,7 @@ function HelpCenter() {
                                     <button
                                         type="button"
                                         onClick={() => scrollCategories("right")}
-                                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#5A392B] text-[2rem] font-semibold text-[#5A392B] shadow-[0_0.75rem_1.6rem_rgba(0,0,0,0.32)] transition-all hover:border-[#ffead4]/85 hover:text-[#ffead4]hover:bg-[#5a392b]"
+                                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#5A392B] text-[2rem] font-semibold text-[#5A392B] shadow-[0_0.75rem_1.6rem_rgba(0,0,0,0.32)] transition-all hover:border-[#ffead4]/85 hover:text-[#ffead4] hover:bg-[#5a392b]"
                                         aria-label="Scroll categories right"
                                     >
                                         <span className="text-xl leading-none">›</span>
@@ -352,10 +352,10 @@ function HelpCenter() {
                     </div>
 
                     <aside className="flex justify-center lg:justify-end">
-                        <div className="sticky top-[max(6rem,15vh)] w-max max-w-[min(18rem,90vw)] rounded-[0.9rem] border border-[#7a3f00]/12 bg-[#5c3722] p-[max(1rem,3%)] text-[#ffead4] shadow-[inset_0_0_18px_rgb(0_0_0_/_10%)]">
-                            <p className="font-[Adamina] text-[clamp(0.65rem,1.5vw,0.72rem)] uppercase tracking-[0.22em] text-[#f6d7b5]\">Need more help?</p>
-                            <h2 className="mt-[max(0.5rem,1%)] font-[Adamina] text-[clamp(1rem,2.5vw,1.55rem)] leading-tight text-[#fff4e7]\">Contact support</h2>
-                            <p className="mt-[max(0.75rem,2%)] font-[Cormorant_Garamond] text-[clamp(0.9rem,2vw,1.1rem)] leading-[1.35] text-[#f7dfca]\">
+                        <div className="sticky top-[max(6rem,15vh)] w-[min(22rem,90vw)] h-100% max-h-[70vh] rounded-[0.9rem] border border-[#7a3f00]/12 bg-[#5c3722] p-[max(1rem,3%)] text-[#ffead4] shadow-[inset_0_0_18px_rgb(0_0_0_/_10%)]">
+                            <p className="font-[Adamina] text-[clamp(0.65rem,1.5vw,0.72rem)] uppercase tracking-[0.22em] text-[#f6d7b5]">Need more help?</p>
+                            <h2 className="mt-[max(0.5rem,1%)] font-[Adamina] text-[clamp(1rem,2.5vw,1.55rem)] leading-tight text-[#fff4e7]">Contact support</h2>
+                            <p className="mt-[max(0.75rem,2%)] font-[Cormorant_Garamond] text-[clamp(0.9rem,2vw,1.1rem)] leading-[1.35] text-[#f7dfca]">
                                 Send the team a note with what happened, where you saw it, and which browser you are using.
                             </p>
 
