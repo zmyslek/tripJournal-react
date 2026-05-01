@@ -40,9 +40,35 @@ const defaultProfile: ProfileForm = {
     avatar: compassAvatar
 };
 
+const PROFILE_CACHE_KEY = "tripjournal:profile:v1";
+
+function getCachedProfile(): ProfileForm {
+    try {
+        const cachedProfile = localStorage.getItem(PROFILE_CACHE_KEY);
+        if (!cachedProfile) {
+            return defaultProfile;
+        }
+
+        const parsedProfile = JSON.parse(cachedProfile);
+        if (!parsedProfile || typeof parsedProfile !== "object") {
+            return defaultProfile;
+        }
+
+        return {
+            name: typeof parsedProfile.name === "string" && parsedProfile.name.trim() ? parsedProfile.name : defaultProfile.name,
+            email: typeof parsedProfile.email === "string" && parsedProfile.email.trim() ? parsedProfile.email : defaultProfile.email,
+            travelStyle: typeof parsedProfile.travelStyle === "string" && parsedProfile.travelStyle.trim() ? parsedProfile.travelStyle : defaultProfile.travelStyle,
+            currentFocus: typeof parsedProfile.currentFocus === "string" && parsedProfile.currentFocus.trim() ? parsedProfile.currentFocus : defaultProfile.currentFocus,
+            avatar: typeof parsedProfile.avatar === "string" && parsedProfile.avatar.trim() ? parsedProfile.avatar : defaultProfile.avatar
+        };
+    } catch {
+        return defaultProfile;
+    }
+}
+
 function Profile() {
-    const [profile, setProfile] = useState<ProfileForm>(defaultProfile);
-    const [draftProfile, setDraftProfile] = useState<ProfileForm>(defaultProfile);
+    const [profile, setProfile] = useState<ProfileForm>(() => getCachedProfile());
+    const [draftProfile, setDraftProfile] = useState<ProfileForm>(() => getCachedProfile());
     const [isEditing, setIsEditing] = useState(false);
 
     const initials = useMemo(() => {
@@ -83,6 +109,11 @@ function Profile() {
 
     const saveProfile = () => {
         setProfile(draftProfile);
+        try {
+            localStorage.setItem(PROFILE_CACHE_KEY, JSON.stringify(draftProfile));
+        } catch {
+            // Ignore profile cache write failures.
+        }
         setIsEditing(false);
     };
 
@@ -92,8 +123,10 @@ function Profile() {
                 className="overflow-hidden rounded-[1.35rem] border border-[#8f5a20]/35 bg-[#ffead4]/95 shadow-[0_18px_42px_rgb(80_48_13_/_20%),inset_0_0_0_1px_rgb(255_244_231_/_55%)]"
                 style={{ backgroundImage: `linear-gradient(rgb(255 234 212 / 0.9), rgb(255 234 212 / 0.9)), url(${paperBackground})`, backgroundSize: "cover" }}
             >
-                <div className="relative min-h-[11rem] rounded-b-[2.4rem] bg-[#5a392b] px-6 py-7 text-[#ffead4] sm:px-9">
-                    <div className="absolute inset-0 rounded-b-[2.4rem] bg-[linear-gradient(135deg,rgb(64_39_28_/_98%),rgb(122_63_0_/_84%))]" aria-hidden="true" />
+                <div
+                    className="relative min-h-[11rem] rounded-b-[2.4rem] bg-[#5a392b] px-6 py-7 text-[#ffead4] sm:px-9"
+                    style={{ backgroundImage: `linear-gradient(rgb(90 57 43 / 0.9), rgb(90 57 43 / 0.9)), url(${paperBackground})`, backgroundSize: "cover" }}
+                >
                     <div className="relative flex flex-wrap items-start justify-between gap-6">
                         <div>
                             <p className="m-0 font-[Adamina] text-[0.7rem] uppercase tracking-[0.24em] text-[#f6d7b5]">Travel profile</p>

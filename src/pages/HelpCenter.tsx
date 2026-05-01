@@ -1,14 +1,23 @@
-import { helpFaqs } from "../data/helpFaq";
+import { useMemo, useState } from "react";
+import { helpFaqSections } from "../data/helpFaq";
 import paperBackground from "../assets/wrinkled-paper.png";
 
 function HelpCenter() {
+    const [activeSectionId, setActiveSectionId] = useState(helpFaqSections[0]?.id ?? "");
+    const activeSection = useMemo(() => {
+        return helpFaqSections.find((section) => section.id === activeSectionId) ?? helpFaqSections[0];
+    }, [activeSectionId]);
+
     return (
         <section className="mx-auto w-full max-w-[1380px] px-5 py-8 text-[#50300d] sm:px-6 lg:px-8" aria-labelledby="help-title">
             <div
                 className="overflow-hidden rounded-[1.35rem] border border-[#8f5a20]/35 bg-[#ffead4]/95 shadow-[0_18px_42px_rgb(80_48_13_/_20%),inset_0_0_0_1px_rgb(255_244_231_/_55%)]"
                 style={{ backgroundImage: `linear-gradient(rgb(255 234 212 / 0.9), rgb(255 234 212 / 0.9)), url(${paperBackground})`, backgroundSize: "cover" }}
             >
-                <div className="rounded-b-[2.4rem] bg-[#5a392b]/95 px-6 py-7 text-[#ffead4] sm:px-9">
+                <div
+                    className="rounded-b-[2.4rem] bg-[#5a392b]/95 px-6 py-7 text-[#ffead4] sm:px-9"
+                    style={{ backgroundImage: `linear-gradient(rgb(90 57 43 / 0.9), rgb(90 57 43 / 0.9)), url(${paperBackground})`, backgroundSize: "cover" }}
+                >
                     <p className="m-0 font-[Adamina] text-[0.7rem] uppercase tracking-[0.24em] text-[#f6d7b5]">TripJournal support</p>
                     <div className="mt-3 flex flex-wrap items-end justify-between gap-4">
                         <div>
@@ -28,8 +37,30 @@ function HelpCenter() {
                 <div className="grid gap-7 px-6 py-7 sm:px-9 lg:grid-cols-[minmax(0,1fr)_24rem]">
                     <div>
                         <p className="font-[Adamina] text-[0.72rem] uppercase tracking-[0.2em] text-[#7a3f00]">Frequently asked questions</p>
-                        <div className="mt-5 grid gap-3 xl:grid-cols-2">
-                            {helpFaqs.map((faq) => (
+                        <div className="mt-4 flex flex-wrap gap-2" role="tablist" aria-label="FAQ sections">
+                            {helpFaqSections.map((section) => (
+                                <button
+                                    key={section.id}
+                                    type="button"
+                                    role="tab"
+                                    aria-selected={section.id === activeSectionId}
+                                    className={`rounded-full border px-4 py-2 font-[Adamina] text-[0.82rem] transition ${
+                                        section.id === activeSectionId
+                                            ? "border-[#7a3f00] bg-[#5a392b] text-[#ffead4]"
+                                            : "border-[#cf8d45]/55 bg-[#fff7ee]/75 text-[#50300d] hover:bg-[#f6dfc1]"
+                                    }`}
+                                    onClick={() => setActiveSectionId(section.id)}
+                                >
+                                    {section.title}
+                                </button>
+                            ))}
+                        </div>
+                        <div className="mt-5 rounded-[0.9rem] border border-[#cf8d45]/35 bg-[#fff4e7]/55 px-5 py-4">
+                            <h2 className="font-[Adamina] text-[1.25rem] text-[#50300d]">{activeSection?.title}</h2>
+                            <p className="mt-1 font-[Cormorant_Garamond] text-[1.12rem] leading-[1.35] text-[#5a392b]">{activeSection?.description}</p>
+                        </div>
+                        <div className="mt-5 grid gap-3">
+                            {activeSection?.faqs.map((faq) => (
                                 <details key={faq.id} className="group rounded-[0.9rem] border border-[#cf8d45]/45 bg-[#fff4e7]/72 px-5 py-4 shadow-[inset_0_0_16px_rgb(143_90_32_/_7%)]">
                                     <summary className="cursor-pointer list-none font-[Adamina] text-[1rem] text-[#50300d] marker:hidden">
                                         <span className="flex items-center justify-between gap-4">
