@@ -223,7 +223,7 @@ function Home({ countryStatuses, setCountryStatus, visitedCountries }: HomeProps
     };
 
     const filteredAndSortedCountries = useMemo(() => {
-        let filtered = countryNames.filter((countryName) => {
+        const filtered = countryNames.filter((countryName) => {
             const status = countryStatuses[countryName] ?? "not-explored";
             return listStatusFilters.has(status);
         });
@@ -333,7 +333,6 @@ function Home({ countryStatuses, setCountryStatus, visitedCountries }: HomeProps
                                     viewMode={mapViewMode}
                                     userLocation={userLocation}
                                     countryStatuses={countryStatuses}
-                                    mapStatusFilters={mapStatusFilters}
                                 />
                             </div>
                         </Suspense>

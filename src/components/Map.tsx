@@ -104,7 +104,6 @@ type MapProps = {
   viewMode: "globe" | "map";
   userLocation?: { lng: number; lat: number } | null;
   countryStatuses?: Record<string, CountryStatus>;
-  mapStatusFilters?: Set<CountryStatus | "not-explored">;
 };
 
 const EMPTY_FEATURE_COLLECTION: CountriesGeoJson = {
@@ -117,8 +116,7 @@ const Map: React.FC<MapProps> = ({
   selectedCountries,
   viewMode,
   userLocation,
-  countryStatuses = {},
-  mapStatusFilters
+  countryStatuses = {}
 }) => {
   const mapContainer = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<maptilersdk.Map | null>(null);
