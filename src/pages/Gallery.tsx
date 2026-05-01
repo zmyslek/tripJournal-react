@@ -16,7 +16,7 @@ function shuffle<T>(items: T[]): T[] {
     const copy = [...items];
     for (let index = copy.length - 1; index > 0; index -= 1) {
         const randomIndex = Math.floor(Math.random() * (index + 1));
-        [copy[index], copy[randomIndex]] = [copy[randomIndex], copy[index]];
+        [copy[index], copy[index]] = [copy[index], copy[randomIndex]];
     }
 
     return copy;
@@ -85,29 +85,32 @@ function Gallery() {
     };
 
     return (
-        <section className="flex min-h-[calc(100svh-8.75rem)] w-full max-w-none flex-col overflow-x-hidden" aria-label="Gallery page">
-            <div
-                className="overflow-hidden rounded-none border-none bg-[#ffead4]/95 shadow-none"
-                style={{ backgroundImage: `linear-gradient(rgb(255 234 212 / 0.9), rgb(255 234 212 / 0.9)), url(${paperBackground})`, backgroundSize: "cover" }}
-            >
+        <>
+            <section className="mx-auto w-full max-w-[min(95vw,1380px)] px-[max(1.25rem,5%)] pt-[max(2rem,6vh)] text-[#50300d]" aria-labelledby="gallery-title">
                 <div
-                    className="relative min-h-[11rem] bg-[#5a392b] px-6 py-7 text-[#ffead4] sm:px-9"
-                    style={{ backgroundImage: `linear-gradient(rgb(90 57 43 / 0.9), rgb(90 57 43 / 0.9)), url(${paperBackground})`, backgroundSize: "cover" }}
+                    className="overflow-hidden rounded-[1.35rem] border border-[#8f5a20]/35 bg-[#ffead4]/95 shadow-[0_18px_42px_rgb(80_48_13_/_20%),inset_0_0_0_1px_rgb(255_244_231_/_55%)]"
+                    style={{ backgroundImage: `linear-gradient(rgb(255 234 212 / 0.9), rgb(255 234 212 / 0.9)), url(${paperBackground})`, backgroundSize: "cover" }}
                 >
-                    <div className="relative flex flex-wrap items-start justify-between gap-6">
-                        <div>
-                            <p className="m-0 font-[Adamina] text-[0.7rem] uppercase tracking-[0.24em] text-[#f6d7b5]">Travel moments</p>
-                            <h1 className="mt-3 font-[Adamina] text-[clamp(2.2rem,5vw,3.8rem)] leading-none text-[#fff4e7]">
-                                Gallery
-                            </h1>
-                            <p className="mt-4 max-w-[42rem] font-[Cormorant_Garamond] text-[1.25rem] leading-[1.35] text-[#f7dfca]">
-                                Explore your travel photographs and moments from around the world.
-                            </p>
+                    <div
+                        className="relative min-h-[11rem] bg-[#5a392b] px-6 py-7 text-[#ffead4] sm:px-9"
+                        style={{ backgroundImage: `linear-gradient(rgb(90 57 43 / 0.9), rgb(90 57 43 / 0.9)), url(${paperBackground})`, backgroundSize: "cover" }}
+                    >
+                        <div className="relative flex flex-wrap items-start justify-between gap-6">
+                            <div>
+                                <p className="m-0 font-[Adamina] text-[0.7rem] uppercase tracking-[0.24em] text-[#f6d7b5]">Travel moments</p>
+                                <h1 id="gallery-title" className="mt-3 font-[Adamina] text-[clamp(2.2rem,5vw,3.8rem)] leading-none text-[#fff4e7]">
+                                    Gallery
+                                </h1>
+                                <p className="mt-4 max-w-[42rem] font-[Cormorant_Garamond] text-[1.25rem] leading-[1.35] text-[#f7dfca]">
+                                    Explore your travel photographs and moments from around the world.
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </section>
 
+            {/* Gallery content - completely separate from header */}
             <div className="flex flex-1 flex-col">
                 <div className="group relative mx-auto h-[clamp(19rem,60svh,44rem)] w-[100vw] max-w-[100vw] overflow-hidden sm:h-[clamp(22rem,64svh,48rem)] lg:w-[96vw] lg:max-w-[96vw]">
                     <div className="h-full w-full origin-center transform-gpu transition-transform duration-300 sm:group-hover:scale-[1.01]">
@@ -187,7 +190,7 @@ function Gallery() {
                     <span className="text-xl">↑</span>
                 </button>
             )}
-        </section>
+        </>
     );
 }
 
