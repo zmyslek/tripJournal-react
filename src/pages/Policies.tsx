@@ -1,4 +1,5 @@
 import { Link, Navigate, useParams } from "react-router-dom";
+import { useScrollToTop } from "../hooks/useScrollToTop";
 
 type PolicySection = {
     heading: string;
@@ -166,6 +167,7 @@ function Policies() {
     const { policySlug } = useParams();
     const currentSlug = policySlug ?? "privacy";
     const policy = policies[currentSlug];
+    const { showScrollTop, scrollToTop } = useScrollToTop();
 
     if (!policy) {
         return <Navigate to="/policies/privacy" replace />;
@@ -227,6 +229,18 @@ function Policies() {
                     </div>
                 </article>
             </div>
+
+            {/* Scroll to top button */}
+            {showScrollTop && (
+                <button
+                    onClick={scrollToTop}
+                    className="fixed bottom-8 right-8 flex h-12 w-12 items-center justify-center rounded-full border border-[#cf8d45] bg-[#5a392b] text-[#ffead4] shadow-[0_8px_24px_rgb(122_63_0_/_30%)] transition hover:bg-[#7a3f00] hover:-translate-y-1"
+                    aria-label="Scroll to top"
+                    title="Back to top"
+                >
+                    <span className="text-xl">↑</span>
+                </button>
+            )}
         </section>
     );
 }
