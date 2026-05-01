@@ -83,37 +83,39 @@ function Gallery() {
                     onClick={handleCloseModal}
                 >
                     <div
-                        className="relative flex max-h-[88svh] max-w-[94vw] items-center justify-center overflow-hidden rounded-[1.2rem]"
+                        className="relative flex max-h-[88svh] max-w-[94vw] items-center justify-center overflow-visible rounded-[1.2rem]"
                         onClick={e => e.stopPropagation()}
                     >
-                        <img
-                            src={galleryItems[selectedIndex]?.image}
-                            alt={galleryItems[selectedIndex]?.text || 'Gallery item'}
-                            className="max-h-[88svh] max-w-[94vw] object-contain"
-                        />
-
-                        <button
-                            onClick={handleCloseModal}
-                            className="absolute right-[2.5vw] top-[2.5vw] flex h-[clamp(2.2rem,5vw,2.8rem)] w-[clamp(2.2rem,5vw,2.8rem)] items-center justify-center rounded-full bg-[#5a392b]/55 text-[#ffead4] transition-all hover:bg-[#5a392b]/80"
-                            aria-label="Close modal"
-                        >
-                            x
-                        </button>
-
                         <button
                             onClick={handlePrevious}
-                            className="absolute left-[2.5vw] top-1/2 flex h-[clamp(2.4rem,5.5vw,3.2rem)] w-[clamp(2.4rem,5.5vw,3.2rem)] -translate-y-1/2 items-center justify-center rounded-full bg-[#5a392b]/55 text-[#ffead4] transition-all hover:bg-[#5a392b]/80"
+                            className="absolute left-[-clamp(3.4rem,6.4vw,4.4rem)] top-1/2 flex h-[clamp(2.8rem,5.8vw,3.6rem)] w-[clamp(2.8rem,5.8vw,3.6rem)] -translate-y-1/2 items-center justify-center rounded-full border border-[#ffead4]/55 bg-[#5a392b]/92 text-[clamp(1rem,2vw,1.3rem)] font-semibold text-[#ffead4] shadow-[0_0.75rem_1.6rem_rgba(0,0,0,0.32)] transition-all hover:border-[#ffead4]/85 hover:bg-[#5a392b]"
                             aria-label="Previous image"
                         >
                             &lt;
                         </button>
 
+                        <div className="relative flex max-h-[88svh] max-w-[94vw] items-center justify-center overflow-hidden rounded-[1rem]">
+                            <img
+                                src={galleryItems[selectedIndex]?.image}
+                                alt={galleryItems[selectedIndex]?.text || 'Gallery item'}
+                                className="max-h-[88svh] max-w-[94vw] object-contain"
+                            />
+                        </div>
+
                         <button
                             onClick={handleNext}
-                            className="absolute right-[2.5vw] top-1/2 flex h-[clamp(2.4rem,5.5vw,3.2rem)] w-[clamp(2.4rem,5.5vw,3.2rem)] -translate-y-1/2 items-center justify-center rounded-full bg-[#5a392b]/55 text-[#ffead4] transition-all hover:bg-[#5a392b]/80"
+                            className="absolute right-[-clamp(3.4rem,6.4vw,4.4rem)] top-1/2 flex h-[clamp(2.8rem,5.8vw,3.6rem)] w-[clamp(2.8rem,5.8vw,3.6rem)] -translate-y-1/2 items-center justify-center rounded-full border border-[#ffead4]/55 bg-[#5a392b]/92 text-[clamp(1rem,2vw,1.3rem)] font-semibold text-[#ffead4] shadow-[0_0.75rem_1.6rem_rgba(0,0,0,0.32)] transition-all hover:border-[#ffead4]/85 hover:bg-[#5a392b]"
                             aria-label="Next image"
                         >
                             &gt;
+                        </button>
+
+                        <button
+                            onClick={handleCloseModal}
+                            className="absolute right-[-clamp(3.4rem,6.4vw,4.4rem)] top-[clamp(0.1rem,1.5vw,0.8rem)] flex h-[clamp(2.8rem,5.8vw,3.6rem)] w-[clamp(2.8rem,5.8vw,3.6rem)] items-center justify-center rounded-full border border-[#ffead4]/55 bg-[#5a392b]/92 text-[clamp(1rem,2vw,1.3rem)] font-semibold text-[#ffead4] shadow-[0_0.75rem_1.6rem_rgba(0,0,0,0.32)] transition-all hover:border-[#ffead4]/85 hover:bg-[#5a392b]"
+                            aria-label="Close modal"
+                        >
+                            x
                         </button>
 
                         <div className="absolute bottom-[2.5vw] left-1/2 -translate-x-1/2 rounded-full bg-[#5a392b]/55 px-[3vw] py-[1.2vw] text-[clamp(0.72rem,1.6vw,0.95rem)] text-[#ffead4]">
