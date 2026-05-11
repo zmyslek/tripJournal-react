@@ -5,8 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "npm run gallery:manifest && tsc -b && vite build",
     "build:docs": "npm run build",
+    "gallery:manifest": "node scripts/generate-gallery-manifest.mjs",
     "predeploy": "npm run build",
     "lint": "eslint .",
     "preview": "vite preview"

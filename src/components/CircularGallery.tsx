@@ -1,6 +1,8 @@
 import { Camera, Mesh, Plane, Program, Renderer, Texture, Transform } from 'ogl';
 import { useEffect, useRef } from 'react';
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 type GL = Renderer['gl'];
 
 function debounce<T extends (...args: any[]) => void>(func: T, wait: number) {
@@ -237,7 +239,7 @@ class Media {
       (this.texture as any).magFilter = glConst.LINEAR;
       (this.texture as any).wrapS = glConst.CLAMP_TO_EDGE;
       (this.texture as any).wrapT = glConst.CLAMP_TO_EDGE;
-    } catch (e) {
+    } catch {
       // ignore if OGL build does not expose gl constants here
     }
     this.program = new Program(this.gl, {
@@ -315,7 +317,7 @@ class Media {
     try {
       (img as any).decoding = 'async';
       (img as any).loading = 'eager';
-    } catch (e) {
+    } catch {
       // ignore if not supported
     }
 
@@ -344,7 +346,7 @@ class Media {
         } else {
           this.texture.image = img;
         }
-      } catch (e) {
+      } catch {
         this.texture.image = img;
       }
       try {
@@ -364,23 +366,23 @@ class Media {
             (this.texture as any).minFilter = glConst.LINEAR_MIPMAP_LINEAR || glConst.LINEAR;
             (this.texture as any).magFilter = glConst.LINEAR;
           }
-        } catch (inner) {
+        } catch {
           // ignore
         }
 
         try {
           if ((this.texture as any).update) (this.texture as any).update();
           else (this.texture as any).needsUpdate = true;
-        } catch (e) {
+        } catch {
           (this.texture as any).needsUpdate = true;
         }
         this.program.uniforms.uImageSizes.value = [actualWidth, actualHeight];
         this.imageLoaded = true;
-      } catch (e) {
+      } catch {
         try {
           if ((this.texture as any).update) (this.texture as any).update();
           else (this.texture as any).needsUpdate = true;
-        } catch (err) {
+        } catch {
           (this.texture as any).needsUpdate = true;
         }
         this.program.uniforms.uImageSizes.value = [img.naturalWidth, img.naturalHeight];
@@ -594,7 +596,7 @@ class App {
       if (this.container.style.position === '' || this.container.style.position === 'static') {
         this.container.style.position = 'relative';
       }
-    } catch (e) {
+    } catch {
       // ignore
     }
     canvas.style.position = 'absolute';
@@ -956,7 +958,6 @@ export default function CircularGallery({
       app.destroy();
       appRef.current = null;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [items, bend, textColor, borderRadius, font, scrollSpeed, scrollEase, onItemClick]);
 
   useEffect(() => {

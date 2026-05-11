@@ -67,8 +67,6 @@ export function useCountriesData() {
 
         if (!countriesData) {
             void loadCountries();
-        } else {
-            setIsLoading(false);
         }
 
         return () => {
