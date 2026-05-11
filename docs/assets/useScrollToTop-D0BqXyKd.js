@@ -1,1 +1,0 @@
-import{a as e,n as t}from"./jsx-runtime-Bg_NI1en.js";var n=e(t(),1);function r(e=300){let[t,r]=(0,n.useState)(!1);return(0,n.useEffect)(()=>{let t=()=>{r(window.scrollY>e)};return window.addEventListener(`scroll`,t),()=>window.removeEventListener(`scroll`,t)},[e]),{showScrollTop:t,scrollToTop:()=>{window.scrollTo({top:0,behavior:`smooth`})}}}export{r as t};
