@@ -1,0 +1,1 @@
+var e=e=>encodeURIComponent(e.trim()),t=e=>{try{return decodeURIComponent(e)}catch{return e}},n=t=>`/trips/${e(t)}`;export{t as n,n as t};
