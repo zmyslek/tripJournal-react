@@ -1,6 +1,7 @@
 .map-canvas-shell {
   position: relative;
   overflow: hidden;
+  overflow-x: hidden;
   background: transparent !important;
   background-color: transparent !important;
 }
@@ -30,8 +31,8 @@
 }
 
 .map-canvas-shell[data-view-mode="globe"] {
-  background: rgba(255, 234, 212, 0.92) !important;
-  background-color: rgba(255, 234, 212, 0.92) !important;
+  background: transparent !important;
+  background-color: transparent !important;
 }
 
 .user-location-marker {

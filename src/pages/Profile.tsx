@@ -1,14 +1,18 @@
 import { useMemo, useState, useEffect } from "react";
+import { Settings, HelpCircle, Edit } from "lucide-react";
 import type { ChangeEvent } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useScrollToTop } from "../hooks/useScrollToTop";
 import compassAvatar from "../assets/avatars/compass.png";
+import SubscriptionStatus from "../components/SubscriptionStatus";
 import globeAvatar from "../assets/avatars/globe.png";
 import mountainsAvatar from "../assets/avatars/mountains.png";
 import passportAvatar from "../assets/avatars/passport.png";
 import postcardAvatar from "../assets/avatars/postcard.png";
 import suitcaseAvatar from "../assets/avatars/suitcase.png";
 import paperBackground from "../assets/wrinkled-paper.png";
+
+export type ProfileProps = Record<string, never>;
 
 type ProfileForm = {
     name: string;
@@ -42,6 +46,7 @@ const defaultProfile: ProfileForm = {
 };
 
 const PROFILE_CACHE_KEY = "tripjournal:profile:v1";
+const AUTH_CACHE_KEY = "tripjournal:auth:v1";
 
 function getCachedProfile(): ProfileForm {
     try {
@@ -67,13 +72,14 @@ function getCachedProfile(): ProfileForm {
     }
 }
 
-function Profile() {
+export function Profile() {
+    const navigate = useNavigate();
     const [profile, setProfile] = useState<ProfileForm>(() => getCachedProfile());
     const [draftProfile, setDraftProfile] = useState<ProfileForm>(() => getCachedProfile());
     const [isEditing, setIsEditing] = useState(false);
-    const { showScrollTop, scrollToTop } = useScrollToTop();    const [scrollBtnBottom, setScrollBtnBottom] = useState(window.innerHeight * 0.02);
+    const { showScrollTop, scrollToTop } = useScrollToTop();
+    const [scrollBtnBottom, setScrollBtnBottom] = useState(window.innerHeight * 0.02);
 
-    // Adjust scroll-to-top button so it doesn't overlap the footer
     useEffect(() => {
         function adjustScrollButton() {
             const footer = document.querySelector("footer");
@@ -101,6 +107,7 @@ function Profile() {
             window.removeEventListener("resize", adjustScrollButton);
         };
     }, []);
+
     const initials = useMemo(() => {
         return profile.name
             .split(" ")
@@ -145,6 +152,16 @@ function Profile() {
             // Ignore profile cache write failures.
         }
         setIsEditing(false);
+    };
+
+    const handleLogout = () => {
+        try {
+            localStorage.removeItem(AUTH_CACHE_KEY);
+        } catch {
+            // Ignore storage failures and still continue with navigation.
+        }
+
+        navigate("/welcome", { replace: true });
     };
 
     return (
@@ -206,27 +223,46 @@ function Profile() {
                         </div>
                     </div>
 
-                    <aside className="flex flex-col gap-3 rounded-[1rem] p-4">
-                        <Link
-                            to="/help-center"
-                            className="rounded-full border border-[#cf8d45] bg-[#fff7ee] px-4 py-2.5 text-center font-[Adamina] text-[0.92rem] text-[#50300d] no-underline interactive-transition hover:-translate-y-px hover:bg-[#f6dfc1] hover:shadow-[0_4px_12px_rgb(122_63_0_/_15%)]"
-                        >
-                            Help center
-                        </Link>
-                        <button
-                            type="button"
-                            className="rounded-full border border-[#7a3f00] bg-[#5a392b] px-4 py-2.5 font-[Adamina] text-[0.92rem] text-[#ffead4] interactive-transition hover:-translate-y-px hover:bg-[#7a3f00] hover:shadow-[0_4px_12px_rgb(122_63_0_/_20%)] active:translate-y-px"
-                            onClick={openEditor}
-                        >
-                            Edit profile
-                        </button>
-                        <button
-                            type="button"
-                            className="rounded-full border border-[#cf8d45] bg-[#cf8d45] px-4 py-2.5 font-[Adamina] text-[0.92rem] text-[#fff4e7] transition hover:-translate-y-px hover:bg-[#b97731]"
-                        >
-                            Log out
-                        </button>
-                    </aside>
+                                    <aside className="flex flex-col gap-3 rounded-[1rem] p-4">
+                                        {/* Subscription badge (reads from localStorage key `subscriptionStatus`) */}
+                                            <SubscriptionStatus />
+
+                                        <Link
+                                            to="/settings"
+                                            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#7a3f00] bg-[#5a392b] text-[#ffead4] transition hover:bg-[#7a3f00]"
+                                            aria-label="Settings"
+                                            title="Settings"
+                                        >
+                                            <Settings size={20} />
+                                        </Link>
+
+                                        <Link
+                                            to="/help-center"
+                                            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#cf8d45] bg-[#fff7ee] text-[#50300d] transition hover:bg-[#f6dfc1]"
+                                            aria-label="Help center"
+                                            title="Help center"
+                                        >
+                                            <HelpCircle size={20} />
+                                        </Link>
+
+                                        <button
+                                            type="button"
+                                            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#7a3f00] bg-[#5a392b] text-[#ffead4] transition hover:bg-[#7a3f00]"
+                                            onClick={openEditor}
+                                            aria-label="Edit profile"
+                                            title="Edit profile"
+                                        >
+                                            <Edit size={18} />
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            className="rounded-full border border-[#cf8d45] bg-[#cf8d45] px-4 py-2.5 font-[Adamina] text-[0.92rem] text-[#fff4e7] transition hover:-translate-y-px hover:bg-[#b97731]"
+                                            onClick={handleLogout}
+                                        >
+                                            Log out
+                                        </button>
+                                    </aside>
                 </div>
             </div>
 
@@ -264,7 +300,7 @@ function Profile() {
                                 </div>
                                 <label className="mt-4 block rounded-[0.8rem] border border-dashed border-[#cf8d45] bg-[#fff7ee]/70 px-4 py-3 text-center font-[Adamina] text-[0.9rem] text-[#50300d]">
                                     Upload your own
-                                    <input type="file" accept="image/*" className="sr-only" onChange={handleAvatarUpload} />
+                                    <input type="file" accept="image/*,.heic,.heif" className="sr-only" onChange={handleAvatarUpload} />
                                 </label>
                             </div>
 
@@ -299,7 +335,6 @@ function Profile() {
                 </div>
             )}
 
-            {/* Scroll to top button */}
             {showScrollTop && (
                 <button
                     onClick={scrollToTop}

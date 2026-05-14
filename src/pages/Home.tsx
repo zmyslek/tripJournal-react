@@ -1,7 +1,9 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { useCountriesData } from "../hooks/useCountriesData.ts";
 import { useScrollToTop } from "../hooks/useScrollToTop.ts";
 import { getCountryName, type CountriesGeoJson, type CountryFeature } from "../types/countries.ts";
+import { buildCountryTripsPath } from "../utils/countryRouting.ts";
 import paperBackground from "../assets/wrinkled-paper.png";
 
 const Map = lazy(() => import("../components/Map.tsx"));
@@ -12,6 +14,7 @@ export type CountryStatusMap = Record<string, CountryStatus>;
 
 export interface HomeProps {
     countryStatuses: CountryStatusMap;
+    countryAddedDates: Record<string, string>;
     setCountryStatus: (countryName: string, status: CountryStatus | null) => void;
     visitedCountries: string[];
 }
@@ -79,7 +82,7 @@ const findCountryAtCoordinates = (countriesData: CountriesGeoJson, lng: number, 
     return null;
 };
 
-function Home({ countryStatuses, setCountryStatus, visitedCountries }: HomeProps) {
+function Home({ countryStatuses, countryAddedDates, setCountryStatus, visitedCountries }: HomeProps) {
     const [searchTerm, setSearchTerm] = useState("");
     const [mapViewMode, setMapViewMode] = useState<"globe" | "map">("globe");
     const [userLocation, setUserLocation] = useState<{ lng: number; lat: number } | null>(null);
@@ -245,6 +248,24 @@ function Home({ countryStatuses, setCountryStatus, visitedCountries }: HomeProps
         return "bg-[#7a3f00]/20 text-[#6a4630] border-[#7a3f00]/40";
     };
 
+    const formatAddedDate = (countryName: string) => {
+        const dateValue = countryAddedDates[countryName];
+        if (!dateValue) {
+            return "Date not set";
+        }
+
+        const date = new Date(dateValue);
+        if (Number.isNaN(date.getTime())) {
+            return "Date not set";
+        }
+
+        return new Intl.DateTimeFormat("en-US", {
+            year: "numeric",
+            month: "short",
+            day: "numeric"
+        }).format(date);
+    };
+
     const toggleListStatusFilter = (status: CountryStatus | "not-explored") => {
         const newFilters = new Set(listStatusFilters);
         if (newFilters.has(status)) {
@@ -317,6 +338,15 @@ function Home({ countryStatuses, setCountryStatus, visitedCountries }: HomeProps
                                                     key={countryName}
                                                     className="flex items-center gap-2"
                                                 >
+                                                    {status !== null && (
+                                                        <Link
+                                                            to={buildCountryTripsPath(countryName)}
+                                                            className="rounded-full border border-[#ffead4]/45 bg-[#ffead4]/15 px-2 py-1 font-[Adamina] text-[0.66rem] uppercase tracking-[0.08em] text-[#fff4e7] no-underline transition hover:bg-[#ffead4]/25"
+                                                            title={`Open ${countryName} itinerary page`}
+                                                        >
+                                                            Open
+                                                        </Link>
+                                                    )}
                                                     <span className="flex-shrink-0 font-[Cormorant_Garamond] text-[0.95rem] text-[#f7dfca] min-w-max">
                                                         {countryName}
                                                     </span>
@@ -448,7 +478,7 @@ function Home({ countryStatuses, setCountryStatus, visitedCountries }: HomeProps
                         </div>
                     </div>
 
-                    <aside className="rounded-[2rem] border border-[#7a3f00]/15 bg-[#5c3722eb] p-5 text-[#ffead4] shadow-[0_24px_60px_#5a392b38]">
+                    <aside className="rounded-[2rem] border border-[#7a3f00]/15 bg-[#5c3722eb] p-5 pb-4 text-[#ffead4] shadow-[0_24px_60px_#5a392b38]">
                         <p className="font-[Adamina] text-[0.78rem] uppercase tracking-[0.24em] text-[#f6d7b5]">Map status</p>
                         <h2 className="mt-2 font-[Adamina] text-[1.8rem] text-[#fff4e7]">Legend synced with your globe</h2>
                         <p className="mt-2 font-[Cormorant_Garamond] text-[1.18rem] text-[#f7dfca]">
@@ -587,9 +617,38 @@ function Home({ countryStatuses, setCountryStatus, visitedCountries }: HomeProps
                                             className={`rounded-[1.2rem] border p-4 transition ${getStatusColor(status)}`}
                                         >
                                             <div className="flex flex-col gap-3">
-                                                <span className="font-[Cormorant_Garamond] text-[1rem] text-[#fff4e7] line-clamp-2">
-                                                    {countryName}
-                                                </span>
+                                                <div className="flex items-center justify-between gap-2">
+                                                    {status !== null ? (
+                                                        <Link
+                                                            to={buildCountryTripsPath(countryName)}
+                                                            className="font-[Cormorant_Garamond] text-[1rem] text-[#fff4e7] no-underline underline-offset-2 hover:underline line-clamp-2"
+                                                        >
+                                                            {countryName}
+                                                        </Link>
+                                                    ) : (
+                                                        <span className="font-[Cormorant_Garamond] text-[1rem] text-[#fff4e7] line-clamp-2">
+                                                            {countryName}
+                                                        </span>
+                                                    )}
+                                                    {status !== null && (
+                                                        <Link
+                                                            to={buildCountryTripsPath(countryName)}
+                                                            className="flex-shrink-0 rounded-full border border-[#ffead4]/45 bg-[#ffead4]/16 px-2 py-1 font-[Adamina] text-[0.62rem] uppercase tracking-[0.08em] text-[#fff4e7] no-underline transition hover:bg-[#ffead4]/26"
+                                                        >
+                                                            See more
+                                                        </Link>
+                                                    )}
+                                                </div>
+                                                {status !== null && (
+                                                    <span className="font-[Cormorant_Garamond] text-[0.86rem] text-[#fff4e7]/85">
+                                                        Added {formatAddedDate(countryName)}
+                                                    </span>
+                                                )}
+                                                {status === null && (
+                                                    <span className="font-[Adamina] text-[0.63rem] uppercase tracking-[0.08em] text-[#fff4e7]/80">
+                                                        Set status to unlock page
+                                                    </span>
+                                                )}
                                                 <select
                                                     value={status ?? "null"}
                                                     onChange={(e) => {

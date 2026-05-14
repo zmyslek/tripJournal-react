@@ -167,19 +167,19 @@ export const helpFaqSections: HelpFaqSection[] = [
         ]
     },
     {
-        id: "profile",
-        title: "Profile",
-        description: "Account creation, profile editing, avatar choices, and cross-device sync.",
+        id: "settings",
+        title: "Settings",
+        description: "Account preferences, notification controls, and premium management saved on this device.",
         faqs: [
             {
                 id: "create-account",
                 question: "How do I create an account?",
-                answer: "Open the Profile page and choose Sign up. Enter your email and a password to create your account. You can also continue without an account and use TripJournal with local storage only."
+                answer: "Open the Welcome page and sign in with email or a social button. TripJournal currently uses local browser storage for settings and travel selections."
             },
             {
                 id: "login-logout",
                 question: "How do I log in or log out?",
-                answer: "Use the Sign in button on the Profile page to log in with your email and password. To log out, open the Profile page and choose Sign out. Your data stays saved to your account."
+                answer: "Use the Welcome page to sign in. To switch users on the same browser, clear the local auth and settings data in browser storage."
             },
             {
                 id: "reset-password",
@@ -189,32 +189,32 @@ export const helpFaqSections: HelpFaqSection[] = [
             {
                 id: "edit-profile",
                 question: "How do I edit my profile information?",
-                answer: "Open the Profile page and choose Edit profile. You can update your name, email, travel style, current focus, and avatar."
+                answer: "Open Settings and use the Account section to update your name, username, and contact emails."
             },
             {
                 id: "avatar-upload",
                 question: "Can I upload my own avatar?",
-                answer: "Yes. In Edit profile, choose Upload your own and select an image from your device. The uploaded image is saved to your account and will appear across devices."
+                answer: "Avatar uploads are not enabled in the current Settings page yet."
             },
             {
                 id: "avatar-save",
                 question: "Will my uploaded avatar stay after I refresh?",
-                answer: "Yes. If you are logged in, your avatar is saved to your account permanently. If you are not logged in, it is saved in local storage for that browser session only."
+                answer: "Current settings and status data are persisted in local storage, so they stay after refresh on the same browser profile."
             },
             {
                 id: "different-device",
                 question: "Will my profile appear on another device?",
-                answer: "Yes, once you are logged in. Your profile details, avatar, country statuses, notes, and photos are all tied to your account and sync across any device you sign into."
+                answer: "Not yet. Cross-device sync requires backend accounts, which are planned but not implemented."
             },
             {
                 id: "delete-account",
                 question: "Can I delete my account and all my data?",
-                answer: "Yes. Go to Profile, open account settings, and choose Delete account. This permanently removes your account, country statuses, notes, photos, and all other stored data. This action cannot be undone."
+                answer: "There is no backend account deletion flow yet. You can clear this site's local storage to remove locally saved settings and travel status data."
             },
             {
                 id: "profile-backend",
                 question: "Is there an account backend already?",
-                answer: "Yes. TripJournal uses a backend to store your account, country data, notes, and photos securely. Local storage is only used as a fallback when you are not logged in."
+                answer: "No. Backend account and cloud sync features are planned for a future release."
             }
         ]
     },

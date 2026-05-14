@@ -1,23 +1,52 @@
 import React, { useEffect, useRef } from "react";
 import * as maptilersdk from "@maptiler/sdk";
+import type { StyleSpecification } from "maplibre-gl";
 import { type CountriesGeoJson } from "../types/countries";
 import type { CountryStatus } from "../pages/Home";
 
 const ENV = (import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env;
 
-const MAPTILER_API_KEY =
-  ENV?.VITE_MAPTILER_API_KEY ?? "FelxstvCdS6k0g9YnLdK";
+const MAPTILER_API_KEY = ENV?.VITE_MAPTILER_API_KEY ?? "";
 
-const MAPTILER_STYLE_ID =
-  ENV?.VITE_MAPTILER_STYLE_ID ?? "0196a729-51f8-7a04-8b3a-22b8d925ea1b";
+const MAPTILER_STYLE_ID = ENV?.VITE_MAPTILER_STYLE_ID ?? "basic";
 
 const MAPTILER_STYLE_URL = ENV?.VITE_MAPTILER_STYLE_URL;
 const GLOBE_BACKGROUND_COLOR = "#FFEAD4";
 const GLOBE_WATER_COLOR = "#FFEAD4";
-const FALLBACK_STYLE_ID = "0196a729-51f8-7a04-8b3a-22b8d925ea1b";
-const DEFAULT_STYLE_URL = `https://api.maptiler.com/maps/${FALLBACK_STYLE_ID}/style.json?key=${MAPTILER_API_KEY}`;
+const SAFE_FALLBACK_STYLE: StyleSpecification = {
+  version: 8,
+  name: "TripJournal Local Globe",
+  sources: {
+    blank: {
+      type: "geojson",
+      data: {
+        type: "FeatureCollection",
+        features: []
+      }
+    }
+  },
+  layers: [
+    {
+      id: "background",
+      type: "background",
+      paint: {
+        "background-color": GLOBE_BACKGROUND_COLOR,
+        "background-opacity": 1
+      }
+    },
+    {
+      id: "blank-layer",
+      type: "fill",
+      source: "blank",
+      paint: {
+        "fill-color": GLOBE_BACKGROUND_COLOR,
+        "fill-opacity": 0
+      }
+    }
+  ]
+};
 
-const resolveStyleUrl = () => {
+const resolveStyleUrl = (): string | StyleSpecification => {
   const normalizeMaptilerUrl = (url: string) => {
     try {
       const parsed = new URL(url);
@@ -57,23 +86,27 @@ const resolveStyleUrl = () => {
   const configuredStyle = (MAPTILER_STYLE_URL?.trim() || MAPTILER_STYLE_ID.trim()).replace(/^['"]|['"]$/g, "");
 
   if (!configuredStyle) {
-    return DEFAULT_STYLE_URL;
+    return SAFE_FALLBACK_STYLE;
   }
 
   // Human-readable style names (e.g. "Streets Default v2") are not valid style IDs/URLs.
   if (configuredStyle.includes(" ")) {
-    return DEFAULT_STYLE_URL;
+    return SAFE_FALLBACK_STYLE;
   }
 
-  const toSafeUrl = (candidate: string) => {
+  const toSafeUrl = (candidate: string | StyleSpecification) => {
+    if (typeof candidate !== "string") {
+      return candidate;
+    }
+
     try {
       const parsed = new URL(candidate);
       if (!parsed.pathname.includes("/style.json")) {
-        return DEFAULT_STYLE_URL;
+        return SAFE_FALLBACK_STYLE;
       }
       return candidate;
     } catch {
-      return DEFAULT_STYLE_URL;
+      return SAFE_FALLBACK_STYLE;
     }
   };
 
@@ -85,25 +118,45 @@ const resolveStyleUrl = () => {
     return toSafeUrl(appendKeyIfNeeded(`https://api.maptiler.com/${configuredStyle.replace(/^\/+/, "")}`));
   }
 
-  return toSafeUrl(`https://api.maptiler.com/maps/${encodeURIComponent(configuredStyle)}/style.json?key=${MAPTILER_API_KEY}`);
+  return toSafeUrl(
+    MAPTILER_API_KEY
+      ? `https://api.maptiler.com/maps/${encodeURIComponent(configuredStyle)}/style.json?key=${MAPTILER_API_KEY}`
+      : SAFE_FALLBACK_STYLE
+  );
 };
 
 const STYLE_URL = resolveStyleUrl();
+const USING_LOCAL_STYLE = STYLE_URL === SAFE_FALLBACK_STYLE;
 
 maptilersdk.config.apiKey = MAPTILER_API_KEY;
+// Log chosen style and API key state to help debugging in dev.
+try {
+  console.info("TripJournal: Using Map style URL:", STYLE_URL);
+  if (!MAPTILER_API_KEY) {
+    console.warn("TripJournal: VITE_MAPTILER_API_KEY not set. Add it to .env.local to avoid style fetch failures.");
+  }
+} catch {
+  // ignore
+}
 
 const COUNTRY_LAYER_ID = "tripjournal-country-fill";
 const COUNTRY_OUTLINE_LAYER_ID = "tripjournal-country-outline";
 const COUNTRY_SOURCE_ID = "tripjournal-countries-geojson";
 const USER_LOCATION_PIN_COLOR = "#50300d";
 const USER_LOCATION_PIN_STROKE = "#eab681";
+const DEFAULT_INITIAL_GLOBE_ZOOM = 1.35;
+const MIN_GLOBE_ZOOM = 0.5;
 
-type MapProps = {
+export type MapProps = {
   countriesData: CountriesGeoJson | null;
   selectedCountries: string[];
   viewMode: "globe" | "map";
   userLocation?: { lng: number; lat: number } | null;
   countryStatuses?: Record<string, CountryStatus>;
+  focusCountry?: string | null;
+  sizeVariant?: "default" | "compact";
+  initialGlobeZoom?: number;
+  showGlobeBackdrop?: boolean;
 };
 
 const EMPTY_FEATURE_COLLECTION: CountriesGeoJson = {
@@ -116,7 +169,11 @@ const Map: React.FC<MapProps> = ({
   selectedCountries,
   viewMode,
   userLocation,
-  countryStatuses = {}
+  countryStatuses = {},
+  focusCountry = null,
+  sizeVariant = "default",
+  initialGlobeZoom = DEFAULT_INITIAL_GLOBE_ZOOM,
+  showGlobeBackdrop = true
 }) => {
   const mapContainer = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<maptilersdk.Map | null>(null);
@@ -125,13 +182,20 @@ const Map: React.FC<MapProps> = ({
   const countryStatusesRef = useRef<Record<string, CountryStatus>>(countryStatuses);
   const viewModeRef = useRef<"globe" | "map">(viewMode);
   const userLocationRef = useRef<{ lng: number; lat: number } | null>(userLocation ?? null);
+  const focusCountryRef = useRef<string | null>(focusCountry ?? null);
   const userLocationOverlayRef = useRef<HTMLDivElement | null>(null);
   const hasCenteredOnUserLocationRef = useRef(false);
+  const lastFocusedCountryRef = useRef<string | null>(null);
   const highlightRefreshFrameRef = useRef<number | null>(null);
+  const initialGlobeZoomRef = useRef<number>(Math.max(MIN_GLOBE_ZOOM, initialGlobeZoom));
 
-  const globeSize = "min(82vw, 82vh)";
+  const globeSize = sizeVariant === "compact" ? "60vw" : "min(82vw, 82vh)";
   const flatMapWidth = "min(100%, 800px)";
   const flatMapHeight = "min(48vh, 560px)";
+
+  useEffect(() => {
+    initialGlobeZoomRef.current = Math.max(MIN_GLOBE_ZOOM, initialGlobeZoom);
+  }, [initialGlobeZoom]);
 
   const applyTransparentBackdrop = (map: maptilersdk.Map) => {
     const globeBackdrop = "transparent";
@@ -147,9 +211,15 @@ const Map: React.FC<MapProps> = ({
       map.getStyle().layers?.forEach((layer) => {
         if (layer.type === "background") {
           if (viewModeRef.current === "globe") {
-            map.setLayoutProperty(layer.id, "visibility", "visible");
-            map.setPaintProperty(layer.id, "background-color", GLOBE_BACKGROUND_COLOR);
-            map.setPaintProperty(layer.id, "background-opacity", 1);
+            if (showGlobeBackdrop) {
+              map.setLayoutProperty(layer.id, "visibility", "visible");
+              map.setPaintProperty(layer.id, "background-color", GLOBE_BACKGROUND_COLOR);
+              map.setPaintProperty(layer.id, "background-opacity", 1);
+            } else {
+              map.setLayoutProperty(layer.id, "visibility", "none");
+              map.setPaintProperty(layer.id, "background-color", "rgba(0, 0, 0, 0)");
+              map.setPaintProperty(layer.id, "background-opacity", 0);
+            }
           } else {
             map.setLayoutProperty(layer.id, "visibility", "none");
             map.setPaintProperty(layer.id, "background-color", "rgba(0, 0, 0, 0)");
@@ -160,7 +230,11 @@ const Map: React.FC<MapProps> = ({
         const layerId = layer.id.toLowerCase();
         if (layerId.includes("background")) {
           try {
-            map.setLayoutProperty(layer.id, "visibility", viewModeRef.current === "globe" ? "visible" : "none");
+            map.setLayoutProperty(
+              layer.id,
+              "visibility",
+              viewModeRef.current === "globe" && showGlobeBackdrop ? "visible" : "none"
+            );
           } catch {
             // Ignore layout mutations for incompatible layer definitions.
           }
@@ -170,8 +244,13 @@ const Map: React.FC<MapProps> = ({
           try {
             if (layer.type === "fill") {
               if (viewModeRef.current === "globe") {
-                map.setPaintProperty(layer.id, "fill-color", GLOBE_WATER_COLOR);
-                map.setPaintProperty(layer.id, "fill-opacity", 1);
+                if (showGlobeBackdrop) {
+                  map.setPaintProperty(layer.id, "fill-color", GLOBE_WATER_COLOR);
+                  map.setPaintProperty(layer.id, "fill-opacity", 1);
+                } else {
+                  map.setPaintProperty(layer.id, "fill-color", "rgba(0, 0, 0, 0)");
+                  map.setPaintProperty(layer.id, "fill-opacity", 0);
+                }
               } else {
                 map.setPaintProperty(layer.id, "fill-color", "rgba(0, 0, 0, 0)");
                 map.setPaintProperty(layer.id, "fill-opacity", 0);
@@ -180,8 +259,12 @@ const Map: React.FC<MapProps> = ({
 
             if (layer.type === "line") {
               if (viewModeRef.current === "globe") {
-                map.setPaintProperty(layer.id, "line-color", GLOBE_WATER_COLOR);
-                map.setPaintProperty(layer.id, "line-opacity", 1);
+                if (showGlobeBackdrop) {
+                  map.setPaintProperty(layer.id, "line-color", GLOBE_WATER_COLOR);
+                  map.setPaintProperty(layer.id, "line-opacity", 1);
+                } else {
+                  map.setPaintProperty(layer.id, "line-opacity", 0);
+                }
               } else {
                 map.setPaintProperty(layer.id, "line-opacity", 0);
               }
@@ -189,10 +272,14 @@ const Map: React.FC<MapProps> = ({
 
             if (layer.type === "raster") {
               if (viewModeRef.current === "globe") {
-                map.setPaintProperty(layer.id, "raster-opacity", 1);
-                map.setPaintProperty(layer.id, "raster-saturation", -0.35);
-                map.setPaintProperty(layer.id, "raster-brightness-min", 0.78);
-                map.setPaintProperty(layer.id, "raster-brightness-max", 0.9);
+                if (showGlobeBackdrop) {
+                  map.setPaintProperty(layer.id, "raster-opacity", 1);
+                  map.setPaintProperty(layer.id, "raster-saturation", -0.35);
+                  map.setPaintProperty(layer.id, "raster-brightness-min", 0.78);
+                  map.setPaintProperty(layer.id, "raster-brightness-max", 0.9);
+                } else {
+                  map.setPaintProperty(layer.id, "raster-opacity", 0);
+                }
               } else {
                 map.setPaintProperty(layer.id, "raster-opacity", 0);
               }
@@ -209,6 +296,39 @@ const Map: React.FC<MapProps> = ({
       });
     } catch {
       // Ignore style mutation failures while style is still changing.
+    }
+
+    // If the caller requested no globe backdrop, defensively mute any remaining
+    // style layers (fills, lines, rasters) except for the country highlight
+    // layers we control. This ensures the ocean/background cannot paint a
+    // circular backdrop.
+    if (!showGlobeBackdrop) {
+      try {
+        const layers = map.getStyle().layers || [];
+        for (const layer of layers) {
+          if (!layer || !layer.id) continue;
+          const id = layer.id as string;
+          if (id === COUNTRY_LAYER_ID || id === COUNTRY_OUTLINE_LAYER_ID) continue;
+
+          try {
+            if (layer.type === "fill") {
+              map.setPaintProperty(id, "fill-opacity", 0);
+            }
+
+            if (layer.type === "line") {
+              map.setPaintProperty(id, "line-opacity", 0);
+            }
+
+            if (layer.type === "raster") {
+              map.setPaintProperty(id, "raster-opacity", 0);
+            }
+          } catch {
+            // ignore failures for layers that don't expose these properties
+          }
+        }
+      } catch {
+        // ignore overall errors
+      }
     }
   };
 
@@ -242,7 +362,7 @@ const Map: React.FC<MapProps> = ({
             "visited", "#CF8D45",
             "want-to-visit-again", "#FABE7D",
             "want-to-go", "#7A3F00",
-            "#FFEAD4"
+            "#EAB681"
           ],
           "fill-opacity": 0.72,
           "fill-outline-color": "rgba(0, 0, 0, 0)"
@@ -266,7 +386,7 @@ const Map: React.FC<MapProps> = ({
             "visited", "#7A3F00",
             "want-to-visit-again", "#CF8D45",
             "want-to-go", "#5A392B",
-            "#5A392B"
+            USING_LOCAL_STYLE ? "#5A392B" : "#5A392B"
           ],
           "line-width": ["interpolate", ["linear"], ["zoom"], 1, 0.9, 3, 1.4, 6, 2.2],
           "line-opacity": 0.95,
@@ -412,16 +532,12 @@ const Map: React.FC<MapProps> = ({
       return;
     }
 
-    const selectedCountrySet = new Set(
-      selectedCountriesRef.current.map((country) => country.trim()).filter((country) => country.length > 0)
-    );
+    // Keep reference for potential future use; currently not required for full-country rendering
+    void selectedCountriesRef.current;
 
     const highlightedFeatures =
       countriesDataRef.current?.features.map((feature) => {
         const countryName = feature.properties?.name?.trim() ?? "";
-        if (!selectedCountrySet.has(countryName)) {
-          return null;
-        }
 
         const geometry = feature.geometry;
         if (!geometry || (geometry.type !== "Polygon" && geometry.type !== "MultiPolygon")) {
@@ -466,6 +582,76 @@ const Map: React.FC<MapProps> = ({
     });
   };
 
+  const calculateCountryCenter = (countryName: string): [number, number] | null => {
+    const normalizedName = countryName.trim();
+    if (!normalizedName || !countriesDataRef.current) {
+      return null;
+    }
+
+    let lngSum = 0;
+    let latSum = 0;
+    let pointCount = 0;
+
+    const accumulateRing = (ring: number[][]) => {
+      ring.forEach((coordinatePair) => {
+        const lng = coordinatePair?.[0];
+        const lat = coordinatePair?.[1];
+
+        if (typeof lng !== "number" || typeof lat !== "number") {
+          return;
+        }
+
+        lngSum += lng;
+        latSum += lat;
+        pointCount += 1;
+      });
+    };
+
+    countriesDataRef.current.features.forEach((feature) => {
+      const featureCountryName = feature.properties?.name?.trim() ?? "";
+      if (featureCountryName !== normalizedName) {
+        return;
+      }
+
+      const geometry = feature.geometry;
+      if (!geometry) {
+        return;
+      }
+
+      if (geometry.type === "Polygon") {
+        accumulateRing(geometry.coordinates[0] ?? []);
+        return;
+      }
+
+      if (geometry.type === "MultiPolygon") {
+        geometry.coordinates.forEach((polygon) => {
+          accumulateRing(polygon[0] ?? []);
+        });
+      }
+    });
+
+    if (pointCount === 0) {
+      return null;
+    }
+
+    return [lngSum / pointCount, latSum / pointCount];
+  };
+
+  const centerMapOnCountry = (map: maptilersdk.Map, countryName: string) => {
+    const center = calculateCountryCenter(countryName);
+    if (!center) {
+      return;
+    }
+
+    map.easeTo({
+      center,
+      zoom: viewModeRef.current === "globe" ? 3.8 : 4.2,
+      pitch: 0,
+      duration: 900,
+      essential: true
+    });
+  };
+
   useEffect(() => {
     viewModeRef.current = viewMode;
 
@@ -484,7 +670,7 @@ const Map: React.FC<MapProps> = ({
 
         map.jumpTo({
           center: [0, 20],
-          zoom: 1.35,
+          zoom: initialGlobeZoomRef.current,
           pitch: 0
         });
       } else {
@@ -505,9 +691,36 @@ const Map: React.FC<MapProps> = ({
   }, [viewMode]);
 
   useEffect(() => {
+    focusCountryRef.current = focusCountry?.trim() || null;
+
+    const map = mapRef.current;
+    const countryToFocus = focusCountryRef.current;
+    if (!map || !countryToFocus) {
+      return;
+    }
+
+    const focusIfReady = () => {
+      if (!map.isStyleLoaded()) {
+        return;
+      }
+
+      if (lastFocusedCountryRef.current === countryToFocus) {
+        return;
+      }
+
+      lastFocusedCountryRef.current = countryToFocus;
+      centerMapOnCountry(map, countryToFocus);
+    };
+
+    focusIfReady();
+    map.once("idle", focusIfReady);
+  }, [focusCountry, countriesData, viewMode]);
+
+  useEffect(() => {
     countriesDataRef.current = countriesData;
     selectedCountriesRef.current = selectedCountries;
     countryStatusesRef.current = countryStatuses;
+    focusCountryRef.current = focusCountry?.trim() || null;
     scheduleHighlightRefresh();
 
     const map = mapRef.current;
@@ -515,7 +728,7 @@ const Map: React.FC<MapProps> = ({
       map.resize();
       map.triggerRepaint();
     }
-  }, [countriesData, selectedCountries]);
+  }, [countriesData, selectedCountries, countryStatuses, focusCountry]);
 
   useEffect(() => {
     userLocationRef.current = userLocation ?? null;
@@ -544,7 +757,9 @@ const Map: React.FC<MapProps> = ({
       },
       projection: viewModeRef.current === "globe" ? "globe" : "mercator",
       center: [0, 20],
-      zoom: viewModeRef.current === "globe" ? 1.35 : 1.15,
+      zoom: viewModeRef.current === "globe" ? initialGlobeZoomRef.current : 1.15,
+      minZoom: 0.5,
+      renderWorldCopies: false,
       pitch: 0,
       navigationControl: false,
       geolocateControl: false,
@@ -566,8 +781,9 @@ const Map: React.FC<MapProps> = ({
       lastFrameTime = timestamp;
 
       const hasUserLocation = Boolean(userLocationRef.current);
+      const hasCountryFocus = Boolean(focusCountryRef.current);
 
-      if (isUserInteracting || hasUserLocation || viewModeRef.current !== "globe") {
+      if (isUserInteracting || hasUserLocation || hasCountryFocus || viewModeRef.current !== "globe") {
         animationFrameId = window.requestAnimationFrame(animateRotation);
         return;
       }
@@ -579,10 +795,37 @@ const Map: React.FC<MapProps> = ({
     };
 
     map.on("load", () => {
+      try {
+        const canvasEl = map.getCanvas();
+        // Force multiply blend and transparent canvas to match Home's visual blending.
+        canvasEl.style.mixBlendMode = "multiply";
+        canvasEl.style.background = "transparent";
+        canvasEl.style.backgroundColor = "transparent";
+      } catch {
+        // ignore
+      }
+      // If the style fetch fails at runtime, fall back to the public demo style once.
+      let triedFallback = false;
+      map.on("error", (err: unknown) => {
+        try {
+          console.warn("TripJournal: Map error", err);
+          if (!map.isStyleLoaded() && !triedFallback) {
+            triedFallback = true;
+            try {
+              map.setStyle(SAFE_FALLBACK_STYLE);
+              console.info("TripJournal: Applied fallback style", "local-style-json");
+            } catch {
+              // ignore
+            }
+          }
+        } catch {
+          // ignore
+        }
+      });
       if (viewModeRef.current === "globe") {
         map.jumpTo({
           center: [0, 20],
-          zoom: 1.35,
+          zoom: initialGlobeZoomRef.current,
           pitch: 0
         });
       }
@@ -615,6 +858,11 @@ const Map: React.FC<MapProps> = ({
       ensureHighlightLayers(map);
       syncUserLocationOverlayAndCenter(map);
       scheduleHighlightRefresh();
+
+      if (focusCountryRef.current) {
+        centerMapOnCountry(map, focusCountryRef.current);
+        lastFocusedCountryRef.current = focusCountryRef.current;
+      }
 
       map.on("styledata", () => {
         if (!map.isStyleLoaded()) {

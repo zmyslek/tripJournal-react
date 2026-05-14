@@ -225,13 +225,8 @@ function Policies() {
                     </div>
                 </div>
 
-                <div className="grid gap-7 px-6 py-7 sm:px-9 lg:grid-cols-[minmax(0,1fr)_20rem]">
+                <div className="grid gap-7 px-6 py-7 sm:px-9 lg:grid-cols-[1fr_4fr]">
                     <aside>
-                        <h2 className="mt-3 font-[Adamina] text-[1.75rem] leading-tight text-[#fff4e7]">Policy center</h2>
-                        <p className="mt-3 m-0 font-[Cormorant_Garamond] text-[1.08rem] leading-[1.32] text-[#f6d7b5]">
-                            Practical notes about privacy, cookies, terms, and accessibility.
-                        </p>
-
                         <nav className="mt-8 flex flex-col gap-1" aria-label="Policy pages">
                             {policyLinks.map((link) => (
                                 <Link
@@ -239,8 +234,8 @@ function Policies() {
                                     to={`/policies/${link.slug}`}
                                     className={`px-0 py-2 font-[Adamina] text-[0.95rem] no-underline transition ${
                                         link.slug === currentSlug
-                                            ? "text-[#fff4e7] underline underline-offset-[0.35em]"
-                                            : "text-[#f6d7b5] opacity-82 hover:text-[#fff4e7] hover:opacity-100"
+                                            ? "text-[#cf8d45] underline underline-offset-[0.35em]"
+                                            : "text-[#7a3f00] opacity-80 hover:text-[#cf8d45] hover:opacity-100"
                                         }`}
                                 >
                                     {link.label}
@@ -249,35 +244,35 @@ function Policies() {
                         </nav>
                     </aside>
 
-                <article className="px-6 py-7 sm:px-9 sm:py-9">
-                    <p className="m-0 font-[Adamina] text-[0.72rem] uppercase tracking-[0.2em] text-[#7a3f00]">Last updated {policy.updated}</p>
-                    <h1 id="policy-title" className="mt-3 max-w-[15ch] font-[Adamina] text-[clamp(2.2rem,5vw,3.8rem)] leading-none text-[#50300d]">
-                        {policy.title}
-                    </h1>
-                    <p className="mt-4 max-w-[70ch] font-[Cormorant_Garamond] text-[1.32rem] leading-[1.36] text-[#5a392b]">{policy.intro}</p>
+                    <article className="px-6 py-7 sm:px-9 sm:py-9">
+                        <p className="m-0 font-[Adamina] text-[0.72rem] uppercase tracking-[0.2em] text-[#7a3f00]">Last updated {policy.updated}</p>
+                        <h1 className="mt-3 max-w-[15ch] font-[Adamina] text-[clamp(2.2rem,5vw,3.8rem)] leading-none text-[#50300d]">
+                            {policy.title}
+                        </h1>
+                        <p className="mt-4 max-w-[70ch] font-[Cormorant_Garamond] text-[1.32rem] leading-[1.36] text-[#5a392b]">{policy.intro}</p>
 
-                    <div className="mt-8 space-y-7">
-                        {policy.sections.map((section) => (
-                            <section
-                                key={section.heading}
-                                className="border-l-[3px] border-[#cf8d45] pl-5"
-                                aria-labelledby={`${currentSlug}-${section.heading.toLowerCase().replaceAll(" ", "-")}`}
-                            >
-                                <h2 id={`${currentSlug}-${section.heading.toLowerCase().replaceAll(" ", "-")}`} className="font-[Adamina] text-[1.16rem] text-[#50300d]">
-                                    {section.heading}
-                                </h2>
-                                <div className="mt-2 space-y-2">
-                                    {section.body.map((paragraph) => (
-                                        <p key={paragraph} className="m-0 max-w-[72ch] font-[Cormorant_Garamond] text-[1.12rem] leading-[1.48] text-[#5a392b]">
-                                            {paragraph}
-                                        </p>
-                                    ))}
-                                </div>
-                            </section>
-                        ))}
-                    </div>
-                </article>
-            </div>
+                        <div className="mt-8 space-y-7">
+                            {policy.sections.map((section) => (
+                                <section
+                                    key={section.heading}
+                                    className="border-l-[3px] border-[#cf8d45] pl-5"
+                                    aria-labelledby={`${currentSlug}-${section.heading.toLowerCase().replaceAll(" ", "-")}`}
+                                >
+                                    <h2 id={`${currentSlug}-${section.heading.toLowerCase().replaceAll(" ", "-")}`} className="font-[Adamina] text-[1.16rem] text-[#50300d]">
+                                        {section.heading}
+                                    </h2>
+                                    <div className="mt-2 space-y-2">
+                                        {section.body.map((paragraph, idx) => (
+                                            <p key={idx} className="m-0 max-w-[72ch] font-[Cormorant_Garamond] text-[1.12rem] leading-[1.48] text-[#5a392b]">
+                                                {paragraph}
+                                            </p>
+                                        ))}
+                                    </div>
+                                </section>
+                            ))}
+                        </div>
+                    </article>
+                </div>
             </div>
 
             {/* Scroll to top button */}
