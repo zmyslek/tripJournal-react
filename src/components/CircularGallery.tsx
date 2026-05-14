@@ -1,13 +1,19 @@
 import { Camera, Mesh, Plane, Program, Renderer, Texture, Transform } from 'ogl';
+import paperBackground from '../assets/wrinkled-paper.png';
 import { useEffect, useRef } from 'react';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 type GL = Renderer['gl'];
 
-function debounce<T extends (...args: any[]) => void>(func: T, wait: number) {
+type MutableTexture = Texture & {
+  update?: () => void;
+  needsUpdate?: boolean;
+};
+
+function debounce<T extends (...args: unknown[]) => void>(func: T, wait: number) {
   let timeout: number;
-  return function (this: any, ...args: Parameters<T>) {
+  return function (this: unknown, ...args: Parameters<T>) {
     window.clearTimeout(timeout);
     timeout = window.setTimeout(() => func.apply(this, args), wait);
   };
@@ -17,11 +23,13 @@ function lerp(p1: number, p2: number, t: number): number {
   return p1 + (p2 - p1) * t;
 }
 
-function autoBind(instance: any): void {
+function autoBind(instance: object): void {
+  const boundInstance = instance as Record<string, unknown>;
   const proto = Object.getPrototypeOf(instance);
   Object.getOwnPropertyNames(proto).forEach(key => {
-    if (key !== 'constructor' && typeof instance[key] === 'function') {
-      instance[key] = instance[key].bind(instance);
+    if (key !== 'constructor' && typeof boundInstance[key] === 'function') {
+      const method = boundInstance[key] as (this: unknown, ...args: unknown[]) => unknown;
+      boundInstance[key] = method.bind(instance);
     }
   });
 }
@@ -357,14 +365,15 @@ class Media {
         this.texture.generateMipmaps = pot;
         try {
           const glConst = this.gl as WebGLRenderingContext;
+          const mutableTexture = this.texture as MutableTexture;
           if (!pot) {
-            (this.texture as any).minFilter = glConst.LINEAR;
-            (this.texture as any).magFilter = glConst.LINEAR;
-            (this.texture as any).wrapS = glConst.CLAMP_TO_EDGE;
-            (this.texture as any).wrapT = glConst.CLAMP_TO_EDGE;
+            mutableTexture.minFilter = glConst.LINEAR;
+            mutableTexture.magFilter = glConst.LINEAR;
+            mutableTexture.wrapS = glConst.CLAMP_TO_EDGE;
+            mutableTexture.wrapT = glConst.CLAMP_TO_EDGE;
           } else {
-            (this.texture as any).minFilter = glConst.LINEAR_MIPMAP_LINEAR || glConst.LINEAR;
-            (this.texture as any).magFilter = glConst.LINEAR;
+            mutableTexture.minFilter = glConst.LINEAR_MIPMAP_LINEAR || glConst.LINEAR;
+            mutableTexture.magFilter = glConst.LINEAR;
           }
         } catch {
           // ignore
@@ -393,7 +402,29 @@ class Media {
 
     img.onerror = () => {
       console.error('[CircularGallery] image load error', this.image);
-      this.imageLoading = false;
+      // Fallback to a lightweight placeholder so the shader always has a valid image
+      try {
+        const fallbackImg = new Image();
+        fallbackImg.src = paperBackground;
+        fallbackImg.onload = () => {
+          try {
+            this.texture.image = fallbackImg;
+            const mutableTexture = this.texture as MutableTexture;
+            if (mutableTexture.update) mutableTexture.update();
+            else mutableTexture.needsUpdate = true;
+          } catch {
+            (this.texture as MutableTexture).needsUpdate = true;
+          }
+          this.program.uniforms.uImageSizes.value = [fallbackImg.naturalWidth || 1, fallbackImg.naturalHeight || 1];
+          this.imageLoaded = true;
+          this.imageLoading = false;
+        };
+        fallbackImg.onerror = () => {
+          this.imageLoading = false;
+        };
+      } catch {
+        this.imageLoading = false;
+      }
     };
 
     img.src = this.image;
@@ -528,7 +559,7 @@ class App {
     last: number;
     position?: number;
   };
-  onCheckDebounce: (...args: any[]) => void;
+  onCheckDebounce: () => void;
   renderer!: Renderer;
   gl!: GL;
   camera!: Camera;
@@ -716,7 +747,8 @@ class App {
       wheelEvent.preventDefault();
     }
 
-    const delta = wheelEvent.deltaY || (wheelEvent as any).wheelDelta || (wheelEvent as any).detail;
+    const legacyWheelEvent = wheelEvent as WheelEvent & { wheelDelta?: number; detail?: number };
+    const delta = wheelEvent.deltaY || legacyWheelEvent.wheelDelta || legacyWheelEvent.detail || 0;
     this.scroll.target += (delta > 0 ? this.scrollSpeed : -this.scrollSpeed) * 0.2;
     this.onCheckDebounce();
   }
@@ -909,6 +941,19 @@ class App {
   destroy() {
     window.cancelAnimationFrame(this.raf);
     this.removeEventListeners();
+    try {
+      // Attempt to explicitly lose the GL context to free GPU resources
+      const gl = this.renderer && this.renderer.gl;
+      if (gl && typeof gl.getExtension === 'function') {
+        const ext = (gl as WebGLRenderingContext).getExtension('WEBGL_lose_context') as { loseContext?: () => void } | null;
+        if (ext && typeof ext.loseContext === 'function') {
+          try { ext.loseContext(); } catch { /* ignore */ }
+        }
+      }
+    } catch {
+      /* ignore */
+    }
+
     if (this.renderer && this.renderer.gl && this.renderer.gl.canvas.parentNode) {
       this.renderer.gl.canvas.parentNode.removeChild(this.renderer.gl.canvas as HTMLCanvasElement);
     }

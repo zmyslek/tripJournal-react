@@ -65,7 +65,7 @@ export function useCountriesData() {
             }
         };
 
-        if (!countriesData) {
+        if (!cachedCountries) {
             void loadCountries();
         }
 
@@ -73,7 +73,7 @@ export function useCountriesData() {
             isMounted = false;
             abortController.abort();
         };
-    }, []);
+    }, [cachedCountries]);
 
     return { countriesData, isLoading, error };
 }

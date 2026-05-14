@@ -1,8 +1,9 @@
-import { readdir, writeFile } from 'node:fs/promises';
+import { readdir, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 const galleryRoot = path.resolve('public', 'temporary-gallery');
 const outputPath = path.join(galleryRoot, 'manifest.json');
+const githubFileSizeLimitBytes = 95 * 1024 * 1024;
 const mediaExtensions = new Set([
   '.avi',
   '.avif',
@@ -52,6 +53,11 @@ async function collectMediaFiles(directory, baseDirectory = directory) {
 
       const extension = path.extname(entry.name).toLowerCase();
       if (!mediaExtensions.has(extension)) {
+        return [];
+      }
+
+      const fileStats = await stat(absolutePath);
+      if (fileStats.size > githubFileSizeLimitBytes) {
         return [];
       }
 

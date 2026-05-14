@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, NavLink, Outlet } from "react-router-dom";
 import leatherBackground from "../assets/dark-leather.jpg";
 import paperBackground from "../assets/wrinkled-paper.png";
+import { Settings, HelpCircle } from "lucide-react";
 
 const COOKIE_CONSENT_KEY = "tripjournal:cookie-consent:v1";
 const policyLinks = [
@@ -36,16 +37,25 @@ function MainLayout() {
     }, [cookieConsent]);
 
     return (
-        <div className="min-h-screen flex flex-col">
-            <nav
-                className="grid grid-cols-[1fr_auto_1fr] items-center gap-[max(1rem,4%)] px-[max(1.25rem,5%)] py-[max(0.875rem,2%)] max-sm:gap-2 max-sm:px-[max(0.875rem,3%)]"
-                style={{ backgroundImage: `url(${leatherBackground})`, backgroundSize: "cover", backgroundPosition: "center" }}
-            >
-                <div aria-hidden="true" />
-                <NavLink to="/" className="col-start-2 text-center font-[Adamina] text-[clamp(1.5rem,5vw,1.875rem)] leading-none font-normal text-[#ffead4] no-underline" aria-label="Home">
-                    TripJournal
-                </NavLink>
-                <div className="col-start-3 flex items-center justify-self-end gap-[max(0.75rem,3%)] max-sm:gap-1.5">
+        <div className="flex min-h-screen w-full flex-col overflow-x-hidden">
+                <nav
+                    className="w-full max-w-full overflow-x-hidden box-border flex items-center justify-between gap-[max(1rem,4%)] px-[max(1.25rem,5%)] py-[max(0.875rem,2%)] max-sm:gap-2 max-sm:px-[max(0.875rem,3%)]"
+                    style={{ backgroundImage: `url(${leatherBackground})`, backgroundSize: "cover", backgroundPosition: "center" }}
+                >
+                    <div className="min-w-0 flex-1 text-center">
+                        <NavLink to="/countries" className="text-center font-[Adamina] text-[clamp(1.5rem,5vw,1.875rem)] leading-none font-normal text-[#ffead4] no-underline" aria-label="Countries">
+                            TripJournal
+                        </NavLink>
+                    </div>
+                    <div className="min-w-0 flex items-center justify-end gap-[max(0.75rem,3%)] max-sm:gap-1.5">
+                    <NavLink
+                        to="/countries"
+                        className={({ isActive }) =>
+                            `font-[Adamina] text-[clamp(0.875rem,2.5vw,1.5rem)] leading-[1.2] font-normal text-[#ffead4] no-underline transition ${isActive ? "underline underline-offset-[0.18em]" : ""}`
+                        }
+                    >
+                        Countries
+                    </NavLink>
                     <NavLink
                         to="/gallery"
                         className={({ isActive }) =>
@@ -60,8 +70,19 @@ function MainLayout() {
                             `inline-flex h-[clamp(1.75rem,6vw,2.6rem)] w-[clamp(1.75rem,6vw,2.6rem)] items-center justify-center rounded-full bg-[linear-gradient(135deg,#cf8d45,#ffd6aa)] font-[Adamina] text-[clamp(0.7rem,1.5vw,0.95rem)] font-semibold tracking-[0.06em] text-[#50300d] no-underline shadow-[0_2px_8px_rgb(80_48_13_/_35%)] transition ${isActive ? "outline outline-2 outline-offset-2 outline-[#ffead4]" : ""}`
                         }
                         aria-label="Profile"
+                        title="Profile"
                     >
                         JD
+                    </NavLink>
+                    <NavLink
+                        to="/settings"
+                        className={({ isActive }) =>
+                            `inline-flex h-[2.4rem] w-[2.4rem] items-center justify-center rounded-full border border-transparent bg-[#5a392b] text-[#ffead4] no-underline transition hover:bg-[#7a3f00] ${isActive ? "outline outline-2 outline-offset-2 outline-[#ffead4]" : ""}`
+                        }
+                        aria-label="Settings"
+                        title="Settings"
+                    >
+                        <Settings size={18} />
                     </NavLink>
                     <NavLink
                         to="/help-center"
@@ -71,13 +92,13 @@ function MainLayout() {
                         aria-label="Help Center"
                         title="Help Center"
                     >
-                        ?
+                        <HelpCircle size={16} />
                     </NavLink>
                 </div>
             </nav>
 
             <main
-                className="flex-1 bg-no-repeat bg-center bg-fixed"
+                className="flex-1 w-full overflow-x-hidden bg-no-repeat bg-center bg-fixed"
                 style={{ backgroundImage: `url(${paperBackground})`, backgroundSize: "cover" }}
             >
                 <Outlet />
@@ -131,14 +152,24 @@ function MainLayout() {
                 <nav className="flex min-w-[10rem] flex-col items-end gap-[max(0.25rem,0.5%)] max-sm:items-start" aria-label="Policies">
                     <div className="mb-[max(0.25rem,0.5%)] flex items-center gap-[max(0.5rem,1%)]">
                         <p className="m-0 font-[Adamina] text-[clamp(0.5rem,1vw,0.58rem)] uppercase tracking-[0.2em] text-[#f6d7b5]">Policies</p>
-                        <Link
-                            to="/help-center"
-                            className="inline-flex h-[clamp(1.25rem,3vw,1.5rem)] w-[clamp(1.25rem,3vw,1.5rem)] items-center justify-center rounded-full border border-[#ffead4]/65 font-[Adamina] text-[clamp(0.65rem,1.2vw,0.76rem)] text-[#ffead4] no-underline transition hover:bg-[#ffead4]/12"
-                            aria-label="Help Center"
-                            title="Help Center"
-                        >
-                            ?
-                        </Link>
+                        <div className="flex items-center gap-2">
+                            <Link
+                                to="/settings"
+                                className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-transparent bg-[#5a392b] text-[#ffead4] no-underline transition hover:bg-[#7a3f00]"
+                                aria-label="Settings"
+                                title="Settings"
+                            >
+                                <Settings size={16} />
+                            </Link>
+                            <Link
+                                to="/help-center"
+                                className="inline-flex h-[clamp(1.25rem,3vw,1.5rem)] w-[clamp(1.25rem,3vw,1.5rem)] items-center justify-center rounded-full border border-[#ffead4]/65 font-[Adamina] text-[clamp(0.65rem,1.2vw,0.76rem)] text-[#ffead4] no-underline transition hover:bg-[#ffead4]/12"
+                                aria-label="Help Center"
+                                title="Help Center"
+                            >
+                                <HelpCircle size={14} />
+                            </Link>
+                        </div>
                     </div>
                     {policyLinks.map((link) => (
                         <Link

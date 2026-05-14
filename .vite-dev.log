@@ -1,0 +1,31 @@
+
+> tripjournal-react@0.0.0 dev
+> vite --host 127.0.0.1
+
+[2m20:55:48[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m Re-optimizing dependencies because vite config has changed
+
+  [32m[1mVITE[22m v8.0.10[39m  [2mready in [0m[1m38726[22m[2m[0m ms[22m
+
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://127.0.0.1:[1m5173[22m/[39m
+[2m20:56:03[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [optimizer] scanning dependencies...
+[2m20:56:10[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [optimizer] bundling dependencies...
+[2m22:05:38[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/PhotoUploadButton.tsx[22m
+[2m22:05:39[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/PhotoUploadButton.tsx[22m
+[2m00:38:09[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/css/index.css[22m
+[2m00:38:09[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/css/index.css, /src/pages/Itineraries.tsx[22m
+[2m00:38:09[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/css/index.css[22m
+[2m00:38:09[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/css/index.css[22m
+[2m00:38:09[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/css/index.css[22m
+[2m00:39:49[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/css/index.css, /src/pages/Itineraries.tsx[22m
+[2m11:08:16[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/css/index.css, /src/pages/Itineraries.tsx[22m
+[2m11:21:14[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/css/index.css[22m
+[2m11:21:14[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/css/index.css, /src/pages/Itineraries.tsx[22m
+[2m11:21:14[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/css/index.css[22m
+[2m11:21:15[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/css/index.css[22m
+[2m11:25:51[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/CircularGallery.tsx, /src/css/index.css[22m
+[2m11:26:01[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/CircularGallery.tsx, /src/css/index.css[22m
+[2m11:29:22[22m [36m[1m[vite][22m[39m [32mvite.config.ts changed, restarting server...[39m
+[2m11:29:23[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m Re-optimizing dependencies because vite config has changed
+[2m11:29:23[22m [36m[1m[vite][22m[39m server restarted.
+[2m11:29:24[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [optimizer] scanning dependencies...
+[2m11:29:26[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [optimizer] bundling dependencies...
