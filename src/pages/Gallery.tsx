@@ -153,10 +153,11 @@ function buildGalleryCollections(relativePaths: string[]) {
 
             if (segments.length >= 2) {
                 const countryName = segments[0];
-                const cityName = segments[1];
-                const sectionLabel = `${countryName}/${cityName}`;
-                // Use the rest of the path (after country/city) as the base identifier
-                const remainder = segments.slice(2).join('/') || base;
+                const cityName = segments.length >= 3 ? segments[1] : 'Imported';
+                const sectionLabel = segments.length >= 3 ? `${countryName}/${cityName}` : countryName;
+                // Use the rest of the path (after country/city) as the base identifier.
+                // Two-segment paths are folder/file imports, so keep them together.
+                const remainder = segments.length >= 3 ? segments.slice(2).join('/') || base : filename;
                 const sectionBucket = sectionMap.get(sectionLabel) ?? new Map();
                 let items: Array<{ kind: MediaKind; src: string; text: string; ext: string }> = sectionBucket.get(remainder) ?? [];
                 
