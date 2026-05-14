@@ -3,7 +3,7 @@ import path from 'node:path';
 
 const galleryRoot = path.resolve('public', 'temporary-gallery');
 const outputPath = path.join(galleryRoot, 'manifest.json');
-const githubFileSizeLimitBytes = 95 * 1024 * 1024;
+const githubRecommendedFileSizeLimitBytes = 50 * 1024 * 1024;
 const mediaExtensions = new Set([
   '.avi',
   '.avif',
@@ -56,12 +56,17 @@ async function collectMediaFiles(directory, baseDirectory = directory) {
         return [];
       }
 
-      const fileStats = await stat(absolutePath);
-      if (fileStats.size > githubFileSizeLimitBytes) {
+      const relativePath = path.relative(baseDirectory, absolutePath).split(path.sep).join('/');
+      if (relativePath.startsWith('Spain/Valencia/') && extension === '.mp4') {
         return [];
       }
 
-      return [path.relative(baseDirectory, absolutePath).split(path.sep).join('/')];
+      const fileStats = await stat(absolutePath);
+      if (fileStats.size > githubRecommendedFileSizeLimitBytes) {
+        return [];
+      }
+
+      return [relativePath];
     })
   );
 

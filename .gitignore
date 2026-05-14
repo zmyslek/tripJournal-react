@@ -19,18 +19,6 @@ Desktop.ini
 ~$*.xls
 *.tmp
 
-# GitHub rejects files over 100 MB; keep oversized local gallery videos out of Pages commits.
-public/temporary-gallery/Spain/Valencia/20260425_131905.mp4
-public/temporary-gallery/Spain/Valencia/20260425_134825.mp4
-public/temporary-gallery/Spain/Valencia/20260425_135244.mp4
-public/temporary-gallery/Spain/Valencia/20260425_135358.mp4
-public/temporary-gallery/Spain/Valencia/20260425_135619.mp4
-public/temporary-gallery/Spain/Valencia/20260425_140203.mp4
-public/temporary-gallery/Spain/Valencia/20260425_140532.mp4
-docs/temporary-gallery/Spain/Valencia/20260425_131905.mp4
-docs/temporary-gallery/Spain/Valencia/20260425_134825.mp4
-docs/temporary-gallery/Spain/Valencia/20260425_135244.mp4
-docs/temporary-gallery/Spain/Valencia/20260425_135358.mp4
-docs/temporary-gallery/Spain/Valencia/20260425_135619.mp4
-docs/temporary-gallery/Spain/Valencia/20260425_140203.mp4
-docs/temporary-gallery/Spain/Valencia/20260425_140532.mp4
+# Keep local gallery videos that are too heavy for GitHub Pages out of commits.
+public/temporary-gallery/Spain/Valencia/*.mp4
+docs/temporary-gallery/Spain/Valencia/*.mp4

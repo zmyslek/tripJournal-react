@@ -1,1 +1,0 @@
-var e=e=>e.properties?.name?.trim()??``;export{e as t};
