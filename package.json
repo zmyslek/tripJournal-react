@@ -14,10 +14,12 @@
   },
   "dependencies": {
     "@maptiler/sdk": "^3.11.1",
+    "@stripe/stripe-js": "^9.7.0",
     "@supabase/supabase-js": "^2.107.0",
     "heic2any": "^0.0.4",
     "lucide-react": "^1.14.0",
     "ogl": "^1.0.11",
+    "posthog-js": "^1.379.1",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-router-dom": "^7.14.1"

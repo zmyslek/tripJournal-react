@@ -5,6 +5,7 @@ import darkLeatherTexture from "../assets/dark-leather.jpg";
 import Map from "../components/Map";
 import { supabase } from "../lib/supabase/client";
 import { createStoredUserProfileFromSession, saveStoredUserProfile, type AuthProvider } from "../types/user";
+import { capturePostHogEvent, identifyPostHogUser } from "../lib/posthog";
 
 interface WelcomeFormState {
   email: string;
@@ -132,6 +133,10 @@ function Welcome() {
       const sessionUser = data.session?.user;
       if (sessionUser) {
         saveAuth(getAuthUserFromSession(sessionUser));
+        identifyPostHogUser(sessionUser.id, {
+          email: sessionUser.email ?? undefined,
+          auth_provider: sessionUser.app_metadata?.provider ?? "email"
+        });
         setIsAuthReady(true);
         redirectIfOnWelcome();
       }
@@ -145,6 +150,10 @@ function Welcome() {
       }
 
       saveAuth(getAuthUserFromSession(session.user));
+      identifyPostHogUser(session.user.id, {
+        email: session.user.email ?? undefined,
+        auth_provider: session.user.app_metadata?.provider ?? "email"
+      });
       setIsAuthReady(true);
       redirectIfOnWelcome();
     });
@@ -222,9 +231,21 @@ function Welcome() {
         const sessionUser = data.session?.user;
         if (sessionUser) {
           saveAuth(getAuthUserFromSession(sessionUser));
+          identifyPostHogUser(sessionUser.id, {
+            email: sessionUser.email ?? undefined,
+            auth_provider: sessionUser.app_metadata?.provider ?? "email"
+          });
+          capturePostHogEvent("account_created", {
+            method: sessionUser.app_metadata?.provider ? sessionUser.app_metadata.provider : "email",
+            confirmationRequired: false
+          });
           setIsAuthReady(true);
           navigate("/countries", { replace: true });
         } else {
+          capturePostHogEvent("account_created", {
+            method: "email",
+            confirmationRequired: true
+          });
           setFormState((prev) => ({
             ...prev,
             error: "Account created. Check your email to confirm sign-in if email confirmation is enabled."
@@ -242,6 +263,10 @@ function Welcome() {
 
         if (data.session?.user) {
           saveAuth(getAuthUserFromSession(data.session.user));
+          identifyPostHogUser(data.session.user.id, {
+            email: data.session.user.email ?? undefined,
+            auth_provider: data.session.user.app_metadata?.provider ?? "email"
+          });
           setIsAuthReady(true);
           navigate("/countries", { replace: true });
         }

@@ -147,6 +147,7 @@ function App() {
         .map(([countryName]) => countryName);
 
     return (
+        <>
         <Routes>
             <Route
                 path="/welcome"
@@ -256,6 +257,7 @@ function App() {
             <Route path="/" element={<Navigate to="/welcome" replace />} />
             <Route path="*" element={<Navigate to="/welcome" replace />} />
         </Routes>
+        </>
     );
 }
 

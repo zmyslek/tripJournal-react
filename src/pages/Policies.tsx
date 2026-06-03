@@ -18,7 +18,7 @@ type Policy = {
 const policies: Record<string, Policy> = {
     privacy: {
         title: "Privacy Policy",
-        updated: "May 1, 2026",
+        updated: "June 3, 2026",
         intro: "TripJournal is a personal travel journal experience. This policy explains what the app stores, what stays on your device, and which browser or third-party services may be involved.",
         sections: [
             {
@@ -39,7 +39,7 @@ const policies: Record<string, Policy> = {
                 heading: "Maps and external services",
                 body: [
                     "TripJournal uses MapTiler to display map tiles and styles. When the map loads, your browser may send standard technical information, including your IP address and map request details, to MapTiler.",
-                    "The app also loads fonts from Google Fonts, which may involve requests from your browser to Google's font servers."
+                    "If you accept analytics, TripJournal uses PostHog to record pageviews, frontend errors, and a small set of in-app events. The app also loads fonts from Google Fonts, which may involve requests from your browser to Google's font servers."
                 ]
             },
             {
@@ -60,8 +60,8 @@ const policies: Record<string, Policy> = {
     },
     cookies: {
         title: "Cookie Policy",
-        updated: "May 1, 2026",
-        intro: "TripJournal does not currently set tracking cookies. It uses browser local storage for small pieces of app state.",
+        updated: "June 3, 2026",
+        intro: "TripJournal uses browser local storage for small pieces of app state and can use analytics only after you accept the notice.",
         sections: [
             {
                 heading: "What is stored",
@@ -80,14 +80,14 @@ const policies: Record<string, Policy> = {
             {
                 heading: "Analytics and advertising",
                 body: [
-                    "TripJournal does not currently use analytics cookies, advertising cookies, or cross-site tracking pixels.",
-                    "If those features are added later, this policy should be updated before they are enabled."
+                    "If you accept, TripJournal uses PostHog for product analytics and frontend error tracking.",
+                    "TripJournal does not use advertising cookies or cross-site tracking pixels."
                 ]
             },
             {
                 heading: "Managing storage",
                 body: [
-                    "Rejecting the notice only saves that rejection choice. It does not erase existing country status selections.",
+                    "Rejecting the notice saves that rejection choice and keeps analytics disabled until you change it.",
                     "To remove saved choices, clear this site's local storage in your browser."
                 ]
             }

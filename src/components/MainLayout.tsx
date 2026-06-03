@@ -4,6 +4,7 @@ import leatherBackground from "../assets/dark-leather.jpg";
 import paperBackground from "../assets/wrinkled-paper.png";
 import { Settings, HelpCircle } from "lucide-react";
 import { getStoredUserProfile } from "../types/user";
+import { setPostHogConsent } from "../lib/posthog";
 
 const COOKIE_CONSENT_KEY = "tripjournal:cookie-consent:v1";
 const policyLinks = [
@@ -29,6 +30,8 @@ function MainLayout() {
         if (cookieConsent === null) {
             return;
         }
+
+        setPostHogConsent(cookieConsent === "accepted");
 
         try {
             localStorage.setItem(COOKIE_CONSENT_KEY, cookieConsent);
@@ -121,8 +124,9 @@ function MainLayout() {
                     <div className="min-w-0">
                         <p className="m-0 font-[Adamina] text-[clamp(1rem,2vw,1.1rem)] text-[#50300d]">Cookie notice</p>
                         <p className="mt-[max(0.375rem,1%)] m-0 font-[Cormorant_Garamond] text-[clamp(0.95rem,2vw,1.05rem)] leading-[1.35] text-[#50300d]">
-                            TripJournal stores your cookie choice and country statuses in this browser. It does not use advertising
-                            cookies or tracking pixels.
+                            TripJournal stores your cookie choice and country statuses in this browser. If you accept, it also uses
+                            PostHog for product analytics and frontend error tracking. It does not use advertising cookies or tracking
+                            pixels.
                             {" "}
                             <Link to="/policies/cookies" className="font-semibold text-[#7a3f00] underline underline-offset-2">
                                 Read the cookie policy

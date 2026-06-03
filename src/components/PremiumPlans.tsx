@@ -1,6 +1,8 @@
-import { useMemo, useState } from 'react';
-import { Check, Lock, X } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { Check, CreditCard, Loader2, Lock, X } from 'lucide-react';
 import { SUBSCRIPTION_TIERS, getUserSubscription, type SubscriptionPlan } from '../types/subscription';
+import { capturePostHogEvent } from '../lib/posthog';
+import { redirectToBillingPortal, redirectToCheckout, refreshCachedSubscription, type CheckoutPlan } from '../lib/stripeCheckout';
 
 export type PremiumPlansProps = Record<string, never>;
 
@@ -14,7 +16,7 @@ interface IntegrationCard {
 interface PaymentMethodOption {
     id: 'stripe' | 'paypal' | 'apple-pay' | 'google-pay' | 'ideal';
     label: string;
-    status: 'planned' | 'preview';
+    status: 'planned' | 'active';
 }
 
 const selectablePlans: SubscriptionPlan[] = ['free', 'monthly', 'yearly', 'lifetime'];
@@ -41,19 +43,50 @@ const integrationCards: IntegrationCard[] = [
 ];
 
 const paymentMethods: PaymentMethodOption[] = [
-    { id: 'stripe', label: 'Stripe', status: 'preview' },
+    { id: 'stripe', label: 'Stripe', status: 'active' },
     { id: 'paypal', label: 'PayPal', status: 'planned' },
     { id: 'apple-pay', label: 'Apple Pay', status: 'planned' },
     { id: 'google-pay', label: 'Google Pay', status: 'planned' },
     { id: 'ideal', label: 'iDEAL', status: 'planned' }
 ];
 
+function isCheckoutPlan(plan: SubscriptionPlan | null): plan is CheckoutPlan {
+    return plan === 'monthly' || plan === 'yearly' || plan === 'lifetime';
+}
+
 export function PremiumPlans() {
     const currentSubscription = getUserSubscription();
     const [isPlanModalOpen, setIsPlanModalOpen] = useState(false);
     const [requestedPlan, setRequestedPlan] = useState<SubscriptionPlan | null>(null);
+    const [checkoutPlan, setCheckoutPlan] = useState<CheckoutPlan | null>(null);
+    const [billingPortalLoading, setBillingPortalLoading] = useState(false);
+    const [paymentMessage, setPaymentMessage] = useState<string | null>(null);
+    const [, setRefreshCount] = useState(0);
 
     const hasPremium = useMemo(() => currentSubscription.plan !== 'free', [currentSubscription.plan]);
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const checkoutStatus = params.get('checkout');
+
+        if (!checkoutStatus) {
+            return;
+        }
+
+        if (checkoutStatus === 'success') {
+            setPaymentMessage('Payment received. Your subscription status is refreshing from Stripe.');
+            void refreshCachedSubscription().then(() => setRefreshCount((count) => count + 1));
+            capturePostHogEvent('stripe_checkout_returned', { status: 'success' });
+        }
+
+        if (checkoutStatus === 'canceled') {
+            setPaymentMessage('Checkout was canceled. No payment was taken.');
+            capturePostHogEvent('stripe_checkout_returned', { status: 'canceled' });
+        }
+
+        const nextUrl = `${window.location.pathname}${window.location.hash}`;
+        window.history.replaceState({}, '', nextUrl);
+    }, []);
 
     const openPlanModal = (planId: SubscriptionPlan) => {
         setRequestedPlan(planId);
@@ -61,8 +94,46 @@ export function PremiumPlans() {
     };
 
     const closePlanModal = () => {
+        if (checkoutPlan) {
+            return;
+        }
+
         setIsPlanModalOpen(false);
         setRequestedPlan(null);
+    };
+
+    const startCheckout = async () => {
+        if (!isCheckoutPlan(requestedPlan)) {
+            closePlanModal();
+            return;
+        }
+
+        setCheckoutPlan(requestedPlan);
+        setPaymentMessage(null);
+
+        try {
+            capturePostHogEvent('stripe_checkout_started', { plan: requestedPlan });
+            await redirectToCheckout(requestedPlan);
+        } catch (err) {
+            const message = err instanceof Error ? err.message : 'Unable to start Stripe checkout.';
+            setPaymentMessage(message);
+            setCheckoutPlan(null);
+        }
+    };
+
+    const openBillingPortal = async () => {
+        setBillingPortalLoading(true);
+        setPaymentMessage(null);
+
+        try {
+            capturePostHogEvent('stripe_billing_portal_started', { plan: currentSubscription.plan });
+            await redirectToBillingPortal();
+        } catch (err) {
+            const message = err instanceof Error ? err.message : 'Unable to open Stripe billing portal.';
+            setPaymentMessage(message);
+        } finally {
+            setBillingPortalLoading(false);
+        }
     };
 
     return (
@@ -75,6 +146,12 @@ export function PremiumPlans() {
                     Choose the plan that works best for you. All premium plans include unlimited access to all features.
                 </p>
             </div>
+
+            {paymentMessage ? (
+                <div className="rounded-lg border border-[#CF8D45]/45 bg-[#FFF4E7] px-4 py-3 font-cormorant text-sm font-semibold text-[#7A3F00]">
+                    {paymentMessage}
+                </div>
+            ) : null}
 
             {/* Plans Grid */}
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -212,14 +289,14 @@ export function PremiumPlans() {
             <section className="rounded-lg border border-[#CF8D45]/35 bg-[#FFEAD4]/30 p-6">
                 <h4 className="font-adamina text-xl text-[#7A3F00]">Payment methods</h4>
                 <p className="mt-1 font-cormorant text-[#7A3F00]/75">
-                    Checkout setup is in progress. Methods below are prepared for launch.
+                    Stripe Checkout is active for paid plans. Wallets and local payment methods appear when enabled in Stripe.
                 </p>
                 <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     {paymentMethods.map((method) => (
                         <div key={method.id} className="rounded-[0.8rem] border border-[#CF8D45]/45 bg-[#FFF4E7] px-4 py-3">
                             <p className="font-adamina text-[0.95rem] text-[#50300D]">{method.label}</p>
                             <p className="mt-1 font-cormorant text-sm text-[#7A3F00]/70">
-                                {method.status === 'preview' ? 'Preview ready' : 'Planned'}
+                                {method.status === 'active' ? 'Active' : 'Planned'}
                             </p>
                         </div>
                     ))}
@@ -237,15 +314,17 @@ export function PremiumPlans() {
                     </div>
                     <button
                         type="button"
+                        onClick={openBillingPortal}
+                        disabled={billingPortalLoading}
                         className="rounded-full border border-[#7A3F00] bg-[#5A392B] px-4 py-2 text-sm font-semibold text-[#FFEAD4] transition hover:bg-[#7A3F00]"
                     >
-                        Download invoices
+                        {billingPortalLoading ? 'Opening...' : 'Manage billing'}
                     </button>
                 </div>
 
                 <div className="mt-4 rounded-[0.9rem] border border-dashed border-[#CF8D45] bg-[#FFF4E7]/80 p-4">
                     <p className="font-cormorant text-[#7A3F00]/80">
-                        No invoices yet. Paid invoices will appear here after payment processing is enabled.
+                        Stripe Billing Portal handles invoices, payment methods, cancellations, and subscription updates.
                     </p>
                 </div>
             </section>
@@ -253,7 +332,7 @@ export function PremiumPlans() {
             {/* FAQ or Additional Info */}
             <div className="mt-8 rounded-lg border border-[#CF8D45]/35 bg-[#FFEAD4]/30 p-6">
                 <p className="font-cormorant text-sm text-[#7A3F00]/80 mb-4">
-                    <span className="font-semibold">Note:</span> Payment processing is currently in development. Premium features are available for testing with your current plan selection.
+                    <span className="font-semibold">Note:</span> Subscription access is confirmed by Stripe webhooks before the app treats a plan as active.
                 </p>
                 <p className="font-cormorant text-xs text-[#7A3F00]/60">
                     First 50 beta users get lifetime premium access for free. Updates coming soon!
@@ -281,31 +360,44 @@ export function PremiumPlans() {
                         </div>
 
                         <p className="mt-4 font-cormorant text-[1.08rem] text-[#7A3F00]/80">
-                            Self-serve plan changes are not enabled yet. This request is shown for preview and onboarding flows.
+                            Continue to Stripe Checkout to pay securely. TripJournal never stores card details.
                         </p>
 
                         <div className="mt-5 rounded-[0.85rem] border border-[#CF8D45]/45 bg-[#FFF4E7] p-4">
                             <p className="font-cormorant text-sm text-[#7A3F00]/80">
-                                Next step: use Stripe checkout once payment wiring is enabled.
+                                {requestedPlan === 'lifetime'
+                                    ? 'Lifetime is a one-time payment.'
+                                    : 'Monthly and yearly plans renew automatically through Stripe Billing.'}
                             </p>
                         </div>
 
-                        <div className="mt-6 flex justify-end gap-3">
-                            <button
-                                type="button"
-                                onClick={closePlanModal}
-                                className="rounded-full border border-[#CF8D45] bg-[#FFF7EE] px-4 py-2 text-sm font-semibold text-[#50300D] transition hover:bg-[#F6DFC1]"
-                            >
-                                Close
-                            </button>
-                            <button
-                                type="button"
-                                onClick={closePlanModal}
-                                className="rounded-full border border-[#7A3F00] bg-[#5A392B] px-4 py-2 text-sm font-semibold text-[#FFEAD4] transition hover:bg-[#7A3F00]"
-                            >
-                                Request access
-                            </button>
-                        </div>
+                                                <div className="mt-6 flex justify-end gap-3">
+                                                    <button
+                                                        type="button"
+                                                        onClick={closePlanModal}
+                                                        className="rounded-full border border-[#CF8D45] bg-[#FFF7EE] px-4 py-2 text-sm font-semibold text-[#50300D] transition hover:bg-[#F6DFC1]"
+                                                    >
+                                                        Close
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={startCheckout}
+                                                        disabled={Boolean(checkoutPlan)}
+                                                        className="inline-flex items-center gap-2 rounded-full border border-[#7A3F00] bg-[#5A392B] px-4 py-2 text-sm font-semibold text-[#FFEAD4] transition hover:bg-[#7A3F00] disabled:cursor-wait disabled:opacity-75"
+                                                    >
+                                                        {checkoutPlan ? (
+                                                            <>
+                                                                <Loader2 size={16} className="animate-spin" />
+                                                                Opening Stripe
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <CreditCard size={16} />
+                                                                Continue to checkout
+                                                            </>
+                                                        )}
+                                                    </button>
+                                                </div>
                     </div>
                 </div>
             ) : null}

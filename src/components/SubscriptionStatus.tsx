@@ -6,12 +6,12 @@ import { getStoredUserProfile } from '../types/user';
 export function SubscriptionStatus() {
     const storedUser = getStoredUserProfile();
     const subscription = getUserSubscription();
-    const plan = storedUser?.subscriptionTier ?? subscription.plan;
+    const plan = subscription.plan;
     const tier = SUBSCRIPTION_TIERS[plan];
     
     const isBeta = plan === 'beta-lifetime' || storedUser?.isLifetimeFree === true;
     const isPremium = plan !== 'free' || isBeta;
-    const renewalDate = getFormattedRenewalDate(storedUser?.subscriptionEndsAt ?? subscription.renewalDate);
+    const renewalDate = getFormattedRenewalDate(subscription.renewalDate);
 
     return (
         <div className="mt-8 space-y-4">
