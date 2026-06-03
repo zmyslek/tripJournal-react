@@ -16,7 +16,7 @@ interface IntegrationCard {
 interface PaymentMethodOption {
     id: 'stripe' | 'paypal' | 'apple-pay' | 'google-pay' | 'ideal';
     label: string;
-    status: 'planned' | 'active';
+    status: 'planned' | 'active' | 'preview';
 }
 
 const selectablePlans: SubscriptionPlan[] = ['free', 'monthly', 'yearly', 'lifetime'];
@@ -60,8 +60,14 @@ export function PremiumPlans() {
     const [requestedPlan, setRequestedPlan] = useState<SubscriptionPlan | null>(null);
     const [checkoutPlan, setCheckoutPlan] = useState<CheckoutPlan | null>(null);
     const [billingPortalLoading, setBillingPortalLoading] = useState(false);
-    const [paymentMessage, setPaymentMessage] = useState<string | null>(null);
+    const [paymentMessage, setPaymentMessage] = useState<string | null>(() => {
+        const status = new URLSearchParams(window.location.search).get('checkout');
+        if (status === 'success') return 'Payment received. Your subscription status is refreshing from Stripe.';
+        if (status === 'canceled') return 'Checkout was canceled. No payment was taken.';
+        return null;
+    });
     const [, setRefreshCount] = useState(0);
+    const [isRedirecting, setIsRedirecting] = useState(false);
 
     const hasPremium = useMemo(() => currentSubscription.plan !== 'free', [currentSubscription.plan]);
 
@@ -74,13 +80,11 @@ export function PremiumPlans() {
         }
 
         if (checkoutStatus === 'success') {
-            setPaymentMessage('Payment received. Your subscription status is refreshing from Stripe.');
             void refreshCachedSubscription().then(() => setRefreshCount((count) => count + 1));
             capturePostHogEvent('stripe_checkout_returned', { status: 'success' });
         }
 
         if (checkoutStatus === 'canceled') {
-            setPaymentMessage('Checkout was canceled. No payment was taken.');
             capturePostHogEvent('stripe_checkout_returned', { status: 'canceled' });
         }
 
@@ -100,14 +104,16 @@ export function PremiumPlans() {
 
         setIsPlanModalOpen(false);
         setRequestedPlan(null);
+        setIsRedirecting(false);
     };
 
-    const startCheckout = async () => {
+    const handleContinueToCheckout = async () => {
         if (!isCheckoutPlan(requestedPlan)) {
             closePlanModal();
             return;
         }
 
+        setIsRedirecting(true);
         setCheckoutPlan(requestedPlan);
         setPaymentMessage(null);
 
@@ -115,9 +121,11 @@ export function PremiumPlans() {
             capturePostHogEvent('stripe_checkout_started', { plan: requestedPlan });
             await redirectToCheckout(requestedPlan);
         } catch (err) {
+            console.error('Stripe redirect failed:', err);
             const message = err instanceof Error ? err.message : 'Unable to start Stripe checkout.';
             setPaymentMessage(message);
             setCheckoutPlan(null);
+            setIsRedirecting(false);
         }
     };
 
@@ -290,13 +298,16 @@ export function PremiumPlans() {
                 <h4 className="font-adamina text-xl text-[#7A3F00]">Payment methods</h4>
                 <p className="mt-1 font-cormorant text-[#7A3F00]/75">
                     Stripe Checkout is active for paid plans. Wallets and local payment methods appear when enabled in Stripe.
+                    Checkout setup is in progress. Methods below are prepared for launch.
                 </p>
                 <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     {paymentMethods.map((method) => (
                         <div key={method.id} className="rounded-[0.8rem] border border-[#CF8D45]/45 bg-[#FFF4E7] px-4 py-3">
                             <p className="font-adamina text-[0.95rem] text-[#50300D]">{method.label}</p>
                             <p className="mt-1 font-cormorant text-sm text-[#7A3F00]/70">
-                                {method.status === 'active' ? 'Active' : 'Planned'}
+                                {method.status === 'active' ? 'Active' : 
+                                 method.status === 'preview' ? 'Preview ready' : 
+                                 'Planned'}
                             </p>
                         </div>
                     ))}
@@ -318,13 +329,14 @@ export function PremiumPlans() {
                         disabled={billingPortalLoading}
                         className="rounded-full border border-[#7A3F00] bg-[#5A392B] px-4 py-2 text-sm font-semibold text-[#FFEAD4] transition hover:bg-[#7A3F00]"
                     >
-                        {billingPortalLoading ? 'Opening...' : 'Manage billing'}
+                        {billingPortalLoading ? 'Opening...' : 'Manage billing & invoices'}
                     </button>
                 </div>
 
                 <div className="mt-4 rounded-[0.9rem] border border-dashed border-[#CF8D45] bg-[#FFF4E7]/80 p-4">
                     <p className="font-cormorant text-[#7A3F00]/80">
                         Stripe Billing Portal handles invoices, payment methods, cancellations, and subscription updates.
+                        No invoices yet. Paid invoices will appear here after payment processing is enabled.
                     </p>
                 </div>
             </section>
@@ -333,6 +345,7 @@ export function PremiumPlans() {
             <div className="mt-8 rounded-lg border border-[#CF8D45]/35 bg-[#FFEAD4]/30 p-6">
                 <p className="font-cormorant text-sm text-[#7A3F00]/80 mb-4">
                     <span className="font-semibold">Note:</span> Subscription access is confirmed by Stripe webhooks before the app treats a plan as active.
+                    <span className="font-semibold">Note:</span> Payment processing is currently in development. Premium features are available for testing with your current plan selection.
                 </p>
                 <p className="font-cormorant text-xs text-[#7A3F00]/60">
                     First 50 beta users get lifetime premium access for free. Updates coming soon!
@@ -375,20 +388,21 @@ export function PremiumPlans() {
                                                     <button
                                                         type="button"
                                                         onClick={closePlanModal}
+                                                        disabled={isRedirecting}
                                                         className="rounded-full border border-[#CF8D45] bg-[#FFF7EE] px-4 py-2 text-sm font-semibold text-[#50300D] transition hover:bg-[#F6DFC1]"
                                                     >
                                                         Close
                                                     </button>
                                                     <button
                                                         type="button"
-                                                        onClick={startCheckout}
-                                                        disabled={Boolean(checkoutPlan)}
-                                                        className="inline-flex items-center gap-2 rounded-full border border-[#7A3F00] bg-[#5A392B] px-4 py-2 text-sm font-semibold text-[#FFEAD4] transition hover:bg-[#7A3F00] disabled:cursor-wait disabled:opacity-75"
+                                                        onClick={handleContinueToCheckout}
+                                                        disabled={isRedirecting}
+                                                        className="inline-flex items-center gap-2 rounded-full border border-[#7A3F00] bg-[#5A392B] px-4 py-2 text-sm font-semibold text-[#FFEAD4] transition hover:bg-[#7A3F00] disabled:opacity-50 disabled:cursor-not-allowed"
                                                     >
-                                                        {checkoutPlan ? (
+                                                        {isRedirecting ? (
                                                             <>
                                                                 <Loader2 size={16} className="animate-spin" />
-                                                                Opening Stripe
+                                                                Redirecting...
                                                             </>
                                                         ) : (
                                                             <>

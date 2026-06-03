@@ -6,11 +6,11 @@ import type { CountryStatus } from "../pages/Home";
 
 const ENV = (import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env;
 
-const MAPTILER_API_KEY = ENV?.VITE_MAPTILER_API_KEY ?? "";
+const MAPTILER_API_KEY = ENV?.VITE_MAPTILER_API_KEY ?? "FelxstvCdS6k0g9YnLdK";
 
-const MAPTILER_STYLE_ID = ENV?.VITE_MAPTILER_STYLE_ID ?? "basic";
+const MAPTILER_STYLE_ID = ENV?.VITE_MAPTILER_STYLE_ID ?? "0196a729-51f8-7a04-8b3a-22b8d925ea1b";
 
-const MAPTILER_STYLE_URL = ENV?.VITE_MAPTILER_STYLE_URL;
+const MAPTILER_STYLE_URL = ENV?.VITE_MAPTILER_STYLE_URL || (MAPTILER_API_KEY === "FelxstvCdS6k0g9YnLdK" ? `https://api.maptiler.com/maps/${MAPTILER_STYLE_ID}/style.json?key=${MAPTILER_API_KEY}` : undefined);
 const GLOBE_BACKGROUND_COLOR = "#FFEAD4";
 const GLOBE_WATER_COLOR = "#FFEAD4";
 const SAFE_FALLBACK_STYLE: StyleSpecification = {
