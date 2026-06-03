@@ -3,6 +3,8 @@ import { seedSampleData } from "../lib/adminApi";
 
 export default function AdminSeed() {
     const [token, setToken] = useState("");
+    const [basicUser, setBasicUser] = useState("");
+    const [basicPass, setBasicPass] = useState("");
     const [running, setRunning] = useState(false);
     const [result, setResult] = useState<string | null>(null);
 
@@ -10,7 +12,7 @@ export default function AdminSeed() {
         setRunning(true);
         setResult(null);
         try {
-            const data = await seedSampleData(token || undefined);
+            const data = await seedSampleData(token || undefined, basicUser || undefined, basicPass || undefined);
             setResult(`OK: user=${data.user_id} trip=${data.trip_id}`);
         } catch (err: any) {
             setResult(`Error: ${err?.message || String(err)}`);
@@ -27,6 +29,16 @@ export default function AdminSeed() {
             <label className="block mb-3">
                 <span className="font-[Adamina] text-sm">Admin token</span>
                 <input value={token} onChange={(e) => setToken(e.target.value)} className="mt-1 w-full rounded border px-3 py-2" />
+            </label>
+
+            <p className="text-sm text-[#50300d] mb-2">Optional: if your deployment requires Basic Auth, provide credentials below.</p>
+            <label className="block mb-3">
+                <span className="font-[Adamina] text-sm">Basic auth user</span>
+                <input value={basicUser} onChange={(e) => setBasicUser(e.target.value)} className="mt-1 w-full rounded border px-3 py-2" />
+            </label>
+            <label className="block mb-3">
+                <span className="font-[Adamina] text-sm">Basic auth password</span>
+                <input type="password" value={basicPass} onChange={(e) => setBasicPass(e.target.value)} className="mt-1 w-full rounded border px-3 py-2" />
             </label>
 
             <div className="flex gap-3">

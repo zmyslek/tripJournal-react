@@ -86,7 +86,7 @@ function Home({ countryStatuses, countryAddedDates, setCountryStatus, visitedCou
     const [searchTerm, setSearchTerm] = useState("");
     const [mapViewMode, setMapViewMode] = useState<"globe" | "map">("globe");
     const [userLocation, setUserLocation] = useState<{ lng: number; lat: number } | null>(null);
-    const [mapStatusFilters, setMapStatusFilters] = useState<Set<CountryStatus | "not-explored">>(
+    const [mapFilters, setMapFilters] = useState<Set<CountryStatus | "not-explored">>(
         new Set(["visited", "want-to-visit-again"])
     );
     const [listStatusFilters, setListStatusFilters] = useState<Set<CountryStatus | "not-explored">>(
@@ -186,9 +186,9 @@ function Home({ countryStatuses, countryAddedDates, setCountryStatus, visitedCou
     const highlightedCountries = useMemo(() => {
         return countryNames.filter((countryName) => {
             const status = countryStatuses[countryName] ?? "not-explored";
-            return mapStatusFilters.has(status);
+            return mapFilters.has(status);
         });
-    }, [countryNames, countryStatuses, mapStatusFilters]);
+    }, [countryNames, countryStatuses, mapFilters]);
 
     const filteredCountryNames = useMemo(() => {
         const query = searchTerm.trim().toLowerCase();
@@ -232,13 +232,13 @@ function Home({ countryStatuses, countryAddedDates, setCountryStatus, visitedCou
     }, [countryNames, countryStatuses]);
 
     const toggleMapStatusFilter = (status: CountryStatus | "not-explored") => {
-        const newFilters = new Set(mapStatusFilters);
+        const newFilters = new Set(mapFilters);
         if (newFilters.has(status)) {
             newFilters.delete(status);
         } else {
             newFilters.add(status);
         }
-        setMapStatusFilters(newFilters);
+        setMapFilters(newFilters);
     };
 
     const getStatusColor = (status: CountryStatus | "not-explored" | null): string => {
@@ -434,7 +434,7 @@ function Home({ countryStatuses, countryAddedDates, setCountryStatus, visitedCou
                                     type="button"
                                     onClick={() => toggleMapStatusFilter("visited")}
                                     className={`px-4 py-2 rounded-full text-sm font-[Cormorant_Garamond] transition ${
-                                        mapStatusFilters.has("visited")
+                                        mapFilters.has("visited")
                                             ? "bg-[#CF8D45] text-[#ffead4] border border-[#CF8D45]"
                                             : "bg-[#CF8D45]/20 text-[#6a4630] border border-[#CF8D45]/40 hover:bg-[#CF8D45]/30"
                                     }`}
@@ -445,7 +445,7 @@ function Home({ countryStatuses, countryAddedDates, setCountryStatus, visitedCou
                                     type="button"
                                     onClick={() => toggleMapStatusFilter("want-to-go")}
                                     className={`px-4 py-2 rounded-full text-sm font-[Cormorant_Garamond] transition ${
-                                        mapStatusFilters.has("want-to-go")
+                                        mapFilters.has("want-to-go")
                                             ? "bg-[#7A3F00] text-[#ffead4] border border-[#7A3F00]"
                                             : "bg-[#7A3F00]/20 text-[#6a4630] border border-[#7A3F00]/40 hover:bg-[#7A3F00]/30"
                                     }`}
@@ -456,7 +456,7 @@ function Home({ countryStatuses, countryAddedDates, setCountryStatus, visitedCou
                                     type="button"
                                     onClick={() => toggleMapStatusFilter("want-to-visit-again")}
                                     className={`px-4 py-2 rounded-full text-sm font-[Cormorant_Garamond] transition ${
-                                        mapStatusFilters.has("want-to-visit-again")
+                                        mapFilters.has("want-to-visit-again")
                                             ? "bg-[#FABE7D] text-[#50300d] border border-[#FABE7D]"
                                             : "bg-[#FABE7D]/20 text-[#6a4630] border border-[#FABE7D]/40 hover:bg-[#FABE7D]/30"
                                     }`}
@@ -467,7 +467,7 @@ function Home({ countryStatuses, countryAddedDates, setCountryStatus, visitedCou
                                     type="button"
                                     onClick={() => toggleMapStatusFilter("not-explored")}
                                     className={`px-4 py-2 rounded-full text-sm font-[Cormorant_Garamond] transition ${
-                                        mapStatusFilters.has("not-explored")
+                                        mapFilters.has("not-explored")
                                             ? "bg-[#7a3f00] text-[#ffead4] border border-[#7a3f00]"
                                             : "bg-[#7a3f00]/20 text-[#6a4630] border border-[#7a3f00]/40 hover:bg-[#7a3f00]/30"
                                     }`}

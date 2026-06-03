@@ -3,6 +3,7 @@ import { Link, NavLink, Outlet } from "react-router-dom";
 import leatherBackground from "../assets/dark-leather.jpg";
 import paperBackground from "../assets/wrinkled-paper.png";
 import { Settings, HelpCircle } from "lucide-react";
+import { getStoredUserProfile } from "../types/user";
 
 const COOKIE_CONSENT_KEY = "tripjournal:cookie-consent:v1";
 const policyLinks = [
@@ -72,7 +73,18 @@ function MainLayout() {
                         aria-label="Profile"
                         title="Profile"
                     >
-                        JD
+                        {(() => {
+                            try {
+                                const user = getStoredUserProfile();
+                                const name = user?.username || user?.email || '';
+                                const parts = name.split(/\s+/).filter(Boolean);
+                                if (parts.length === 0) return 'JD';
+                                const initials = parts.slice(0,2).map(p => p[0]?.toUpperCase()).join('');
+                                return initials || 'JD';
+                            } catch {
+                                return 'JD';
+                            }
+                        })()}
                     </NavLink>
                     <NavLink
                         to="/settings"
