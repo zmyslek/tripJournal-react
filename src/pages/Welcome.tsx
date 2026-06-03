@@ -1,8 +1,10 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useCountriesData } from "../hooks/useCountriesData";
 import darkLeatherTexture from "../assets/dark-leather.jpg";
 import Map from "../components/Map";
+import { supabase } from "../lib/supabase/client";
+import { createStoredUserProfileFromSession, saveStoredUserProfile, type AuthProvider } from "../types/user";
 
 interface WelcomeFormState {
   email: string;
@@ -16,7 +18,7 @@ const AUTH_CACHE_KEY = "tripjournal:auth:v1";
 export interface AuthUser {
   id: string;
   email: string;
-  provider: "email" | "google" | "facebook";
+  provider: AuthProvider;
   loginTime: string;
 }
 
@@ -37,6 +39,19 @@ function saveAuth(user: AuthUser): void {
   } catch {
     // Silently fail if localStorage unavailable
   }
+}
+
+function getAuthUserFromSession(sessionUser: { id: string; email?: string | null; app_metadata?: { provider?: string } }): AuthUser {
+  const profile = createStoredUserProfileFromSession(sessionUser);
+
+  saveStoredUserProfile(profile);
+
+  return {
+    id: profile.id,
+    email: profile.email,
+    provider: profile.authProvider,
+    loginTime: profile.loginTime
+  };
 }
 
 function GoogleIcon() {
@@ -82,6 +97,7 @@ function IconButton({
 
 function Welcome() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { countriesData, isLoading: isCountriesLoading } = useCountriesData();
   const [isAuthReady, setIsAuthReady] = useState(() => Boolean(getStoredAuth()));
   const [formState, setFormState] = useState<WelcomeFormState>({
@@ -91,6 +107,53 @@ function Welcome() {
     isLoading: false,
   });
   const [showSignUp, setShowSignUp] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const redirectIfOnWelcome = () => {
+      if (location.pathname === "/welcome") {
+        navigate("/countries", { replace: true });
+      }
+    };
+
+    async function syncSession() {
+      const { data, error } = await supabase.auth.getSession();
+
+      if (!isMounted) {
+        return;
+      }
+
+      if (error) {
+        setFormState((prev) => ({ ...prev, error: "Unable to read your Supabase session." }));
+        return;
+      }
+
+      const sessionUser = data.session?.user;
+      if (sessionUser) {
+        saveAuth(getAuthUserFromSession(sessionUser));
+        setIsAuthReady(true);
+        redirectIfOnWelcome();
+      }
+    }
+
+    void syncSession();
+
+    const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session?.user) {
+        return;
+      }
+
+      saveAuth(getAuthUserFromSession(session.user));
+      setIsAuthReady(true);
+      redirectIfOnWelcome();
+    });
+
+    return () => {
+      isMounted = false;
+      subscription.subscription.unsubscribe();
+    };
+  }, [location.pathname, navigate]);
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormState((prev) => ({
@@ -140,37 +203,75 @@ function Welcome() {
       return;
     }
 
-    // Simulate auth delay
     setFormState((prev) => ({ ...prev, isLoading: true }));
-    await new Promise((resolve) => setTimeout(resolve, 800));
 
-    // Mock successful auth - save to localStorage
-    const newUser: AuthUser = {
-      id: `user_${Date.now()}`,
-      email: formState.email,
-      provider: "email",
-      loginTime: new Date().toISOString(),
-    };
-    saveAuth(newUser);
-    setIsAuthReady(true);
-    setFormState((prev) => ({ ...prev, isLoading: false }));
+    try {
+      if (showSignUp) {
+        const { data, error } = await supabase.auth.signUp({
+          email: formState.email,
+          password: formState.password,
+          options: {
+            emailRedirectTo: window.location.origin
+          }
+        });
+
+        if (error) {
+          throw error;
+        }
+
+        const sessionUser = data.session?.user;
+        if (sessionUser) {
+          saveAuth(getAuthUserFromSession(sessionUser));
+          setIsAuthReady(true);
+          navigate("/countries", { replace: true });
+        } else {
+          setFormState((prev) => ({
+            ...prev,
+            error: "Account created. Check your email to confirm sign-in if email confirmation is enabled."
+          }));
+        }
+      } else {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: formState.email,
+          password: formState.password
+        });
+
+        if (error) {
+          throw error;
+        }
+
+        if (data.session?.user) {
+          saveAuth(getAuthUserFromSession(data.session.user));
+          setIsAuthReady(true);
+          navigate("/countries", { replace: true });
+        }
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Authentication failed. Please try again.";
+      setFormState((prev) => ({ ...prev, error: message }));
+    } finally {
+      setFormState((prev) => ({ ...prev, isLoading: false }));
+    }
   };
 
   const handleSocialAuth = async (provider: "google" | "facebook") => {
     setFormState((prev) => ({ ...prev, isLoading: true, error: "" }));
-    await new Promise((resolve) => setTimeout(resolve, 1000));
 
-    // Mock social auth
-    const mockEmail = `user_${provider}@${provider}.com`;
-    const newUser: AuthUser = {
-      id: `${provider}_${Date.now()}`,
-      email: mockEmail,
-      provider,
-      loginTime: new Date().toISOString(),
-    };
-    saveAuth(newUser);
-    setIsAuthReady(true);
-    setFormState((prev) => ({ ...prev, isLoading: false }));
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: window.location.origin
+        }
+      });
+
+      if (error) {
+        throw error;
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Social sign-in failed. Please try again.";
+      setFormState((prev) => ({ ...prev, error: message, isLoading: false }));
+    }
   };
 
   const handleEnterTripJournal = () => {
@@ -221,7 +322,7 @@ function Welcome() {
               onClick={handleEnterTripJournal}
               className="rounded-full border border-[#EAB681] bg-[#EAB681] px-6 py-2.5 font-cormorant text-base font-semibold text-[#1a1a1a] transition hover:brightness-110"
             >
-              {isAuthReady ? "Continue to countries" : "Explore countries as guest"}
+              {isAuthReady ? "Continue to countries" : "Explore as guest"}
             </button>
           </div>
 

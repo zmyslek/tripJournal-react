@@ -1,14 +1,17 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { getUserSubscription, getFormattedRenewalDate, SUBSCRIPTION_TIERS } from '../types/subscription';
+import { getStoredUserProfile } from '../types/user';
 
 export function SubscriptionStatus() {
+    const storedUser = getStoredUserProfile();
     const subscription = getUserSubscription();
-    const tier = SUBSCRIPTION_TIERS[subscription.plan];
+    const plan = storedUser?.subscriptionTier ?? subscription.plan;
+    const tier = SUBSCRIPTION_TIERS[plan];
     
-    const isBeta = subscription.plan === 'beta-lifetime';
-    const isPremium = subscription.plan !== 'free';
-    const renewalDate = getFormattedRenewalDate(subscription.renewalDate);
+    const isBeta = plan === 'beta-lifetime' || storedUser?.isLifetimeFree === true;
+    const isPremium = plan !== 'free' || isBeta;
+    const renewalDate = getFormattedRenewalDate(storedUser?.subscriptionEndsAt ?? subscription.renewalDate);
 
     return (
         <div className="mt-8 space-y-4">
@@ -63,7 +66,7 @@ export function SubscriptionStatus() {
             </div>
 
             {/* Feature Highlights for Free Users */}
-            {subscription.plan === 'free' && (
+            {plan === 'free' && !isBeta && (
                 <div className="rounded-lg bg-[#FFEAD4]/50 p-4 border border-[#8f5a20]/35">
                     <p className="font-cormorant text-sm font-semibold text-[#7A3F00] mb-2">
                         Premium unlocks:

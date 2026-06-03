@@ -11,6 +11,8 @@ import passportAvatar from "../assets/avatars/passport.png";
 import postcardAvatar from "../assets/avatars/postcard.png";
 import suitcaseAvatar from "../assets/avatars/suitcase.png";
 import paperBackground from "../assets/wrinkled-paper.png";
+import { supabase } from "../lib/supabase/client";
+import { clearStoredUserProfile, getStoredUserProfile, saveStoredUserProfile } from "../types/user";
 
 export type ProfileProps = Record<string, never>;
 
@@ -38,8 +40,8 @@ const profileStats = [
 ];
 
 const defaultProfile: ProfileForm = {
-    name: "John Doe",
-    email: "john.doe@example.com",
+    name: "Traveler",
+    email: "",
     travelStyle: "Slow routes, old streets, good notes",
     currentFocus: "Planning the next chapter",
     avatar: compassAvatar
@@ -49,6 +51,18 @@ const PROFILE_CACHE_KEY = "tripjournal:profile:v1";
 const AUTH_CACHE_KEY = "tripjournal:auth:v1";
 
 function getCachedProfile(): ProfileForm {
+    const storedUser = getStoredUserProfile();
+
+    if (storedUser) {
+        return {
+            name: storedUser.username ?? storedUser.email.split("@")[0] ?? defaultProfile.name,
+            email: storedUser.email || defaultProfile.email,
+            travelStyle: storedUser.travelStyle || defaultProfile.travelStyle,
+            currentFocus: storedUser.currentFocus || defaultProfile.currentFocus,
+            avatar: storedUser.avatarUrl || defaultProfile.avatar
+        };
+    }
+
     try {
         const cachedProfile = localStorage.getItem(PROFILE_CACHE_KEY);
         if (!cachedProfile) {
@@ -146,6 +160,17 @@ export function Profile() {
 
     const saveProfile = () => {
         setProfile(draftProfile);
+        const storedUser = getStoredUserProfile();
+        if (storedUser) {
+            saveStoredUserProfile({
+                ...storedUser,
+                username: draftProfile.name.trim() || storedUser.username,
+                email: draftProfile.email.trim() || storedUser.email,
+                avatarUrl: draftProfile.avatar || storedUser.avatarUrl,
+                travelStyle: draftProfile.travelStyle,
+                currentFocus: draftProfile.currentFocus
+            });
+        }
         try {
             localStorage.setItem(PROFILE_CACHE_KEY, JSON.stringify(draftProfile));
         } catch {
@@ -155,14 +180,19 @@ export function Profile() {
     };
 
     const handleLogout = () => {
+        void supabase.auth.signOut();
+
         try {
             localStorage.removeItem(AUTH_CACHE_KEY);
         } catch {
             // Ignore storage failures and still continue with navigation.
         }
 
+        clearStoredUserProfile();
+
         navigate("/welcome", { replace: true });
     };
+
 
     return (
         <section className="mx-auto w-full max-w-[min(95vw,1380px)] px-[max(1.25rem,5%)] py-[max(2rem,6vh)] text-[#50300d]" aria-labelledby="profile-title">
@@ -209,6 +239,43 @@ export function Profile() {
                                 <div className="rounded-[0.8rem] border border-[#cf8d45]/25 bg-[#ffead4]/45 px-4 py-3">
                                     <p className="font-[Adamina] text-[0.78rem] uppercase tracking-[0.18em] text-[#7a3f00]">Current focus</p>
                                     <p className="mt-1 font-[Cormorant_Garamond] text-[1.25rem] text-[#50300d]">{profile.currentFocus}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="mt-7 rounded-[1rem] border border-[#cf8d45]/35 bg-[#fff4e7]/72 p-5 shadow-[inset_0_0_16px_rgb(143_90_32_/_7%)]">
+                            <div className="flex flex-wrap items-center justify-between gap-3">
+                                <div>
+                                    <p className="font-[Adamina] text-[0.72rem] uppercase tracking-[0.18em] text-[#7a3f00]">User record</p>
+                                    <h2 className="mt-2 font-[Adamina] text-[1.35rem] text-[#50300d]">ERD-backed account data</h2>
+                                </div>
+                                <p className="font-[Cormorant_Garamond] text-[1rem] text-[#7a3f00]">Stored locally until Supabase sync is added</p>
+                            </div>
+
+                            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                                <div className="rounded-[0.8rem] border border-[#cf8d45]/25 bg-[#ffead4]/45 px-4 py-3">
+                                    <p className="font-[Adamina] text-[0.78rem] uppercase tracking-[0.18em] text-[#7a3f00]">User ID</p>
+                                    <p className="mt-1 break-all font-[Cormorant_Garamond] text-[1.05rem] text-[#50300d]">{getStoredUserProfile()?.id || "Not set yet"}</p>
+                                </div>
+                                <div className="rounded-[0.8rem] border border-[#cf8d45]/25 bg-[#ffead4]/45 px-4 py-3">
+                                    <p className="font-[Adamina] text-[0.78rem] uppercase tracking-[0.18em] text-[#7a3f00]">Subscription tier</p>
+                                    <p className="mt-1 font-[Cormorant_Garamond] text-[1.05rem] text-[#50300d]">{getStoredUserProfile()?.subscriptionTier || "free"}</p>
+                                </div>
+                                <div className="rounded-[0.8rem] border border-[#cf8d45]/25 bg-[#ffead4]/45 px-4 py-3">
+                                    <p className="font-[Adamina] text-[0.78rem] uppercase tracking-[0.18em] text-[#7a3f00]">Subscription status</p>
+                                    <p className="mt-1 font-[Cormorant_Garamond] text-[1.05rem] text-[#50300d]">{getStoredUserProfile()?.subscriptionStatus || "inactive"}</p>
+                                </div>
+                                <div className="rounded-[0.8rem] border border-[#cf8d45]/25 bg-[#ffead4]/45 px-4 py-3">
+                                    <p className="font-[Adamina] text-[0.78rem] uppercase tracking-[0.18em] text-[#7a3f00]">Profile created</p>
+                                    <p className="mt-1 font-[Cormorant_Garamond] text-[1.05rem] text-[#50300d]">{getStoredUserProfile()?.createdAt ? new Date(getStoredUserProfile()!.createdAt).toLocaleDateString() : "Not set yet"}</p>
+                                </div>
+                                <div className="rounded-[0.8rem] border border-[#cf8d45]/25 bg-[#ffead4]/45 px-4 py-3">
+                                    <p className="font-[Adamina] text-[0.78rem] uppercase tracking-[0.18em] text-[#7a3f00]">Auth provider</p>
+                                    <p className="mt-1 font-[Cormorant_Garamond] text-[1.05rem] text-[#50300d]">{getStoredUserProfile()?.authProvider || "email"}</p>
+                                </div>
+                                <div className="rounded-[0.8rem] border border-[#cf8d45]/25 bg-[#ffead4]/45 px-4 py-3">
+                                    <p className="font-[Adamina] text-[0.78rem] uppercase tracking-[0.18em] text-[#7a3f00]">Lifetime beta</p>
+                                    <p className="mt-1 font-[Cormorant_Garamond] text-[1.05rem] text-[#50300d]">{getStoredUserProfile()?.isLifetimeFree ? "Yes" : "No"}</p>
                                 </div>
                             </div>
                         </div>
@@ -262,6 +329,7 @@ export function Profile() {
                                         >
                                             Log out
                                         </button>
+                                        {/* Admin seeding moved to /admin-seed (protected) */}
                                     </aside>
                 </div>
             </div>

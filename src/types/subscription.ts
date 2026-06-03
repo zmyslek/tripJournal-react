@@ -1,4 +1,6 @@
-export type SubscriptionPlan = 'free' | 'monthly' | 'yearly' | 'lifetime' | 'beta-lifetime';
+import { getCachedUserRecord, saveCachedUserRecord, type UserRecord, type UserSubscriptionPlan } from './user';
+
+export type SubscriptionPlan = UserSubscriptionPlan;
 
 export interface UserSubscription {
     plan: SubscriptionPlan;
@@ -90,7 +92,36 @@ export const SUBSCRIPTION_TIERS: Record<SubscriptionPlan, SubscriptionTier> = {
 
 const SUBSCRIPTION_STORAGE_KEY = 'tripjournal:subscription:v1';
 
+function mapRecordToSubscription(record: UserRecord): UserSubscription {
+    return {
+        plan: record.subscriptionTier,
+        renewalDate: record.subscriptionEndsAt ?? record.trialEndsAt,
+        startDate: record.createdAt,
+        cancelledAt: record.subscriptionStatus === 'canceled' ? record.subscriptionEndsAt ?? record.trialEndsAt : null
+    };
+}
+
+function updateCachedUserRecord(subscription: UserSubscription): void {
+    const cachedUser = getCachedUserRecord();
+    if (!cachedUser) {
+        return;
+    }
+
+    saveCachedUserRecord({
+        ...cachedUser,
+        subscriptionTier: subscription.plan,
+        subscriptionStatus: subscription.plan === 'free' ? 'inactive' : 'active',
+        subscriptionEndsAt: subscription.renewalDate,
+        trialEndsAt: subscription.plan === 'free' ? cachedUser.trialEndsAt : cachedUser.trialEndsAt
+    });
+}
+
 export function getUserSubscription(): UserSubscription {
+    const cachedUser = getCachedUserRecord();
+    if (cachedUser) {
+        return mapRecordToSubscription(cachedUser);
+    }
+
     try {
         const stored = localStorage.getItem(SUBSCRIPTION_STORAGE_KEY);
         if (stored) {
@@ -111,6 +142,7 @@ export function getUserSubscription(): UserSubscription {
 export function saveUserSubscription(subscription: UserSubscription): void {
     try {
         localStorage.setItem(SUBSCRIPTION_STORAGE_KEY, JSON.stringify(subscription));
+        updateCachedUserRecord(subscription);
     } catch (err) {
         console.error('[Subscription] Failed to save subscription:', err);
     }

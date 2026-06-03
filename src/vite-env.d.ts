@@ -2,6 +2,15 @@
 
 declare module "*.css";
 
+interface ImportMetaEnv {
+	readonly VITE_SUPABASE_URL: string;
+	readonly VITE_SUPABASE_ANON_KEY: string;
+}
+
+interface ImportMeta {
+	readonly env: ImportMetaEnv;
+}
+
 // Allow importing common image/video/asset formats used by the gallery.
 declare module "*.avif";
 declare module "*.heic";
