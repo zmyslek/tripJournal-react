@@ -11,6 +11,7 @@ const HelpCenter = lazy(() => import("./pages/HelpCenter"));
 const Policies = lazy(() => import("./pages/Policies"));
 const CountryTrips = lazy(() => import("./pages/CountryTrips"));
 const Itineraries = lazy(() => import("./pages/Itineraries"));
+const AdminSeed = lazy(() => import("./pages/AdminSeed"));
 const COUNTRY_STATUS_CACHE_KEY = "tripjournal:country-statuses:v1";
 const COUNTRY_ADDED_CACHE_KEY = "tripjournal:country-added-dates:v1";
 
@@ -209,6 +210,14 @@ function App() {
                     element={
                         <Suspense fallback={<RouteFallback />}>
                             <Settings />
+                        </Suspense>
+                    }
+                />
+                <Route
+                    path="/admin-seed"
+                    element={
+                        <Suspense fallback={<RouteFallback />}>
+                            <AdminSeed />
                         </Suspense>
                     }
                 />
