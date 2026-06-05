@@ -11,8 +11,8 @@ const MAPTILER_API_KEY = ENV?.VITE_MAPTILER_API_KEY ?? "FelxstvCdS6k0g9YnLdK";
 const MAPTILER_STYLE_ID = ENV?.VITE_MAPTILER_STYLE_ID ?? "0196a729-51f8-7a04-8b3a-22b8d925ea1b";
 
 const MAPTILER_STYLE_URL = ENV?.VITE_MAPTILER_STYLE_URL || (MAPTILER_API_KEY === "FelxstvCdS6k0g9YnLdK" ? `https://api.maptiler.com/maps/${MAPTILER_STYLE_ID}/style.json?key=${MAPTILER_API_KEY}` : undefined);
-const GLOBE_BACKGROUND_COLOR = "#FFEAD4";
-const GLOBE_WATER_COLOR = "#FFEAD4";
+const GLOBE_BACKGROUND_COLOR = "#F2DFC4";
+const GLOBE_WATER_COLOR = "#F2DFC4";
 const SAFE_FALLBACK_STYLE: StyleSpecification = {
   version: 8,
   name: "TripJournal Local Globe",
@@ -359,12 +359,12 @@ const Map: React.FC<MapProps> = ({
           "fill-color": [
             "match",
             ["get", "status"],
-            "visited", "#CF8D45",
-            "want-to-visit-again", "#FABE7D",
-            "want-to-go", "#7A3F00",
-            "#EAB681"
+            "visited", "#2C1506",
+            "want-to-visit-again", "#7A3F00",
+            "want-to-go", "#C07830",
+            "#E8D5BC"
           ],
-          "fill-opacity": 0.72,
+          "fill-opacity": 0.92,
           "fill-outline-color": "rgba(0, 0, 0, 0)"
         }
       }, beforeId);
@@ -383,10 +383,10 @@ const Map: React.FC<MapProps> = ({
           "line-color": [
             "match",
             ["get", "status"],
-            "visited", "#7A3F00",
-            "want-to-visit-again", "#CF8D45",
-            "want-to-go", "#5A392B",
-            USING_LOCAL_STYLE ? "#5A392B" : "#5A392B"
+            "visited", "#1A0D03",
+            "want-to-visit-again", "#4A2800",
+            "want-to-go", "#7A4A10",
+            USING_LOCAL_STYLE ? "#C4A882" : "#C4A882"
           ],
           "line-width": ["interpolate", ["linear"], ["zoom"], 1, 0.9, 3, 1.4, 6, 2.2],
           "line-opacity": 0.95,
