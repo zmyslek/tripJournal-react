@@ -2,6 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+const mainUrl = process.env.VITE_APP_URL || "https://trip-journal-react.vercel.app";
 
 const app = express();
 app.use(cors());
@@ -20,7 +21,7 @@ app.post("/create-checkout-session", async (req, res) => {
         quantity: 1,
       },
     ],
-    return_url: "http://localhost:3000/success?session_id={CHECKOUT_SESSION_ID}",
+    return_url: `${mainUrl}/success?session_id={CHECKOUT_SESSION_ID}`,
   });
 
   res.json({ clientSecret: session.client_secret });
@@ -35,5 +36,3 @@ app.get("/session-status", async (req, res) => {
     customer_email: session.customer_details?.email,
   });
 });
-
-app.listen(4242, () => console.log("Server running on http://localhost:4242"));
