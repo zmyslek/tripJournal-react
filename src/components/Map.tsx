@@ -14,10 +14,10 @@ const GLOBE_BACKGROUND_COLOR = "#F2DFC4";
 const GLOBE_WATER_COLOR      = "#F2DFC4";
 
 // Status colors — from the dropdown/badge screenshots
-const COLOR_VISITED            = "#5C3317";
-const COLOR_WANT_RETURN        = "#C8893A";
-const COLOR_TO_BE_VISITED      = "#7A3500";
-const COLOR_NOT_EXPLORED_BADGE = "#7A5C00";
+const COLOR_VISITED            = "#cf8d45";
+const COLOR_WANT_RETURN        = "#fabe7d";
+const COLOR_TO_BE_VISITED      = "#7a3f00";
+const COLOR_NOT_EXPLORED_BADGE = "#694b3d";
 
 const OUTLINE_VISITED            = "#3A1F0A";
 const OUTLINE_WANT_RETURN        = "#9A6020";
