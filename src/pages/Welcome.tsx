@@ -278,7 +278,7 @@ function Welcome() {
     setFormState((prev) => ({ ...prev, isLoading: true, error: "" }));
 
     try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
           redirectTo: window.location.origin,

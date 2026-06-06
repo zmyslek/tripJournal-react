@@ -6,13 +6,13 @@ import MainLayout from "./components/MainLayout.tsx";
 const Home = lazy(() => import("./pages/Home.tsx"));
 const Welcome = lazy(() => import("./pages/Welcome.tsx"));
 const Gallery = lazy(() => import("./pages/Gallery.tsx"));
-const Profile = lazy(() => import("./pages/Profile"));
-const Settings = lazy(() => import("./pages/Settings"));
-const HelpCenter = lazy(() => import("./pages/HelpCenter"));
-const Policies = lazy(() => import("./pages/Policies"));
-const CountryTrips = lazy(() => import("./pages/CountryTrips"));
-const Itineraries = lazy(() => import("./pages/Itineraries"));
-const AdminSeed = lazy(() => import("./pages/AdminSeed"));
+const Profile = lazy(() => import("./pages/Profile.tsx"));
+const Settings = lazy(() => import("./pages/Settings.tsx"));
+const HelpCenter = lazy(() => import("./pages/HelpCenter.tsx"));
+const Policies = lazy(() => import("./pages/Policies.tsx"));
+const CountryTrips = lazy(() => import("./pages/CountryTrips.tsx"));
+const Itineraries = lazy(() => import("./pages/Itineraries.tsx"));
+const AdminSeed = lazy(() => import("./pages/AdminSeed.tsx"));
 const COUNTRY_STATUS_CACHE_KEY = "tripjournal:country-statuses:v1";
 const COUNTRY_ADDED_CACHE_KEY = "tripjournal:country-added-dates:v1";
 
@@ -27,7 +27,7 @@ function getCachedCountryStatuses(): CountryStatusMap {
             return {};
         }
 
-        const parsedStatuses = JSON.parse(cachedStatuses);
+        const parsedStatuses = JSON.parse(cachedStatuses) as Record<string, unknown>;
         if (!parsedStatuses || typeof parsedStatuses !== "object") {
             return {};
         }
@@ -57,7 +57,7 @@ function getCachedCountryAddedDates(): CountryAddedDateMap {
             return {};
         }
 
-        const parsedDates = JSON.parse(cachedDates);
+        const parsedDates = JSON.parse(cachedDates) as Record<string, unknown>;
         if (!parsedDates || typeof parsedDates !== "object") {
             return {};
         }
