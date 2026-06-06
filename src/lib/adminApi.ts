@@ -8,7 +8,7 @@ export async function seedSampleData(adminToken?: string, basicUser?: string, ba
         }
 
         try {
-            return (globalThis as any).Buffer?.from(input).toString('base64') ?? '';
+            return (globalThis as unknown as { Buffer?: { from: (s: string) => { toString: (e: string) => string } } }).Buffer?.from(input).toString('base64') ?? '';
         } catch {
             return '';
         }

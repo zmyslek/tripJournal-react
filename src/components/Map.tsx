@@ -82,6 +82,32 @@ const resolveStyleUrl = (): string | StyleSpecification => {
   );
 };
 
+const createUserLocationPinElement = () => {
+  const marker = document.createElement("div");
+  marker.setAttribute("aria-hidden", "true");
+  marker.className = "user-location-marker";
+  marker.style.setProperty("--user-location-color", USER_LOCATION_PIN_COLOR);
+  marker.style.setProperty("--user-location-stroke", USER_LOCATION_PIN_STROKE);
+  const ringOuter = document.createElement("div");
+  ringOuter.className = "user-location-ring user-location-ring-outer";
+  const ringInner = document.createElement("div");
+  ringInner.className = "user-location-ring user-location-ring-inner";
+  const dot = document.createElement("div");
+  dot.className = "user-location-dot";
+  marker.appendChild(ringOuter);
+  marker.appendChild(ringInner);
+  marker.appendChild(dot);
+  return marker;
+};
+
+const isLocationOnVisibleSide = (center: { lng: number; lat: number }, loc: { lng: number; lat: number }) => {
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const phi1 = toRad(center.lat), phi2 = toRad(loc.lat);
+  const deltaLambda = toRad(loc.lng - center.lng);
+  const cosAngle = Math.sin(phi1) * Math.sin(phi2) + Math.cos(phi1) * Math.cos(phi2) * Math.cos(deltaLambda);
+  return Math.acos(Math.max(-1, Math.min(1, cosAngle))) <= Math.PI / 2 + 1e-6;
+};
+
 const STYLE_URL = resolveStyleUrl();
 
 maptilersdk.config.apiKey = MAPTILER_API_KEY;
@@ -145,7 +171,7 @@ const Map: React.FC<MapProps> = ({
   useEffect(() => { initialGlobeZoomRef.current = Math.max(MIN_GLOBE_ZOOM, initialGlobeZoom); }, [initialGlobeZoom]);
   useEffect(() => { showGlobeBackdropRef.current = showGlobeBackdrop; }, [showGlobeBackdrop]);
 
-  const applyTransparentBackdrop = (map: maptilersdk.Map) => {
+  const applyTransparentBackdrop = React.useCallback((map: maptilersdk.Map) => {
     const canvas = map.getCanvas();
     canvas.style.backgroundColor = "transparent";
     canvas.style.setProperty("background", "transparent", "important");
@@ -227,9 +253,9 @@ const Map: React.FC<MapProps> = ({
         }
       } catch { /* ignore */ }
     }
-  };
+  }, []);
 
-  const ensureHighlightLayers = (map: maptilersdk.Map) => {
+  const ensureHighlightLayers = React.useCallback((map: maptilersdk.Map) => {
     if (!map.getSource(COUNTRY_SOURCE_ID)) {
       map.addSource(COUNTRY_SOURCE_ID, { type: "geojson", data: EMPTY_FEATURE_COLLECTION });
     }
@@ -355,18 +381,18 @@ const Map: React.FC<MapProps> = ({
     overlay.style.top = `${point.y}px`;
     overlay.style.transform = "translate(-50%, -50%)";
     overlay.dataset.visible = "true";
-  };
+  }, []);
 
-  const syncUserLocationOverlay = (map: maptilersdk.Map) => {
+  const syncUserLocationOverlay = React.useCallback((map: maptilersdk.Map) => {
     ensureUserLocationOverlay();
     updateUserLocationOverlay(map);
     const location = userLocationRef.current;
     if (!location || hasCenteredOnUserLocationRef.current) return;
     hasCenteredOnUserLocationRef.current = true;
     map.easeTo({ center: [location.lng, location.lat], zoom: Math.max(map.getZoom(), 2.2), duration: 900, essential: true });
-  };
+  }, [ensureUserLocationOverlay, updateUserLocationOverlay]);
 
-  const syncUserLocationOverlayAndCenter = (map: maptilersdk.Map) => {
+  const syncUserLocationOverlayAndCenter = React.useCallback((map: maptilersdk.Map) => {
     syncUserLocationOverlay(map);
     if (!hasCenteredOnUserLocationRef.current) {
       const location = userLocationRef.current;
@@ -374,9 +400,9 @@ const Map: React.FC<MapProps> = ({
       hasCenteredOnUserLocationRef.current = true;
       map.easeTo({ center: [location.lng, location.lat], zoom: Math.max(map.getZoom(), 2.2), duration: 900, essential: true });
     }
-  };
+  }, [syncUserLocationOverlay]);
 
-  const syncHighlightedCountries = () => {
+  const syncHighlightedCountries = React.useCallback(() => {
     const map = mapRef.current;
     if (!map || !map.isStyleLoaded()) return;
     ensureHighlightLayers(map);
@@ -437,17 +463,17 @@ const Map: React.FC<MapProps> = ({
     } catch { /* ignore transient failures */ }
 
     try { map.moveLayer(COUNTRY_LAYER_ID); map.moveLayer(COUNTRY_OUTLINE_LAYER_ID); } catch { /* ignore */ }
-  };
+  }, [ensureHighlightLayers]);
 
-  const scheduleHighlightRefresh = () => {
+  const scheduleHighlightRefresh = React.useCallback(() => {
     if (highlightRefreshFrameRef.current !== null) window.cancelAnimationFrame(highlightRefreshFrameRef.current);
     highlightRefreshFrameRef.current = window.requestAnimationFrame(() => {
       highlightRefreshFrameRef.current = null;
       syncHighlightedCountries();
     });
-  };
+  }, [syncHighlightedCountries]);
 
-  const calculateCountryCenter = (countryName: string): [number, number] | null => {
+  const calculateCountryCenter = React.useCallback((countryName: string): [number, number] | null => {
     const normalizedName = countryName.trim();
     if (!normalizedName || !countriesDataRef.current) return null;
     let lngSum = 0, latSum = 0, pointCount = 0;
@@ -467,13 +493,13 @@ const Map: React.FC<MapProps> = ({
     });
     if (pointCount === 0) return null;
     return [lngSum / pointCount, latSum / pointCount];
-  };
+  }, []);
 
-  const centerMapOnCountry = (map: maptilersdk.Map, countryName: string) => {
+  const centerMapOnCountry = React.useCallback((map: maptilersdk.Map, countryName: string) => {
     const center = calculateCountryCenter(countryName);
     if (!center) return;
     map.easeTo({ center, zoom: viewModeRef.current === "globe" ? 3.8 : 4.2, pitch: 0, duration: 900, essential: true });
-  };
+  }, [calculateCountryCenter]);
 
   useEffect(() => {
     viewModeRef.current = viewMode;
@@ -488,7 +514,7 @@ const Map: React.FC<MapProps> = ({
     applyTransparentBackdrop(map);
     map.resize();
     map.triggerRepaint();
-  }, [viewMode]);
+  }, [viewMode, applyTransparentBackdrop, initialGlobeZoom]);
 
   useEffect(() => {
     focusCountryRef.current = focusCountry?.trim() || null;
@@ -502,7 +528,7 @@ const Map: React.FC<MapProps> = ({
     };
     focusIfReady();
     map.once("idle", focusIfReady);
-  }, [focusCountry, countriesData, viewMode]);
+  }, [focusCountry, countriesData, viewMode, centerMapOnCountry]);
 
   useEffect(() => {
     countriesDataRef.current = countriesData;
@@ -512,13 +538,13 @@ const Map: React.FC<MapProps> = ({
     scheduleHighlightRefresh();
     const map = mapRef.current;
     if (map) { map.resize(); map.triggerRepaint(); }
-  }, [countriesData, selectedCountries, countryStatuses, focusCountry]);
+  }, [countriesData, selectedCountries, countryStatuses, focusCountry, scheduleHighlightRefresh]);
 
   useEffect(() => {
     userLocationRef.current = userLocation ?? null;
     const map = mapRef.current;
     if (map) syncUserLocationOverlay(map);
-  }, [userLocation]);
+  }, [userLocation, syncUserLocationOverlay]);
 
   useEffect(() => {
     if (!mapContainer.current) return;
@@ -633,7 +659,7 @@ const Map: React.FC<MapProps> = ({
       userLocationOverlayRef.current = null;
       map.remove();
     };
-  }, []);
+  }, [applyTransparentBackdrop, centerMapOnCountry, ensureHighlightLayers, scheduleHighlightRefresh, syncUserLocationOverlay, syncUserLocationOverlayAndCenter, updateUserLocationOverlay]);
 
   return (
     <div

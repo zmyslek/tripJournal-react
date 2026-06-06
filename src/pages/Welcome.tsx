@@ -278,7 +278,7 @@ function Welcome() {
     setFormState((prev) => ({ ...prev, isLoading: true, error: "" }));
 
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
           redirectTo: window.location.origin,
@@ -289,6 +289,10 @@ function Welcome() {
 
       if (error) {
         throw error;
+      }
+
+      if (data?.url) {
+        console.log('Redirecting user to Microsoft login screen...', data.url);
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : "Social sign-in failed. Please try again.";
