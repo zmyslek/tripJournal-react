@@ -288,8 +288,8 @@ function Itineraries(props: ItinerariesProps) {
                             const ext = extensionOf(fileName);
                             const kind: GalleryMediaKind = videoExtensions.has(ext) ? "video" : "image";
                             return {
-                                id: validFiles[idx].id,
-                                src: s.signedUrl,
+                                id: validFiles[idx].id ?? `file-${idx}`,
+                                src: s.signedUrl ?? "",
                                 path: fileName,
                                 kind
                             };
