@@ -24,9 +24,19 @@ export default defineConfig({
   build: {
     outDir: 'docs',
     emptyOutDir: true,
+    chunkSizeWarningLimit: 1000,
     commonjsOptions: {
       include: [/heic2any/, /node_modules/]
-    }
+    },
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            return 'vendor';
+          }
+        }
+      }
+    },
   },
   optimizeDeps: {
     include: ['heic2any']

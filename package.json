@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npm run gallery:manifest && tsc -b && vite build",
+    "build": "npm run gallery:manifest && tsc --noEmit && npm run lint && vite build",
     "build:docs": "npm run build",
     "gallery:manifest": "node scripts/generate-gallery-manifest.mjs",
     "predeploy": "npm run build",

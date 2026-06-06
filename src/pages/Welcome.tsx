@@ -278,11 +278,12 @@ function Welcome() {
     setFormState((prev) => ({ ...prev, isLoading: true, error: "" }));
 
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
           redirectTo: window.location.origin,
-          queryParams: provider === 'azure' ? { prompt: 'select_account' } : undefined
+          scopes: provider === 'azure' ? 'openid email profile' : undefined,
+          queryParams: provider === 'azure' ? { prompt: 'select_account' } : undefined,
         }
       });
 

@@ -5,7 +5,7 @@ import MainLayout from "./components/MainLayout.tsx";
 
 const Home = lazy(() => import("./pages/Home.tsx"));
 const Welcome = lazy(() => import("./pages/Welcome.tsx"));
-const Gallery = lazy(() => import("./pages/Gallery"));
+const Gallery = lazy(() => import("./pages/Gallery.tsx"));
 const Profile = lazy(() => import("./pages/Profile"));
 const Settings = lazy(() => import("./pages/Settings"));
 const HelpCenter = lazy(() => import("./pages/HelpCenter"));
@@ -155,120 +155,64 @@ function App() {
         .filter(([, status]) => status === "visited" || status === "want-to-visit-again")
         .map(([countryName]) => countryName);
 
-    return (
-        <>
-        <PostHogPageView />
+  return (
+    <>
+      <PostHogPageView />
+      <Suspense fallback={<RouteFallback />}>
         <Routes>
-            <Route
-                path="/welcome"
-                element={
-                    <Suspense fallback={<RouteFallback />}>
-                        <Welcome />
-                    </Suspense>
-                }
-            />
-            <Route element={<MainLayout />}>
-                <Route
-                    path="/countries"
-                    element={
-                        <Suspense fallback={<RouteFallback />}>
-                            <Home
-                                visitedCountries={visitedCountries}
-                                countryStatuses={countryStatuses}
-                                countryAddedDates={countryAddedDates}
-                                setCountryStatus={setCountryStatus}
-                            />
-                        </Suspense>
-                    }
-                />
-                <Route
-                    path="/trips/:countryName"
-                    element={
-                        <Suspense fallback={<RouteFallback />}>
-                            <CountryTrips countryStatuses={countryStatuses} />
-                        </Suspense>
-                    }
-                />
-                <Route
-                    path="/itineraries/:countryName"
-                    element={
-                        <Suspense fallback={<RouteFallback />}>
-                            <Itineraries
-                                countryStatuses={countryStatuses}
-                                countryAddedDates={countryAddedDates}
-                            />
-                        </Suspense>
-                    }
-                />
-                <Route
-                    path="/gallery"
-                    element={
-                        <Suspense fallback={<RouteFallback />}>
-                            <Gallery />
-                        </Suspense>
-                    }
-                />
-                <Route
-                    path="/profile"
-                    element={
-                        <Suspense fallback={<RouteFallback />}>
-                            <Profile />
-                        </Suspense>
-                    }
-                />
-                <Route
-                    path="/settings"
-                    element={
-                        <Suspense fallback={<RouteFallback />}>
-                            <Settings />
-                        </Suspense>
-                    }
-                />
-                <Route
-                    path="/admin-seed"
-                    element={
-                        <Suspense fallback={<RouteFallback />}>
-                            <AdminSeed />
-                        </Suspense>
-                    }
-                />
-                <Route
-                    path="/help-center"
-                    element={
-                        <Suspense fallback={<RouteFallback />}>
-                            <HelpCenter />
-                        </Suspense>
-                    }
-                />
-                <Route
-                    path="/policies/:policySlug"
-                    element={
-                        <Suspense fallback={<RouteFallback />}>
-                            <Policies />
-                        </Suspense>
-                    }
-                />
-            </Route>
+          <Route path="/welcome" element={<Welcome />} />
 
+          <Route element={<MainLayout />}>
             <Route
-                path="/map-only"
-                element={
-                    <Suspense fallback={<RouteFallback />}>
-                        <Home
-                            visitedCountries={visitedCountries}
-                            countryStatuses={countryStatuses}
-                            countryAddedDates={countryAddedDates}
-                            setCountryStatus={setCountryStatus}
-                        />
-                    </Suspense>
-                }
+              path="/countries"
+              element={
+                <Home
+                  visitedCountries={visitedCountries}
+                  countryStatuses={countryStatuses}
+                  countryAddedDates={countryAddedDates}
+                  setCountryStatus={setCountryStatus}
+                />
+              }
             />
+            <Route
+              path="/trips/:countryName"
+              element={<CountryTrips countryStatuses={countryStatuses} />}
+            />
+            <Route
+              path="/itineraries/:countryName"
+              element={
+                <Itineraries
+                  countryStatuses={countryStatuses}
+                  countryAddedDates={countryAddedDates}
+                />
+              }
+            />
+            <Route path="/gallery" element={<Gallery />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/admin-seed" element={<AdminSeed />} />
+            <Route path="/help-center" element={<HelpCenter />} />
+            <Route path="/policies/:policySlug" element={<Policies />} />
+          </Route>
 
-            <Route path="/" element={<Navigate to="/welcome" replace />} />
-            <Route path="*" element={<Navigate to="/welcome" replace />} />
+          <Route
+            path="/map-only"
+            element={
+              <Home
+                visitedCountries={visitedCountries}
+                countryStatuses={countryStatuses}
+                countryAddedDates={countryAddedDates}
+                setCountryStatus={setCountryStatus}
+              />
+            }
+          />
+
+          <Route path="/" element={<Navigate to="/welcome" replace />} />
+          <Route path="*" element={<Navigate to="/welcome" replace />} />
         </Routes>
-        </>
-    );
+      </Suspense>
+    </>
+  );
 }
 
 export default App;
