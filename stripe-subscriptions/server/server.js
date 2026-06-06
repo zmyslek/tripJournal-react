@@ -10,11 +10,9 @@ app.use(express.json());
 
 // CREATE SUBSCRIPTION CHECKOUT SESSION
 app.post("/create-checkout-session", async (req, res) => {
-  const { priceId } = req.body;
-
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
-    ui_mode: "embedded",
+    ui_mode: "elements",
     line_items: [
       {
         price: priceId,
