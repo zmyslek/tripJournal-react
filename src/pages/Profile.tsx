@@ -1,5 +1,6 @@
-import { useMemo, useState, useEffect } from "react";
-import { Settings, HelpCircle, Edit } from "lucide-react";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { useMemo, useState, useEffect, useCallback } from "react";
+import { Settings, HelpCircle, Edit, Loader2 } from "lucide-react";
 import type { ChangeEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useScrollToTop } from "../hooks/useScrollToTop";
@@ -12,7 +13,8 @@ import postcardAvatar from "../assets/avatars/postcard.png";
 import suitcaseAvatar from "../assets/avatars/suitcase.png";
 import paperBackground from "../assets/wrinkled-paper.png";
 import { supabase } from "../lib/supabase/client";
-import { clearStoredUserProfile, getStoredUserProfile, saveStoredUserProfile } from "../types/user";
+import { clearStoredUserProfile, getStoredUserProfile, saveStoredUserProfile, createStoredUserProfileFromSession } from "../types/user";
+import type { User } from "@supabase/supabase-js";
 
 export type ProfileProps = Record<string, never>;
 
@@ -88,6 +90,8 @@ function getCachedProfile(): ProfileForm {
 
 export function Profile() {
     const navigate = useNavigate();
+    const [user, setUser] = useState<User | null>(null);
+    const [isSaving, setIsSaving] = useState(false);
     const [profile, setProfile] = useState<ProfileForm>(() => getCachedProfile());
     const [draftProfile, setDraftProfile] = useState<ProfileForm>(() => getCachedProfile());
     const [isEditing, setIsEditing] = useState(false);
@@ -95,6 +99,36 @@ export function Profile() {
     const [scrollBtnBottom, setScrollBtnBottom] = useState(window.innerHeight * 0.02);
 
     useEffect(() => {
+        async function syncUser() {
+            const { data: { user: sbUser } } = await supabase.auth.getUser();
+            
+            if (sbUser) {
+                setUser(sbUser);
+                const metadata = sbUser.user_metadata;
+                
+                const syncedProfile: ProfileForm = {
+                    name: metadata.username || metadata.full_name || sbUser.email?.split("@")[0] || profile.name,
+                    email: sbUser.email || profile.email,
+                    travelStyle: metadata.travelStyle || profile.travelStyle,
+                    currentFocus: metadata.currentFocus || profile.currentFocus,
+                    avatar: metadata.avatar_url || metadata.avatar || profile.avatar
+                };
+
+                setProfile(syncedProfile);
+                setDraftProfile(syncedProfile);
+                
+                // Sync the helper storage
+                saveStoredUserProfile({
+                    ...createStoredUserProfileFromSession(sbUser),
+                    travelStyle: syncedProfile.travelStyle,
+                    currentFocus: syncedProfile.currentFocus
+                });
+            } else if (!getStoredUserProfile()) {
+                navigate("/welcome", { replace: true });
+            }
+        }
+        void syncUser();
+
         function adjustScrollButton() {
             const footer = document.querySelector("footer");
             const baseBottom = window.innerHeight * 0.02;
@@ -158,25 +192,46 @@ export function Profile() {
         reader.readAsDataURL(file);
     };
 
-    const saveProfile = () => {
-        setProfile(draftProfile);
-        const storedUser = getStoredUserProfile();
-        if (storedUser) {
-            saveStoredUserProfile({
-                ...storedUser,
-                username: draftProfile.name.trim() || storedUser.username,
-                email: draftProfile.email.trim() || storedUser.email,
-                avatarUrl: draftProfile.avatar || storedUser.avatarUrl,
-                travelStyle: draftProfile.travelStyle,
-                currentFocus: draftProfile.currentFocus
-            });
-        }
+    const saveProfile = async () => {
+        setIsSaving(true);
         try {
-            localStorage.setItem(PROFILE_CACHE_KEY, JSON.stringify(draftProfile));
-        } catch {
-            // Ignore profile cache write failures.
+            const { data, error } = await supabase.auth.updateUser({
+                data: {
+                    username: draftProfile.name.trim(),
+                    travelStyle: draftProfile.travelStyle.trim(),
+                    currentFocus: draftProfile.currentFocus.trim(),
+                    avatar_url: draftProfile.avatar
+                }
+            });
+
+            if (error) throw error;
+
+            if (data.user) {
+                setUser(data.user);
+                const metadata = data.user.user_metadata;
+                const updated: ProfileForm = {
+                    name: metadata.username || data.user.email?.split("@")[0] || "Traveler",
+                    email: data.user.email || "",
+                    travelStyle: metadata.travelStyle,
+                    currentFocus: metadata.currentFocus,
+                    avatar: metadata.avatar_url
+                };
+                setProfile(updated);
+                
+                // Sync local caches
+                saveStoredUserProfile({
+                    ...createStoredUserProfileFromSession(data.user),
+                    travelStyle: updated.travelStyle,
+                    currentFocus: updated.currentFocus
+                });
+                localStorage.setItem(PROFILE_CACHE_KEY, JSON.stringify(updated));
+            }
+            setIsEditing(false);
+        } catch (err) {
+            console.error("Failed to save profile to Supabase:", err);
+        } finally {
+            setIsSaving(false);
         }
-        setIsEditing(false);
     };
 
     const handleLogout = () => {
@@ -255,23 +310,23 @@ export function Profile() {
                             <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                                 <div className="rounded-[0.8rem] border border-[#cf8d45]/25 bg-[#ffead4]/45 px-4 py-3">
                                     <p className="font-[Adamina] text-[0.78rem] uppercase tracking-[0.18em] text-[#7a3f00]">User ID</p>
-                                    <p className="mt-1 break-all font-[Cormorant_Garamond] text-[1.05rem] text-[#50300d]">{getStoredUserProfile()?.id || "Not set yet"}</p>
+                                    <p className="mt-1 break-all font-[Cormorant_Garamond] text-[1.05rem] text-[#50300d]">{user?.id || getStoredUserProfile()?.id || "Not set yet"}</p>
                                 </div>
                                 <div className="rounded-[0.8rem] border border-[#cf8d45]/25 bg-[#ffead4]/45 px-4 py-3">
                                     <p className="font-[Adamina] text-[0.78rem] uppercase tracking-[0.18em] text-[#7a3f00]">Subscription tier</p>
-                                    <p className="mt-1 font-[Cormorant_Garamond] text-[1.05rem] text-[#50300d]">{getStoredUserProfile()?.subscriptionTier || "free"}</p>
+                                    <p className="mt-1 font-[Cormorant_Garamond] text-[1.05rem] text-[#50300d]">{user?.app_metadata?.subscription_tier || getStoredUserProfile()?.subscriptionTier || "free"}</p>
                                 </div>
                                 <div className="rounded-[0.8rem] border border-[#cf8d45]/25 bg-[#ffead4]/45 px-4 py-3">
                                     <p className="font-[Adamina] text-[0.78rem] uppercase tracking-[0.18em] text-[#7a3f00]">Subscription status</p>
-                                    <p className="mt-1 font-[Cormorant_Garamond] text-[1.05rem] text-[#50300d]">{getStoredUserProfile()?.subscriptionStatus || "inactive"}</p>
+                                    <p className="mt-1 font-[Cormorant_Garamond] text-[1.05rem] text-[#50300d]">{user?.app_metadata?.subscription_status || getStoredUserProfile()?.subscriptionStatus || "inactive"}</p>
                                 </div>
                                 <div className="rounded-[0.8rem] border border-[#cf8d45]/25 bg-[#ffead4]/45 px-4 py-3">
                                     <p className="font-[Adamina] text-[0.78rem] uppercase tracking-[0.18em] text-[#7a3f00]">Profile created</p>
-                                    <p className="mt-1 font-[Cormorant_Garamond] text-[1.05rem] text-[#50300d]">{getStoredUserProfile()?.createdAt ? new Date(getStoredUserProfile()!.createdAt).toLocaleDateString() : "Not set yet"}</p>
+                                    <p className="mt-1 font-[Cormorant_Garamond] text-[1.05rem] text-[#50300d]">{user?.created_at ? new Date(user.created_at).toLocaleDateString() : "Not set yet"}</p>
                                 </div>
                                 <div className="rounded-[0.8rem] border border-[#cf8d45]/25 bg-[#ffead4]/45 px-4 py-3">
                                     <p className="font-[Adamina] text-[0.78rem] uppercase tracking-[0.18em] text-[#7a3f00]">Auth provider</p>
-                                    <p className="mt-1 font-[Cormorant_Garamond] text-[1.05rem] text-[#50300d]">{getStoredUserProfile()?.authProvider || "email"}</p>
+                                    <p className="mt-1 font-[Cormorant_Garamond] text-[1.05rem] text-[#50300d]">{user?.app_metadata?.provider || getStoredUserProfile()?.authProvider || "email"}</p>
                                 </div>
                                 <div className="rounded-[0.8rem] border border-[#cf8d45]/25 bg-[#ffead4]/45 px-4 py-3">
                                     <p className="font-[Adamina] text-[0.78rem] uppercase tracking-[0.18em] text-[#7a3f00]">Lifetime beta</p>
@@ -393,7 +448,8 @@ export function Profile() {
                                     <button type="button" className="rounded-full border border-[#cf8d45] bg-[#fff7ee] px-5 py-2.5 font-[Adamina] text-[0.92rem] text-[#50300d] interactive-transition hover:-translate-y-px hover:bg-[#f6dfc1] hover:shadow-[0_4px_12px_rgb(122_63_0_/_15%)] active:translate-y-px" onClick={() => setIsEditing(false)}>
                                         Cancel
                                     </button>
-                                    <button type="submit" className="rounded-full border border-[#7a3f00] bg-[#5a392b] px-5 py-2.5 font-[Adamina] text-[0.92rem] text-[#ffead4] interactive-transition hover:-translate-y-px hover:bg-[#7a3f00] hover:shadow-[0_4px_12px_rgb(122_63_0_/_20%)] active:translate-y-px">
+                                    <button type="submit" disabled={isSaving} className="rounded-full border border-[#7a3f00] bg-[#5a392b] px-5 py-2.5 font-[Adamina] text-[0.92rem] text-[#ffead4] interactive-transition hover:-translate-y-px hover:bg-[#7a3f00] hover:shadow-[0_4px_12px_rgb(122_63_0_/_20%)] active:translate-y-px flex items-center gap-2">
+                                        {isSaving && <Loader2 size={16} className="animate-spin" />}
                                         Save profile
                                     </button>
                                 </div>
