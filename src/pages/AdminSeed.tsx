@@ -14,8 +14,9 @@ export default function AdminSeed() {
         try {
             const data = await seedSampleData(token || undefined, basicUser || undefined, basicPass || undefined);
             setResult(`OK: user=${data.user_id} trip=${data.trip_id}`);
-        } catch (err: any) {
-            setResult(`Error: ${err?.message || String(err)}`);
+        } catch (err) {
+            const error = err as Error;
+            setResult(`Error: ${error?.message || String(err)}`);
         } finally {
             setRunning(false);
         }

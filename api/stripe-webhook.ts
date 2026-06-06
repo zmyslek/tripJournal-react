@@ -5,7 +5,7 @@ const jsonHeaders = { "content-type": "application/json; charset=utf-8" };
 type SubscriptionPlan = "free" | "monthly" | "yearly" | "lifetime" | "beta-lifetime";
 type SubscriptionStatus = "inactive" | "trialing" | "active" | "canceled" | "expired" | "past_due";
 
-interface StripeEvent<T = any> {
+interface StripeEvent<T = unknown> {
     id: string;
     type: string;
     data: {

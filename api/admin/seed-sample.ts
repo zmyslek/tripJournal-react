@@ -23,7 +23,7 @@ async function createAuthUser(supabaseUrl: string, serviceKey: string, email: st
 }
 
 // Use PostgREST to insert/upsert rows with service role key
-async function restInsert(supabaseUrl: string, serviceKey: string, table: string, payload: any) {
+async function restInsert(supabaseUrl: string, serviceKey: string, table: string, payload: Record<string, unknown> | Record<string, unknown>[]) {
     const url = `${supabaseUrl.replace(/\/+$/,'')}/rest/v1/${table}`;
     const res = await fetch(url, {
         method: "POST",
@@ -97,7 +97,7 @@ export default async function handler(request: Request): Promise<Response> {
             if (!(user === BASIC_USER && pass === BASIC_PASS)) {
                 return new Response(JSON.stringify({ error: 'Unauthorized: invalid basic credentials' }), { status: 401, headers: jsonHeaders });
             }
-        } catch (e) {
+        } catch {
             return new Response(JSON.stringify({ error: 'Unauthorized: invalid basic auth header' }), { status: 401, headers: jsonHeaders });
         }
 
@@ -184,7 +184,8 @@ export default async function handler(request: Request): Promise<Response> {
         });
 
         return new Response(JSON.stringify({ ok: true, user_id: userId, trip_id: trip.id }), { status: 200, headers: jsonHeaders });
-    } catch (err: any) {
-        return new Response(JSON.stringify({ error: err?.message || String(err) }), { status: 500, headers: jsonHeaders });
+    } catch (err) {
+        const error = err as Error;
+        return new Response(JSON.stringify({ error: error?.message || String(err) }), { status: 500, headers: jsonHeaders });
     }
 }
