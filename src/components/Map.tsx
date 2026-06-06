@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useEffect, useRef } from "react";
 import * as maptilersdk from "@maptiler/sdk";
 import type { StyleSpecification } from "maplibre-gl";
@@ -324,7 +325,7 @@ const Map: React.FC<MapProps> = ({
         }
       }, beforeId);
     }
-  };
+  }, []);
 
   const createUserLocationPinElement = () => {
     const marker = document.createElement("div");
@@ -381,7 +382,7 @@ const Map: React.FC<MapProps> = ({
     overlay.style.top = `${point.y}px`;
     overlay.style.transform = "translate(-50%, -50%)";
     overlay.dataset.visible = "true";
-  }, []);
+  };
 
   const syncUserLocationOverlay = React.useCallback((map: maptilersdk.Map) => {
     ensureUserLocationOverlay();
