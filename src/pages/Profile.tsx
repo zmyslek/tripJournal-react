@@ -13,7 +13,6 @@ import suitcaseAvatar from "../assets/avatars/suitcase.png";
 import paperBackground from "../assets/wrinkled-paper.png";
 import { supabase } from "../lib/supabase/client";
 import { clearStoredUserProfile, getStoredUserProfile, saveStoredUserProfile } from "../types/user";
-import { resetPostHogIdentity } from "../lib/posthog";
 
 export type ProfileProps = Record<string, never>;
 
@@ -181,7 +180,6 @@ export function Profile() {
     };
 
     const handleLogout = () => {
-        resetPostHogIdentity();
         void supabase.auth.signOut();
 
         try {

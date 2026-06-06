@@ -1,9 +1,10 @@
 import { lazy, Suspense, useEffect, useState } from "react";
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
+import posthog from "posthog-js";
 import MainLayout from "./components/MainLayout.tsx";
 
 const Home = lazy(() => import("./pages/Home.tsx"));
-const Welcome = lazy(() => import("./pages/Welcome"));
+const Welcome = lazy(() => import("./pages/Welcome.tsx"));
 const Gallery = lazy(() => import("./pages/Gallery"));
 const Profile = lazy(() => import("./pages/Profile"));
 const Settings = lazy(() => import("./pages/Settings"));
@@ -85,6 +86,14 @@ function getCachedCountryAddedDates(): CountryAddedDateMap {
     }
 }
 
+function PostHogPageView() {
+    const location = useLocation();
+    useEffect(() => {
+        posthog.capture("$pageview", { $current_url: window.location.href });
+    }, [location]);
+    return null;
+}
+
 function RouteFallback() {
     return <div className="h-20" />;
 }
@@ -148,6 +157,7 @@ function App() {
 
     return (
         <>
+        <PostHogPageView />
         <Routes>
             <Route
                 path="/welcome"

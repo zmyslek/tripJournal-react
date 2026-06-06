@@ -92,27 +92,10 @@ export const SUBSCRIPTION_TIERS: Record<SubscriptionPlan, SubscriptionTier> = {
 
 const SUBSCRIPTION_STORAGE_KEY = 'tripjournal:subscription:v1';
 
-function isFutureDate(value: string | null): boolean {
-    if (!value) {
-        return false;
-    }
-
-    const date = new Date(value);
-    return !Number.isNaN(date.getTime()) && date.getTime() > Date.now();
-}
-
 function mapRecordToSubscription(record: UserRecord): UserSubscription {
-    const renewalDate = record.subscriptionEndsAt ?? record.trialEndsAt;
-    const hasActiveAccess =
-        record.isLifetimeFree ||
-        record.subscriptionTier === 'beta-lifetime' ||
-        record.subscriptionStatus === 'active' ||
-        record.subscriptionStatus === 'trialing' ||
-        (record.subscriptionStatus === 'canceled' && isFutureDate(renewalDate));
-
     return {
-        plan: hasActiveAccess ? record.subscriptionTier : 'free',
-        renewalDate,
+        plan: record.subscriptionTier,
+        renewalDate: record.subscriptionEndsAt ?? record.trialEndsAt,
         startDate: record.createdAt,
         cancelledAt: record.subscriptionStatus === 'canceled' ? record.subscriptionEndsAt ?? record.trialEndsAt : null
     };
