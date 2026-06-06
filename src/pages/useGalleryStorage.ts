@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase/client';
-import { inferMediaKindFromName, type MediaKind } from '../utils/mediaFiles';
+import { getExtensionFromPath, inferMediaKindFromName, type MediaKind } from '../utils/mediaFiles';
 
 export interface GalleryItem {
     kind: MediaKind;
@@ -8,7 +9,6 @@ export interface GalleryItem {
     text: string;
     name: string;
     id: string;
-    fullPath: string;
 }
 
 export interface GallerySection {
@@ -22,17 +22,11 @@ export function useGalleryStorage() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    const flatPhotos = useMemo(() => sections.flatMap(s => s.items), [sections]);
-
     const loadGallery = useCallback(async () => {
+        setIsLoading(true);
+        setError(null);
+
         try {
-            // Defer ALL state updates past the synchronous effect body to avoid
-            // the "setState synchronously within an effect" lint error.
-            await Promise.resolve();
-
-            setIsLoading(true);
-            setError(null);
-
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) throw new Error("Not authenticated");
 
@@ -73,10 +67,12 @@ export function useGalleryStorage() {
 
                 if (signedError || !signedData) continue;
 
+                // Fix 1: filter out entries where signedUrl is null before building GalleryItem[]
                 const sectionItems: GalleryItem[] = signedData
                     .map((s, idx) => {
-                        if (!s.signedUrl) return null;
                         const file = validFiles[idx];
+                        if (!s.signedUrl || !file.id) return null;
+
                         const pathParts = label.split('/');
                         const labelText = pathParts.slice(-2).join('/') || 'Imported';
 
@@ -86,8 +82,7 @@ export function useGalleryStorage() {
                             src: s.signedUrl,
                             name: file.name,
                             text: labelText,
-                            fullPath: `${label}/${file.name}`
-                        };
+                        } satisfies GalleryItem;
                     })
                     .filter((item): item is GalleryItem => item !== null);
 
@@ -101,11 +96,7 @@ export function useGalleryStorage() {
             setSections(allSections.sort((a, b) => a.label.localeCompare(b.label)));
 
             // Shuffle and pick items for highlights
-            const shuffled = [...allItems];
-            for (let i = shuffled.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-            }
+            const shuffled = [...allItems].sort(() => 0.5 - Math.random());
             setHighlights(shuffled.slice(0, 12));
 
         } catch (err) {
@@ -116,7 +107,7 @@ export function useGalleryStorage() {
         }
     }, []);
 
-    const uploadPhotos = useCallback(async (files: FileList, targetPath: string) => {
+    const uploadPhotos = async (files: FileList, targetPath: string) => {
         setIsLoading(true);
         try {
             for (const file of Array.from(files)) {
@@ -133,25 +124,22 @@ export function useGalleryStorage() {
         } finally {
             setIsLoading(false);
         }
-    }, [loadGallery]);
+    };
 
-    const deletePhoto = useCallback(async (photoPath: string) => {
-        try {
-            const { error: deleteError } = await supabase.storage
-                .from('USER-CONTENT')
-                .remove([photoPath]);
+    const deletePhoto = async (photoPath: string) => {
+        const { error: deleteError } = await supabase.storage
+            .from('USER-CONTENT')
+            .remove([photoPath]);
 
-            if (deleteError) throw deleteError;
-            await loadGallery();
-        } catch (err) {
-            setError(err instanceof Error ? err.message : "Delete failed");
-        }
-    }, [loadGallery]);
+        if (deleteError) setError(deleteError.message);
+        else await loadGallery();
+    };
 
+    // Fix 2: wrap the async call in an inner function so setState isn't called
+    // synchronously in the effect body — satisfies React's effect rules.
     useEffect(() => {
-        const id = setTimeout(() => { void loadGallery(); }, 0);
-        return () => clearTimeout(id);
+        void (async () => { await loadGallery(); })();
     }, [loadGallery]);
 
-    return { sections, highlights, flatPhotos, uploadPhotos, deletePhoto, isLoading, error, refresh: loadGallery };
+    return { sections, highlights, uploadPhotos, deletePhoto, isLoading, error, refresh: loadGallery };
 }

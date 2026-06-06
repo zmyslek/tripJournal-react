@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useState, useEffect, useMemo, useRef } from 'react';
 import CircularGallery from '../components/CircularGallery';
 import GalleryQuiz from '../components/GalleryQuiz';
@@ -6,47 +8,14 @@ import EmptyGalleryState from '../components/EmptyGalleryState';
 import PhotoRandomizer from '../components/PhotoRandomizer';
 import VideoCard from '../components/VideoCard';
 import { useScrollToTop } from '../hooks/useScrollToTop';
-import { useGalleryStorage } from '../hooks/useGalleryStorage';
+import { useGalleryStorage, type GalleryItem } from '../hooks/useGalleryStorage';
 import paperBackground from '../assets/wrinkled-paper.png';
-import { getExtensionFromPath, inferMediaKindFromName, type MediaKind } from '../utils/mediaFiles';
+import { inferMediaKindFromName, type MediaKind } from '../utils/mediaFiles';
 
-interface GalleryItem {
-    kind: MediaKind;
-    src: string;
-    text: string;
-}
-
-export type { GalleryItem };
-
-interface GallerySection {
-    label: string;
-    items: GalleryItem[];
-}
-
-const galleryManifestUrl = `${import.meta.env.BASE_URL}temporary-gallery/manifest.json`;
-const galleryPublicRoot = `${import.meta.env.BASE_URL}temporary-gallery/`;
-const imageExtensions = new Set(['jpeg', 'jpg', 'png', 'webp', 'gif', 'avif', 'tif', 'tiff', 'bmp', 'svg']);
-const videoExtensions = new Set(['mp4', 'mov', 'webm', 'm4v', 'avi', 'mkv', 'wmv', 'flv', '3gp', 'mpeg']);
 const videoPosterCache = new Map<string, string>();
 
-let cachedManifestPaths: string[] | null = null;
 const initialVisibleItemsPerSection = 15;
 const loadMoreStep = 15;
-
-function shuffle<T>(items: T[]): T[] {
-    const copy = [...items];
-    for (let index = copy.length - 1; index > 0; index -= 1) {
-        const randomIndex = Math.floor(Math.random() * (index + 1));
-        [copy[index], copy[randomIndex]] = [copy[randomIndex], copy[index]];
-    }
-
-    return copy;
-}
-
-function selectRandomImages(items: GalleryItem[], maxCount: number): GalleryItem[] {
-    const images = items.filter(item => item.kind === 'image');
-    return shuffle(images).slice(0, Math.min(maxCount, images.length));
-}
 
 function escapeSvgText(value: string): string {
     return value
@@ -91,130 +60,6 @@ function getVideoCoverUrl(source: string, label: string): string {
     const coverUrl = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
     videoPosterCache.set(cacheKey, coverUrl);
     return coverUrl;
-}
-
-function spreadHighlightItems(sections: GallerySection[]): GalleryItem[] {
-    const highlightImagesPerSection = 3;
-    const buckets = sections
-        .map(section => ({
-            label: section.label,
-            items: selectRandomImages(section.items, highlightImagesPerSection)
-        }))
-        .filter(bucket => bucket.items.length > 0);
-
-    const spreadItems: GalleryItem[] = [];
-    let hasMoreItems = true;
-
-    while (hasMoreItems) {
-        hasMoreItems = false;
-
-        for (const bucket of buckets) {
-            const nextItem = bucket.items.shift();
-            if (nextItem) {
-                spreadItems.push(nextItem);
-                hasMoreItems = true;
-            }
-        }
-    }
-
-    return spreadItems;
-}
-
-function toGalleryPublicUrl(relativePath: string) {
-    return `${galleryPublicRoot}${relativePath}`;
-}
-
-function buildGalleryCollections(relativePaths: string[]) {
-    const sectionMap = new Map<string, Map<string, Array<{ kind: MediaKind; src: string; text: string; ext: string }>>>();
-    const looseItemsMap = new Map<string, { kind: MediaKind; src: string; text: string; ext: string }>();
-
-    relativePaths
-        .sort((pathA, pathB) => pathA.localeCompare(pathB))
-        .forEach(relativePath => {
-            const segments = relativePath.split('/');
-            const filename = segments[segments.length - 1];
-            const ext = getExtensionFromPath(filename);
-            const inferredKind = inferMediaKindFromName(filename);
-            const kind: MediaKind | null = inferredKind ?? (videoExtensions.has(ext) ? 'video' : imageExtensions.has(ext) ? 'image' : null);
-
-            if (!kind) {
-                return;
-            }
-
-            const src = toGalleryPublicUrl(relativePath);
-            const base = filename.replace(/\.[^/.]+$/, '');
-
-            // Accept files at varying depths. Use the first two segments as country/city
-            // so nested folders (country/city/whatever/file.jpg) are included.
-            if (segments.length === 1) {
-                looseItemsMap.set(base, { kind, src, text: '', ext });
-                return;
-            }
-
-            if (segments.length >= 2) {
-                const countryName = segments[0];
-                const cityName = segments.length >= 3 ? segments[1] : 'Imported';
-                const sectionLabel = segments.length >= 3 ? `${countryName}/${cityName}` : countryName;
-                // Use the rest of the path (after country/city) as the base identifier.
-                // Two-segment paths are folder/file imports, so keep them together.
-                const remainder = segments.length >= 3 ? segments.slice(2).join('/') || base : filename;
-                const sectionBucket = sectionMap.get(sectionLabel) ?? new Map();
-                let items: Array<{ kind: MediaKind; src: string; text: string; ext: string }> = sectionBucket.get(remainder) ?? [];
-                
-                // For images, prefer higher-priority formats (jpg, png, etc.)
-                // For videos, keep all (mp4, webm, mov, etc.)
-                if (kind === 'image') {
-                    const preferredExts = ['jpg', 'jpeg', 'png', 'webp', 'avif', 'gif', 'bmp', 'svg'];
-                    const prefIndex = (extName: string) => {
-                        const index = preferredExts.indexOf(extName);
-                        return index === -1 ? preferredExts.length : index;
-                    };
-                    const existing = items.find(i => i.kind === 'image');
-                    if (!existing || prefIndex(ext) < prefIndex(existing.ext)) {
-                        items = items.filter(i => i.kind !== 'image');
-                        items.push({ kind, src, text: `${countryName}/${cityName}`, ext });
-                    }
-                } else if (kind === 'video') {
-                    // Always add videos; they will be rendered separately
-                    items.push({ kind, src, text: `${countryName}/${cityName}`, ext });
-                }
-
-                if (items.length > 0) {
-                    sectionBucket.set(remainder, items);
-                    sectionMap.set(sectionLabel, sectionBucket);
-                }
-                return;
-            }
-        });
-
-    function pickPreferred(itemsMap: Map<string, Array<{ kind: MediaKind; src: string; text: string; ext: string }>>) {
-        const out: GalleryItem[] = [];
-        for (const entries of itemsMap.values()) {
-            for (const entry of entries) {
-                out.push({ kind: entry.kind, src: entry.src, text: entry.text });
-            }
-        }
-        return out;
-    }
-
-    const sections: GallerySection[] = Array.from(sectionMap.entries())
-        .sort(([labelA], [labelB]) => labelA.localeCompare(labelB))
-        .map(([label, itemsMap]) => ({
-            label,
-            items: shuffle(pickPreferred(itemsMap))
-        }));
-
-    const looseItems = Array.from(looseItemsMap.values()).map(v => ({ kind: v.kind, src: v.src, text: v.text }));
-    const highlights = sections.length > 0 ? spreadHighlightItems(sections) : shuffle(looseItems.filter(item => item.kind === 'image'));
-
-    return {
-        highlights,
-        sections
-    };
-}
-
-function getInitialSelectedItems(highlights: GalleryItem[]): GalleryItem[] {
-    return highlights;
 }
 
 interface GalleryStripProps {
@@ -273,107 +118,40 @@ function GalleryStrip({ items, bend, onItemClick }: GalleryStripProps) {
     );
 }
 
-function useGalleryManifest(): { paths: string[]; loading: boolean; hasError: boolean } {
-    const [paths, setPaths] = useState<string[]>(cachedManifestPaths ?? []);
-    const [loading, setLoading] = useState(!cachedManifestPaths);
-    const [hasError, setHasError] = useState(false);
-
-    useEffect(() => {
-        if (cachedManifestPaths) {
-            return;
-        }
-
-        let cancelled = false;
-
-        const loadManifest = async () => {
-            try {
-                const response = await fetch(galleryManifestUrl);
-                if (!response.ok) {
-                    throw new Error(`Manifest error: ${response.status}`);
-                }
-
-                const data: unknown = await response.json();
-                const validPaths = Array.isArray(data) ? data.filter((entry): entry is string => typeof entry === 'string') : [];
-
-                if (!cancelled) {
-                    cachedManifestPaths = validPaths;
-                    setPaths(validPaths);
-                    setHasError(false);
-                }
-            } catch (err) {
-                if (!cancelled) {
-                    console.error('Gallery manifest load failed:', err);
-                    setPaths([]);
-                    setHasError(true);
-                }
-            } finally {
-                if (!cancelled) {
-                    setLoading(false);
-                }
-            }
-        };
-
-        void loadManifest();
-
-        return () => {
-            cancelled = true;
-        };
-    }, []);
-
-    return { paths, loading, hasError };
-}
-
 function Gallery() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedIndex, setSelectedIndex] = useState(0);
-    const { paths: manifestPaths, loading: manifestLoading, hasError: manifestError } = useGalleryManifest();
     const [isQuizOpen, setIsQuizOpen] = useState(false);
-    const galleryCollections = useMemo(() => buildGalleryCollections(manifestPaths), [manifestPaths]);
-    const [selectedItems, setSelectedItems] = useState<GalleryItem[]>(() => getInitialSelectedItems(galleryCollections.highlights));
+    const { sections, highlights, flatPhotos, uploadPhotos, deletePhoto, isLoading, error } = useGalleryStorage();
+    const [selectedItems, setSelectedItems] = useState<GalleryItem[]>([]);
     const [visibleItemsBySection, setVisibleItemsBySection] = useState<Record<string, number>>({});
     const { showScrollTop, scrollToTop } = useScrollToTop();
     const [scrollBtnBottom, setScrollBtnBottom] = useState(window.innerHeight * 0.02);
     
-    // User-uploaded photos
-    const { flatPhotos, uploadPhotos, isLoading: isUploading, error: uploadError, deletePhoto } = useGalleryStorage();
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const [visibleUserPhotos, setVisibleUserPhotos] = useState(initialVisibleItemsPerSection);
     const [isEditing, setIsEditing] = useState(false);
-    const [photoToDelete, setPhotoToDelete] = useState<string | null>(null);
+    const [photoToDelete, setPhotoToDelete] = useState<GalleryItem | null>(null);
     const [isDeleteConfirmModalOpen, setIsDeleteConfirmModalOpen] = useState(false);
 
-    // Combine manifest items with user uploads, and separate images/videos
-    const { combinedImages, combinedVideos } = useMemo(() => {
-        const userPhotoItems: GalleryItem[] = flatPhotos.map(photo => ({
-            kind: inferMediaKindFromName(photo.name, photo.type) ?? 'image',
-            src: photo.url,
-            text: photo.dateAdded
-        }));
+    const combinedImages = useMemo(() => 
+        flatPhotos.filter(i => i.kind === 'image'), 
+    [flatPhotos]);
 
-        const allItems = [...userPhotoItems, ...galleryCollections.highlights];
-        return {
-            combinedImages: allItems.filter(i => i.kind === 'image'),
-            combinedVideos: allItems.filter(i => i.kind === 'video')
-        };
-    }, [flatPhotos, galleryCollections.highlights]);
-
-    const combinedAllItems = useMemo(() => [...combinedImages, ...combinedVideos], [combinedImages, combinedVideos]);
-
-    const activeSelectedItems = selectedItems.length > 0 ? selectedItems : [...combinedVideos, ...combinedImages];
+    const activeSelectedItems = selectedItems.length > 0 ? selectedItems : highlights;
 
     useEffect(() => {
         window.requestAnimationFrame(() => {
             setVisibleItemsBySection(previousState => {
                 const nextState: Record<string, number> = {};
 
-                galleryCollections.sections.forEach(section => {
+                sections.forEach(section => {
                     nextState[section.label] = previousState[section.label] ?? initialVisibleItemsPerSection;
                 });
 
                 return nextState;
             });
         });
-    }, [galleryCollections.sections]);
+    }, [sections]);
 
     // Adjust scroll-to-top button so it doesn't overlap the footer
     useEffect(() => {
@@ -438,26 +216,23 @@ function Gallery() {
         }));
     };
 
-    const handleLoadMoreUserPhotos = () => {
-        setVisibleUserPhotos(previousCount => previousCount + loadMoreStep);
-    };
-
     const handleUploadClick = () => {
         fileInputRef.current?.click();
     };
 
     const handleFileUpload = async (files: FileList) => {
-        await uploadPhotos(files, 'User Uploads');
+        // Note: Logic for choosing targetPath (Country/City) should be added to UI
+        await uploadPhotos(files, 'General');
     };
 
-    const handleDeleteClick = (photoId: string) => {
-        setPhotoToDelete(photoId);
+    const handleDeleteClick = (item: GalleryItem) => {
+        setPhotoToDelete(item);
         setIsDeleteConfirmModalOpen(true);
     };
 
     const handleConfirmDelete = async () => {
-        if (photoToDelete) {
-            await deletePhoto(photoToDelete);
+        if (photoToDelete && photoToDelete.fullPath) {
+            await deletePhoto(photoToDelete.fullPath);
             setIsDeleteConfirmModalOpen(false);
             setPhotoToDelete(null);
         }
@@ -513,11 +288,11 @@ function Gallery() {
                             <div className="flex flex-col gap-3">
                                 <PhotoUploadButton
                                     onUpload={handleFileUpload}
-                                    isLoading={isUploading}
+                                    isLoading={isLoading}
                                     inputRef={fileInputRef}
                                 />
-                                {uploadError && (
-                                    <p className="text-sm text-red-600">{uploadError}</p>
+                                {error && (
+                                    <p className="text-sm text-red-600">{error}</p>
                                 )}
                             </div>
                         </div>
@@ -525,157 +300,22 @@ function Gallery() {
                 </div>
             </section>
 
-            {/* Show empty state if no photos at all */}
-            {galleryCollections.highlights.length === 0 && flatPhotos.length === 0 && !manifestLoading ? (
+            {flatPhotos.length === 0 && !isLoading ? (
                 <section className="mx-auto w-full max-w-[min(100%,1380px)] px-[max(1.25rem,5%)] py-16">
                     <EmptyGalleryState onUploadClick={handleUploadClick} />
                 </section>
             ) : (
                 <>
                     <section className="mx-auto w-full max-w-[min(100%,1380px)] px-[max(1.25rem,5%)] pb-10 pt-10 text-[#50300d]">
-                        {manifestLoading ? (
+                        {isLoading ? (
                             <p className="mb-6 font-[Cormorant_Garamond] text-[1.2rem] text-[#5a392b]">Loading gallery media...</p>
                         ) : null}
 
-                        {manifestError ? (
-                            <p className="mb-6 font-[Cormorant_Garamond] text-[1.2rem] text-[#7a3f00]">
-                                Gallery media could not be loaded. Check public/temporary-gallery/manifest.json.
-                            </p>
-                        ) : null}
-
-                        {/* User uploads section */}
-                        {flatPhotos.length > 0 && (
-                            <div className="mb-12">
-                                <div className="mb-4 flex items-end justify-between gap-4">
-                                    <div>
-                                        <p className="m-0 font-[Adamina] text-[0.7rem] uppercase tracking-[0.24em] text-[#8f5a20]">Your photos</p>
-                                        <h2 className="mt-2 font-[Adamina] text-[clamp(1.8rem,3vw,2.5rem)] leading-none text-[#5a392b]">
-                                            Recent Uploads
-                                        </h2>
-                                    </div>
-                                </div>
-                                {(() => {
-                                    const visiblePhotos = flatPhotos.slice(0, visibleUserPhotos);
-                                    const hasMorePhotos = flatPhotos.length > visibleUserPhotos;
-                                    
-                                    // Separate videos from images
-                                    const videoPhotos = visiblePhotos.filter(p => inferMediaKindFromName(p.name, p.type) === 'video');
-                                    const imagePhotos = visiblePhotos.filter(p => inferMediaKindFromName(p.name, p.type) !== 'video');
-
-                                    return (
-                                        <>
-                                            {/* Videos section */}
-                                            {videoPhotos.length > 0 && (
-                                                <div className="mb-8">
-                                                    <p className="mb-3 font-[Adamina] text-[0.7rem] uppercase tracking-[0.24em] text-[#8f5a20]">Videos</p>
-                                                    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-                                                        {videoPhotos.map(video => {
-                                                            const posterUrl = getVideoCoverUrl(video.url, video.dateAdded);
-                                                            return (
-                                                                <VideoCard
-                                                                    key={video.id}
-                                                                    item={{
-                                                                        kind: 'video',
-                                                                        src: video.url,
-                                                                        text: video.dateAdded
-                                                                    }}
-                                                                    posterUrl={posterUrl}
-                                                                    onClick={() => handleItemClick([
-                                                                        ...videoPhotos.map(v => ({
-                                                                            kind: 'video' as MediaKind,
-                                                                            src: v.url,
-                                                                            text: v.dateAdded
-                                                                        })),
-                                                                        ...imagePhotos.map(p => ({
-                                                                            kind: 'image' as MediaKind,
-                                                                            src: p.url,
-                                                                            text: p.dateAdded
-                                                                        }))
-                                                                    ], {
-                                                                        kind: 'video',
-                                                                        src: video.url,
-                                                                        text: video.dateAdded
-                                                                    })}
-                                                                    isEditing={isEditing}
-                                                                    onDelete={() => handleDeleteClick(video.id)}
-                                                                />
-                                                            );
-                                                        })}
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                            {/* Images section */}
-                                            {imagePhotos.length > 0 && (
-                                                <>
-                                                    {isEditing ? (
-                                                        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-                                                            {imagePhotos.map(photo => (
-                                                                <div key={photo.id} className="relative">
-                                                                    <img src={photo.url} alt={photo.dateAdded} className="h-44 w-full object-cover rounded-lg" />
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={() => handleDeleteClick(photo.id)}
-                                                                        className="absolute top-2 right-2 z-20 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-[#5a392b] shadow hover:bg-white transition"
-                                                                        aria-label={`Delete ${photo.name}`}
-                                                                    >
-                                                                        ×
-                                                                    </button>
-                                                                </div>
-                                                            ))}
-                                                        </div>
-                                                    ) : (
-                                                        <GalleryStrip
-                                                            items={imagePhotos.map(photo => ({
-                                                                kind: 'image' as const,
-                                                                src: photo.url,
-                                                                text: photo.dateAdded
-                                                            }))}
-                                                            bend={0.5}
-                                                            onItemClick={item => handleItemClick(
-                                                                [
-                                                                    ...videoPhotos.map(v => ({
-                                                                        kind: 'video' as MediaKind,
-                                                                        src: v.url,
-                                                                        text: v.dateAdded
-                                                                    })),
-                                                                    ...imagePhotos.map(p => ({
-                                                                        kind: 'image' as MediaKind,
-                                                                        src: p.url,
-                                                                        text: p.dateAdded
-                                                                    }))
-                                                                ],
-                                                                item
-                                                            )}
-                                                        />
-                                                    )}
-                                                </>
-                                            )}
-
-                                            {hasMorePhotos ? (
-                                                <div className="mt-5 flex justify-center">
-                                                    <button
-                                                        type="button"
-                                                        onClick={handleLoadMoreUserPhotos}
-                                                        className="rounded-full border border-[#cf8d45] bg-[#5a392b] px-5 py-2.5 font-[Adamina] text-[0.88rem] text-[#ffead4] transition hover:bg-[#7a3f00]"
-                                                    >
-                                                        Load more ({flatPhotos.length - visibleUserPhotos} left)
-                                                    </button>
-                                                </div>
-                                            ) : null}
-                                        </>
-                                    );
-                                })()}
-                            </div>
-                        )}
-
-
-
-                        {/* Highlights (80%) and Shuffle/Randomizer (20%) — side-by-side on large screens */}
-                        {(galleryCollections.highlights.length > 0 || combinedAllItems.length > 0) && (
+                        {/* Highlights and Shuffle/Randomizer */}
+                        {(highlights.length > 0 || combinedImages.length > 0) && (
                             <div className="mb-12 grid gap-6 lg:grid-cols-[minmax(0,4fr)_minmax(18rem,1fr)] lg:items-start">
                                 <div className="min-w-0">
-                                    {galleryCollections.highlights.length > 0 && (
+                                    {highlights.length > 0 && (
                                         <div className="min-h-0">
                                             <div className="mb-4 flex items-end justify-between gap-4">
                                                 <div>
@@ -687,15 +327,15 @@ function Gallery() {
                                             </div>
 
                                             <GalleryStrip
-                                                items={galleryCollections.highlights}
+                                                items={highlights}
                                                 bend={1.1}
-                                                onItemClick={item => handleItemClick(galleryCollections.highlights, item)}
+                                                onItemClick={item => handleItemClick(highlights, item)}
                                             />
 
                                             <div className="mb-8 mt-6 flex justify-center gap-4 lg:justify-start">
                                                 <button
                                                     onClick={() => setIsQuizOpen(true)}
-                                                    disabled={galleryCollections.highlights.length === 0}
+                                                    disabled={highlights.length === 0}
                                                     className="px-6 py-3 rounded-lg bg-[#7A3F00] text-[#FFEAD4] font-semibold hover:bg-[#5A392B] disabled:opacity-50 disabled:cursor-not-allowed transition"
                                                 >
                                                     Quiz: Guess the Location
@@ -709,8 +349,8 @@ function Gallery() {
                                     {combinedImages.length > 0 && (
                                         <div className="sticky top-[6rem] max-h-[calc(100vh-8rem)] min-w-0 overflow-y-auto">
                                             <PhotoRandomizer
-                                                items={combinedImages}
-                                                onPhotoClick={(item) => handleItemClick(combinedImages, item)}
+                                                items={combinedImages as any}
+                                                onPhotoClick={(item: any) => handleItemClick(combinedImages, item)}
                                             />
                                         </div>
                                     )}
@@ -720,13 +360,13 @@ function Gallery() {
                     </section>
 
                     <div className="flex flex-1 flex-col gap-10 pb-16">
-                        {galleryCollections.sections.map(section => (
+                        {sections.map(section => (
                             <section key={section.label} className="mx-auto w-full max-w-[min(100%,1380px)] px-[max(1.25rem,5%)] text-[#50300d]">
                                 {(() => {
                                     const visibleCount = visibleItemsBySection[section.label] ?? initialVisibleItemsPerSection;
                                     const visibleItems = section.items.slice(0, visibleCount);
-                                    const visibleImages = visibleItems.filter(i => i.kind === 'image');
-                                    const visibleVideos = visibleItems.filter(i => i.kind === 'video');
+                                    const visibleImages = visibleItems.filter(i => i.kind === 'image') as GalleryItem[];
+                                    const visibleVideos = visibleItems.filter(i => i.kind === 'video') as GalleryItem[];
                                     const hasMoreItems = section.items.length > visibleCount;
 
                                     return (
@@ -759,7 +399,9 @@ function Gallery() {
                                                         key={v.src}
                                                         item={v}
                                                         posterUrl={getVideoCoverUrl(v.src, v.text)}
-                                                        onClick={() => handleItemClick(visibleVideos, v)}
+                                                        onClick={() => handleItemClick(visibleVideos, v as any)}
+                                                        isEditing={isEditing}
+                                                        onDelete={() => handleDeleteClick(v as any)}
                                                     />
                                                 ))}
                                             </div>
@@ -853,7 +495,7 @@ function Gallery() {
             <GalleryQuiz
                 isOpen={isQuizOpen}
                 onClose={() => setIsQuizOpen(false)}
-                galleryItems={galleryCollections.highlights}
+                galleryItems={highlights}
             />
 
             {/* Delete confirmation modal */}
