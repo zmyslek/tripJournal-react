@@ -9,6 +9,7 @@ export interface ItineraryDraft {
     endDate: string;
     status: ItineraryStatus;
     description: string;
+    location_label?: string;
 }
 
 export interface ItineraryItem {
@@ -22,6 +23,7 @@ export interface ItineraryItem {
     description: string;
     createdAt: string;
     updatedAt: string;
+    location_label?: string;
     destination?: string;
     coverPhoto?: string;
     mood?: string;

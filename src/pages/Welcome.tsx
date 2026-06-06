@@ -214,7 +214,7 @@ function Welcome() {
           first_name: questionnaire.firstName.trim(),
           last_name: questionnaire.lastName.trim(),
           full_name: `${questionnaire.firstName.trim()} ${questionnaire.lastName.trim()}`,
-          username: questionnaire.firstName.trim()
+          username: `${questionnaire.firstName.trim()} ${questionnaire.lastName.trim()}`
         }
       });
 

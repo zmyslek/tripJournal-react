@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useEffect, useMemo, useReducer, useState } from "react";
 import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode, SelectHTMLAttributes, TextareaHTMLAttributes } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
@@ -14,6 +15,7 @@ import {
     readItineraries,
     seedItinerariesFromCatalog
 } from "../utils/itineraryStorage";
+import { supabase } from "../lib/supabase/client";
 
 type CountryStatusMap = Record<string, CountryStatus>;
 type CountryAddedDateMap = Record<string, string>;
@@ -44,9 +46,6 @@ type HotelEntry = NonNullable<ItineraryItem["hotels"]>[number];
 type TransportEntry = NonNullable<ItineraryItem["transport"]>[number];
 type NoteEntry = NonNullable<ItineraryItem["notes"]>[number];
 
-const galleryManifestUrl = `${import.meta.env.BASE_URL}temporary-gallery/manifest.json`;
-const galleryPublicRoot = `${import.meta.env.BASE_URL}temporary-gallery/`;
-const imageExtensions = new Set(["jpeg", "jpg", "png", "webp", "gif", "avif", "bmp", "svg"]);
 const videoExtensions = new Set(["mp4", "mov", "webm", "m4v", "avi", "mkv", "wmv", "flv", "3gp", "mpeg"]);
 const STATUS_LABELS: Record<ItineraryStatus, string> = {
     planned: "Planned",
@@ -63,28 +62,6 @@ function normalize(value: string): string {
     return value
         .toLowerCase()
         .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "");
-}
-
-function toPublicGalleryUrl(path: string): string {
-    return `${galleryPublicRoot}${path}`;
-}
-
-function matchesGalleryFilter(path: string, itinerary: ItineraryItem): boolean {
-    const normalizedPath = normalize(path);
-    const filters = itinerary.galleryFilters ?? [];
-
-    if (filters.length > 0) {
-        return filters.some((filter) => {
-            const countryMatches = normalizedPath.startsWith(`${normalize(filter.country)}/`);
-            const cityMatches = filter.city ? normalizedPath.includes(`/${normalize(filter.city)}/`) : true;
-            return countryMatches && cityMatches;
-        });
-    }
-
-    const city = itinerary.city ? normalize(itinerary.city) : "";
-    const destination = itinerary.destination ? normalize(itinerary.destination) : "";
-    return Boolean(city && normalizedPath.includes(`/${city}/`)) || Boolean(destination && normalizedPath.includes(destination));
 }
 
 function itineraryReducer(state: ItineraryItem[], action: ItineraryAction): ItineraryItem[] {
@@ -212,9 +189,6 @@ function SectionShell({ eyebrow, title, action, children }: { eyebrow: string; t
 }
 
 function Itineraries(props: ItinerariesProps) {
-    void props.countryStatuses;
-    void props.countryAddedDates;
-
     const { countryName: encodedCountryName = "" } = useParams();
     const routeCountryName = decodeCountryParam(encodedCountryName).trim();
     const { countriesData } = useCountriesData();
@@ -223,7 +197,8 @@ function Itineraries(props: ItinerariesProps) {
     const navigate = useNavigate();
 
     const [itineraries, dispatchItineraries] = useReducer(itineraryReducer, []);
-    const [manifestPaths, setManifestPaths] = useState<string[]>([]);
+    const [photoUrls, setPhotoUrls] = useState<TripGalleryItem[]>([]);
+    const [isGalleryLoading, setIsGalleryLoading] = useState(false);
     const [editingItineraryId, setEditingItineraryId] = useState<string | null>(null);
 
     const countryNames = useMemo(() => {
@@ -264,28 +239,6 @@ function Itineraries(props: ItinerariesProps) {
         }
     }, [itineraries, routeCountryName]);
 
-    useEffect(() => {
-        let cancelled = false;
-
-        const loadManifest = async () => {
-            try {
-                const response = await fetch(galleryManifestUrl);
-                if (!response.ok) throw new Error(`Manifest error: ${response.status}`);
-                const data: unknown = await response.json();
-                if (!cancelled) {
-                    setManifestPaths(Array.isArray(data) ? data.filter((entry): entry is string => typeof entry === "string") : []);
-                }
-            } catch {
-                if (!cancelled) setManifestPaths([]);
-            }
-        };
-
-        void loadManifest();
-        return () => {
-            cancelled = true;
-        };
-    }, []);
-
     const primaryItinerary = useMemo(() => {
         if (focusedItineraryId) {
             const found = itineraries.find((it) => it.id === focusedItineraryId);
@@ -297,18 +250,68 @@ function Itineraries(props: ItinerariesProps) {
 
     const canShowGallery = primaryItinerary?.status !== "planned";
 
-    const tripGalleryItems = useMemo<TripGalleryItem[]>(() => {
-        if (!primaryItinerary || !canShowGallery) return [];
+    useEffect(() => {
+        let cancelled = false;
+        const locationLabel = primaryItinerary?.location_label?.trim();
 
-        return manifestPaths
-            .filter((path) => matchesGalleryFilter(path, primaryItinerary))
-            .map((path) => {
-                const ext = extensionOf(path);
-                const kind: GalleryMediaKind = videoExtensions.has(ext) ? "video" : "image";
-                return { id: path, src: toPublicGalleryUrl(path), path, kind };
-            })
-            .filter((item) => imageExtensions.has(extensionOf(item.path)) || videoExtensions.has(extensionOf(item.path)));
-    }, [canShowGallery, manifestPaths, primaryItinerary]);
+        if (locationLabel && canShowGallery) {
+            const loadGalleryImages = async () => {
+                setIsGalleryLoading(true);
+                try {
+                    const { data: files, error } = await supabase.storage
+                        .from('USER-CONTENT')
+                        .list(locationLabel, {
+                            limit: 150,
+                            sortBy: { column: 'name', order: 'asc' },
+                        });
+
+                    if (error) throw error;
+                    if (!files || files.length === 0) {
+                        if (!cancelled) setPhotoUrls([]);
+                        return;
+                    }
+
+                    // Filter valid files and generate full paths
+                    const validFiles = files.filter(f => f.id !== null);
+                    const filePaths = validFiles.map(f => `${locationLabel}/${f.name}`);
+
+                    // Insight: Use plural createSignedUrls for 100+ photos to avoid multiple network requests
+                    const { data: signedData, error: signedError } = await supabase.storage
+                        .from('USER-CONTENT')
+                        .createSignedUrls(filePaths, 3600);
+
+                    if (signedError) throw signedError;
+
+                    if (!cancelled && signedData) {
+                        const items: TripGalleryItem[] = signedData.map((s, idx) => {
+                            const fileName = validFiles[idx].name;
+                            const ext = extensionOf(fileName);
+                            const kind: GalleryMediaKind = videoExtensions.has(ext) ? "video" : "image";
+                            return {
+                                id: validFiles[idx].id,
+                                src: s.signedUrl,
+                                path: fileName,
+                                kind
+                            };
+                        });
+                        setPhotoUrls(items);
+                    }
+                } catch (err) {
+                    console.error("Failed to load gallery from Supabase:", err);
+                } finally {
+                    if (!cancelled) setIsGalleryLoading(false);
+                }
+            };
+            void loadGalleryImages();
+        }
+
+        return () => {
+            cancelled = true;
+            // Clearing state in the cleanup function avoids the synchronous setState warning
+            setPhotoUrls([]);
+            setIsGalleryLoading(false);
+        };
+    }, [primaryItinerary?.id, primaryItinerary?.location_label, canShowGallery]);
 
     const updateCurrent = (patch: Partial<ItineraryItem>) => {
         if (!primaryItinerary) return;
@@ -470,6 +473,10 @@ function Itineraries(props: ItinerariesProps) {
                             <FieldLabel>Budget</FieldLabel>
                             <TextInput value={primaryItinerary.budget ?? ""} onChange={(event) => updateCurrent({ budget: event.target.value })} />
                         </label>
+                        <label className="grid gap-1">
+                            <FieldLabel>Gallery folder path</FieldLabel>
+                            <TextInput placeholder="UUID/temporary-gallery/Country/City" value={primaryItinerary.location_label ?? ""} onChange={(event) => updateCurrent({ location_label: event.target.value })} />
+                        </label>
                         <label className="grid gap-1 lg:col-span-3">
                             <FieldLabel>Mood</FieldLabel>
                             <TextInput value={primaryItinerary.mood ?? ""} onChange={(event) => updateCurrent({ mood: event.target.value })} />
@@ -489,6 +496,7 @@ function Itineraries(props: ItinerariesProps) {
                         <StaticField label="Budget" value={displayValue(primaryItinerary.budget)} />
                         <StaticField label="Start date" value={formatDate(primaryItinerary.startDate)} />
                         <StaticField label="End date" value={formatDate(primaryItinerary.endDate)} />
+                        <StaticField label="Gallery folder" value={displayValue(primaryItinerary.location_label)} />
                         <StaticField label="Mood" value={displayValue(primaryItinerary.mood)} className="lg:col-span-3" />
                         <StaticField label="Description" value={displayValue(primaryItinerary.description)} className="lg:col-span-3" />
                     </div>
@@ -804,9 +812,11 @@ function Itineraries(props: ItinerariesProps) {
 
                 {canShowGallery && (
                     <SectionShell eyebrow="Gallery" title="Trip photos">
-                        {tripGalleryItems.length > 0 ? (
+                        {isGalleryLoading ? (
+                            <p className="font-[Cormorant_Garamond] text-[1.1rem] text-[#6a4630]">Loading your 100+ photos...</p>
+                        ) : photoUrls.length > 0 ? (
                             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                                {tripGalleryItems.map((item) => (
+                                {photoUrls.map((item) => (
                                     <div key={item.id} className="overflow-hidden rounded-[0.85rem] border border-[#8f5a20]/15 bg-[#ffead4] shadow-[0_8px_18px_rgb(80_48_13_/_10%)]">
                                         <div className="aspect-[4/3]">
                                             {item.kind === "video" ? (
@@ -821,7 +831,7 @@ function Itineraries(props: ItinerariesProps) {
                             </div>
                         ) : (
                             <p className="rounded-[0.75rem] border border-dashed border-[#8f5a20]/25 bg-[#ffead4]/45 p-4 font-[Cormorant_Garamond] text-[1.05rem] text-[#6a4630]">
-                                This trip can show photos once matching media exists in temporary-gallery and the trip is linked to that folder.
+                                This trip can show photos once matching media exists in USER-CONTENT and the trip is linked to that folder via location_label.
                             </p>
                         )}
                     </SectionShell>
