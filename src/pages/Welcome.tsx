@@ -66,10 +66,13 @@ function GoogleIcon() {
   );
 }
 
-function FacebookIcon() {
+function MicrosoftIcon() {
   return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-6 w-6">
-      <path fill="#1877F2" d="M24 12.1C24 5.4 18.6 0 12 0S0 5.4 0 12.1C0 18.1 4.4 23 10.1 24v-8.4H7.1v-3.5h3V9.3c0-3 1.8-4.6 4.5-4.6 1.3 0 2.7.2 2.7.2v3h-1.5c-1.5 0-2 .9-2 1.9v2.3h3.4l-.5 3.5h-2.9V24C19.6 23 24 18.1 24 12.1Z" />
+    <svg aria-hidden="true" viewBox="0 0 23 23" className="h-6 w-6">
+      <path fill="#f35325" d="M1 1h10v10H1z" />
+      <path fill="#81bc06" d="M12 1h10v10H12z" />
+      <path fill="#05a6f0" d="M1 12h10v10H1z" />
+      <path fill="#ffba08" d="M12 12h10v10H12z" />
     </svg>
   );
 }
@@ -271,14 +274,15 @@ function Welcome() {
     }
   };
 
-  const handleSocialAuth = async (provider: "google" | "facebook") => {
+  const handleSocialAuth = async (provider: "google" | "azure") => {
     setFormState((prev) => ({ ...prev, isLoading: true, error: "" }));
 
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: window.location.origin
+          redirectTo: window.location.origin,
+          queryParams: provider === 'azure' ? { prompt: 'select_account' } : undefined
         }
       });
 
@@ -415,9 +419,18 @@ function Welcome() {
                 <IconButton label="Continue with Google" onClick={() => handleSocialAuth("google")}>
                   <GoogleIcon />
                 </IconButton>
-                <IconButton label="Continue with Facebook" onClick={() => handleSocialAuth("facebook")}>
-                  <FacebookIcon />
+                <IconButton label="Continue with Microsoft" onClick={() => handleSocialAuth("azure")}>
+                  <MicrosoftIcon />
                 </IconButton>
+              </div>
+
+              <div className="mt-4 text-center">
+                <a
+                  href="#"
+                  className="font-cormorant text-xs text-[#EAB681]/70 underline underline-offset-4 transition hover:text-[#FABE7D]"
+                >
+                  Microsoft account login help (placeholder link)
+                </a>
               </div>
             </div>
           </div>
