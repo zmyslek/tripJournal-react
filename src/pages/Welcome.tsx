@@ -111,12 +111,24 @@ function Welcome() {
     isLoading: false,
   });
   const [showSignUp, setShowSignUp] = useState(false);
+  const [showQuestionnaire, setShowQuestionnaire] = useState(false);
+  const [questionnaire, setQuestionnaire] = useState({ firstName: "", lastName: "" });
+  const [isQuestionnaireLoading, setIsQuestionnaireLoading] = useState(false);
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const isProfileIncomplete = (user: any) => {
+    if (!user) return false;
+    const metadata = user.user_metadata;
+    // Profile is incomplete if there's no full name or first/last name pair
+    const hasName = metadata?.full_name || (metadata?.first_name && metadata?.last_name);
+    return !hasName;
+  };
 
   useEffect(() => {
     let isMounted = true;
 
     const redirectIfOnWelcome = () => {
-      if (location.pathname === "/welcome") {
+      if (location.pathname === "/welcome" || location.pathname === "/") {
         navigate("/countries", { replace: true });
       }
     };
@@ -136,8 +148,12 @@ function Welcome() {
       const sessionUser = data.session?.user;
       if (sessionUser) {
         saveAuth(getAuthUserFromSession(sessionUser));
-        setIsAuthReady(true);
-        redirectIfOnWelcome();
+        if (isProfileIncomplete(sessionUser)) {
+          setShowQuestionnaire(true);
+        } else {
+          setIsAuthReady(true);
+          redirectIfOnWelcome();
+        }
       }
     }
 
@@ -149,8 +165,12 @@ function Welcome() {
       }
 
       saveAuth(getAuthUserFromSession(session.user));
-      setIsAuthReady(true);
-      redirectIfOnWelcome();
+      if (isProfileIncomplete(session.user)) {
+        setShowQuestionnaire(true);
+      } else {
+        setIsAuthReady(true);
+        redirectIfOnWelcome();
+      }
     });
 
     return () => {
@@ -178,6 +198,38 @@ function Welcome() {
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
+  };
+
+  const handleQuestionnaireSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!questionnaire.firstName.trim() || !questionnaire.lastName.trim()) {
+      setFormState(prev => ({ ...prev, error: "Please provide both name and surname" }));
+      return;
+    }
+
+    setIsQuestionnaireLoading(true);
+    try {
+      const { data, error } = await supabase.auth.updateUser({
+        data: {
+          first_name: questionnaire.firstName.trim(),
+          last_name: questionnaire.lastName.trim(),
+          full_name: `${questionnaire.firstName.trim()} ${questionnaire.lastName.trim()}`,
+          username: questionnaire.firstName.trim()
+        }
+      });
+
+      if (error) throw error;
+      if (data.user) {
+        saveAuth(getAuthUserFromSession(data.user));
+      }
+      setIsAuthReady(true);
+      navigate("/countries", { replace: true });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to update profile.";
+      setFormState(prev => ({ ...prev, error: message }));
+    } finally {
+      setIsQuestionnaireLoading(false);
+    }
   };
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
@@ -233,9 +285,13 @@ function Welcome() {
           } catch {
             // ignore
           }
-          saveAuth(getAuthUserFromSession(sessionUser));
-          setIsAuthReady(true);
-          navigate("/countries", { replace: true });
+          if (isProfileIncomplete(sessionUser)) {
+            setShowQuestionnaire(true);
+          } else {
+            saveAuth(getAuthUserFromSession(sessionUser));
+            setIsAuthReady(true);
+            navigate("/countries", { replace: true });
+          }
         } else {
           try {
             posthog.capture('account_created', {
@@ -261,9 +317,13 @@ function Welcome() {
         }
 
         if (data.session?.user) {
-          saveAuth(getAuthUserFromSession(data.session.user));
-          setIsAuthReady(true);
-          navigate("/countries", { replace: true });
+          if (isProfileIncomplete(data.session.user)) {
+            setShowQuestionnaire(true);
+          } else {
+            saveAuth(getAuthUserFromSession(data.session.user));
+            setIsAuthReady(true);
+            navigate("/countries", { replace: true });
+          }
         }
       }
     } catch (error) {
@@ -304,6 +364,59 @@ function Welcome() {
   const handleEnterTripJournal = () => {
     navigate("/countries", { replace: true });
   };
+
+  if (showQuestionnaire) {
+    return (
+      <div
+        className="relative min-h-screen flex items-center justify-center text-[#FFEAD4]"
+        style={{
+          backgroundImage: `linear-gradient(90deg, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.8) 100%), url(${darkLeatherTexture})`,
+          backgroundSize: "cover",
+        }}
+      >
+        <div className="w-full max-w-md p-8 rounded-[2rem] border border-[#EAB681]/70 bg-[#5A392B] shadow-[0_30px_90px_rgba(0,0,0,0.55)]">
+          <div className="text-center mb-8">
+            <h2 className="font-adamina text-3xl">One last step</h2>
+            <p className="mt-2 font-cormorant text-[#FABE7D]">Please introduce yourself to your journal.</p>
+          </div>
+          <form onSubmit={handleQuestionnaireSubmit} className="space-y-5">
+            <div>
+              <label className="mb-2 block font-cormorant text-sm text-[#EAB681]">First Name</label>
+              <input
+                type="text"
+                required
+                value={questionnaire.firstName}
+                onChange={(e) => setQuestionnaire(prev => ({ ...prev, firstName: e.target.value }))}
+                className="w-full rounded-full border border-[#EAB681]/60 bg-[#1a1a1a]/90 px-4 py-3 font-cormorant text-[#FFEAD4] outline-none transition focus:border-[#FABE7D]"
+              />
+            </div>
+            <div>
+              <label className="mb-2 block font-cormorant text-sm text-[#EAB681]">Last Name</label>
+              <input
+                type="text"
+                required
+                value={questionnaire.lastName}
+                onChange={(e) => setQuestionnaire(prev => ({ ...prev, lastName: e.target.value }))}
+                className="w-full rounded-full border border-[#EAB681]/60 bg-[#1a1a1a]/90 px-4 py-3 font-cormorant text-[#FFEAD4] outline-none transition focus:border-[#FABE7D]"
+              />
+            </div>
+            {formState.error && (
+              <div className="rounded-2xl border border-[#FABE7D]/50 bg-[#FABE7D] px-4 py-3 font-cormorant text-sm text-[#5A392B]">
+                {formState.error}
+              </div>
+            )}
+            <button
+              type="submit"
+              disabled={isQuestionnaireLoading}
+              className="w-full rounded-full bg-[#EAB681] px-4 py-3 font-cormorant text-lg font-semibold text-[#1a1a1a] transition hover:brightness-110 disabled:opacity-50"
+            >
+              {isQuestionnaireLoading ? "Saving..." : "Start your journey"}
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
