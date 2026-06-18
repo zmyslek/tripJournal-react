@@ -182,6 +182,7 @@ function SectionShell({ eyebrow, title, action, children }: { eyebrow: string; t
     );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function Itineraries(_props: ItinerariesProps) {
     const { countryName: encodedCountryName = "" } = useParams();
     const routeCountryName = decodeCountryParam(encodedCountryName).trim();
@@ -577,7 +578,7 @@ function Itineraries(_props: ItinerariesProps) {
                                             }}>Move down</SmallButton>
                                             <SmallButton type="button" tone="danger" onClick={() => updateDays(dayPlan.filter((_, entryIndex) => entryIndex !== index))}>Delete</SmallButton>
                                         </div>
-                                    </div>
+                                    </article>
                                 ))}
                             </div>
                         ) : (
@@ -698,6 +699,7 @@ function Itineraries(_props: ItinerariesProps) {
                     <aside className="space-y-6">
                         <SpotifyPlaylistGenerator 
                             tripId={primaryItinerary.id} 
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             currentPlaylistId={supabasePlaylistId || (primaryItinerary as any).spotify_playlist_id} 
                             countryCode={resolvedCountryName || 'Globetrotting'} 
                         />
