@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useState, useEffect, useMemo, useRef } from 'react';
 import CircularGallery from '../components/CircularGallery';
 import GalleryQuiz from '../components/GalleryQuiz';
@@ -10,7 +8,6 @@ import VideoCard from '../components/VideoCard';
 import { useScrollToTop } from '../hooks/useScrollToTop';
 import { useGalleryStorage, type GalleryItem } from '../hooks/useGalleryStorage';
 import paperBackground from '../assets/wrinkled-paper.png';
-import { inferMediaKindFromName, type MediaKind } from '../utils/mediaFiles';
 
 const videoPosterCache = new Map<string, string>();
 
@@ -349,8 +346,8 @@ function Gallery() {
                                     {combinedImages.length > 0 && (
                                         <div className="sticky top-[6rem] max-h-[calc(100vh-8rem)] min-w-0 overflow-y-auto">
                                             <PhotoRandomizer
-                                                items={combinedImages as any}
-                                                onPhotoClick={(item: any) => handleItemClick(combinedImages, item)}
+                                                items={combinedImages}
+                                                onPhotoClick={(item) => handleItemClick(combinedImages, item)}
                                             />
                                         </div>
                                     )}
@@ -399,9 +396,9 @@ function Gallery() {
                                                         key={v.src}
                                                         item={v}
                                                         posterUrl={getVideoCoverUrl(v.src, v.text)}
-                                                        onClick={() => handleItemClick(visibleVideos, v as any)}
+                                                        onClick={() => handleItemClick(visibleVideos, v)}
                                                         isEditing={isEditing}
-                                                        onDelete={() => handleDeleteClick(v as any)}
+                                                        onDelete={() => handleDeleteClick(v)}
                                                     />
                                                 ))}
                                             </div>

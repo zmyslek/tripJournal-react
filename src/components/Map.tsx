@@ -1,17 +1,12 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useEffect, useRef } from "react";
 import * as maptilersdk from "@maptiler/sdk";
-import type { StyleSpecification } from "maplibre-gl";
 import { type CountriesGeoJson } from "../types/countries";
 import type { CountryStatus } from "../pages/Home";
 
 const ENV = (import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env;
 
-const MAPTILER_API_KEY = ENV?.VITE_MAPTILER_API_KEY ?? "FelxstvCdS6k0g9YnLdK";
-const MAPTILER_STYLE_ID = ENV?.VITE_MAPTILER_STYLE_ID ?? "0196a729-51f8-7a04-8b3a-22b8d925ea1b";
-const MAPTILER_STYLE_URL = ENV?.VITE_MAPTILER_STYLE_URL || (MAPTILER_API_KEY === "FelxstvCdS6k0g9YnLdK" ? `https://api.maptiler.com/maps/${MAPTILER_STYLE_ID}/style.json?key=${MAPTILER_API_KEY}` : undefined);
+const MAPTILER_API_KEY = ENV?.VITE_MAPTILER_API_KEY || "FelxstvCdS6k0g9YnLdK";
 
-const GLOBE_BACKGROUND_COLOR = "#F2DFC4";
 const GLOBE_WATER_COLOR      = "#F2DFC4";
 
 // Status colors — from the dropdown/badge screenshots
@@ -25,63 +20,29 @@ const OUTLINE_WANT_RETURN        = "#9A6020";
 const OUTLINE_TO_BE_VISITED      = "#4A2000";
 const OUTLINE_NOT_EXPLORED_BADGE = "#4A3800";
 
-const SAFE_FALLBACK_STYLE: StyleSpecification = {
-  version: 8,
-  name: "TripJournal Local Globe",
-  sources: {
-    blank: { type: "geojson", data: { type: "FeatureCollection", features: [] } }
-  },
-  layers: [
-    { id: "background", type: "background", paint: { "background-color": GLOBE_BACKGROUND_COLOR, "background-opacity": 1 } },
-    { id: "blank-layer", type: "fill", source: "blank", paint: { "fill-color": GLOBE_BACKGROUND_COLOR, "fill-opacity": 0 } }
-  ]
-};
+function resolveStyleUrl(): string | maptilersdk.StyleSpecification | maptilersdk.ReferenceMapStyle {
+  const styleEnv = ENV?.VITE_MAPTILER_STYLE_URL || ENV?.VITE_MAPTILER_STYLE_ID;
+  if (!styleEnv) return maptilersdk.MapStyle.STREETS;
+  
+  if (styleEnv.startsWith("http") || styleEnv.includes("/style.json")) {
+    const url = new URL(styleEnv.startsWith("http") ? styleEnv : `https://api.maptiler.com/${styleEnv.replace(/^\/+/, "")}`);
+    if (url.hostname.includes("maptiler.com") && !url.searchParams.has("key")) url.searchParams.set("key", MAPTILER_API_KEY);
+    return url.toString();
+  }
+  
+  return styleEnv as string;
+}
 
-const resolveStyleUrl = (): string | StyleSpecification => {
-  const normalizeMaptilerUrl = (url: string) => {
-    try {
-      const parsed = new URL(url);
-      const host = parsed.hostname.toLowerCase();
-      if ((host === "cloud.maptiler.com" || host.endsWith(".maptiler.com")) && !parsed.pathname.endsWith("/style.json")) {
-        const mapsMatch = parsed.pathname.match(/\/maps\/([^/?#]+)/i);
-        const styleId = mapsMatch?.[1];
-        if (styleId) return `https://api.maptiler.com/maps/${styleId}/style.json`;
-      }
-      if (host === "api.maptiler.com") {
-        const apiMapsMatch = parsed.pathname.match(/^\/maps\/([^/?#]+)\/?$/i);
-        if (apiMapsMatch?.[1]) return `https://api.maptiler.com/maps/${apiMapsMatch[1]}/style.json`;
-      }
-      return url;
-    } catch { return url; }
-  };
+const STYLE_URL = resolveStyleUrl();
+maptilersdk.config.apiKey = MAPTILER_API_KEY;
 
-  const appendKeyIfNeeded = (url: string) => {
-    if (!MAPTILER_API_KEY || !url.includes("api.maptiler.com") || url.includes("key=")) return url;
-    return `${url}${url.includes("?") ? "&" : "?"}key=${MAPTILER_API_KEY}`;
-  };
-
-  const configuredStyle = (MAPTILER_STYLE_URL?.trim() || MAPTILER_STYLE_ID.trim()).replace(/^['"]|['"]$/g, "");
-  if (!configuredStyle || configuredStyle.includes(" ")) return SAFE_FALLBACK_STYLE;
-
-  const toSafeUrl = (candidate: string | StyleSpecification) => {
-    if (typeof candidate !== "string") return candidate;
-    try {
-      const parsed = new URL(candidate);
-      if (!parsed.pathname.includes("/style.json")) return SAFE_FALLBACK_STYLE;
-      return candidate;
-    } catch { return SAFE_FALLBACK_STYLE; }
-  };
-
-  if (configuredStyle.startsWith("http://") || configuredStyle.startsWith("https://"))
-    return toSafeUrl(appendKeyIfNeeded(normalizeMaptilerUrl(configuredStyle)));
-  if (configuredStyle.includes("/style.json"))
-    return toSafeUrl(appendKeyIfNeeded(`https://api.maptiler.com/${configuredStyle.replace(/^\/+/, "")}`));
-  return toSafeUrl(
-    MAPTILER_API_KEY
-      ? `https://api.maptiler.com/maps/${encodeURIComponent(configuredStyle)}/style.json?key=${MAPTILER_API_KEY}`
-      : SAFE_FALLBACK_STYLE
-  );
-};
+const COUNTRY_LAYER_ID        = "tripjournal-country-fill";
+const COUNTRY_OUTLINE_LAYER_ID = "tripjournal-country-outline";
+const COUNTRY_SOURCE_ID        = "tripjournal-countries-geojson";
+const USER_LOCATION_PIN_COLOR  = "#50300d";
+const USER_LOCATION_PIN_STROKE = "#eab681";
+const DEFAULT_INITIAL_GLOBE_ZOOM = 1.35;
+const MIN_GLOBE_ZOOM = 0.5;
 
 const createUserLocationPinElement = () => {
   const marker = document.createElement("div");
@@ -108,22 +69,6 @@ const isLocationOnVisibleSide = (center: { lng: number; lat: number }, loc: { ln
   const cosAngle = Math.sin(phi1) * Math.sin(phi2) + Math.cos(phi1) * Math.cos(phi2) * Math.cos(deltaLambda);
   return Math.acos(Math.max(-1, Math.min(1, cosAngle))) <= Math.PI / 2 + 1e-6;
 };
-
-const STYLE_URL = resolveStyleUrl();
-
-maptilersdk.config.apiKey = MAPTILER_API_KEY;
-try {
-  console.info("TripJournal: Using Map style URL:", STYLE_URL);
-  if (!MAPTILER_API_KEY) console.warn("TripJournal: VITE_MAPTILER_API_KEY not set.");
-} catch { /* ignore */ }
-
-const COUNTRY_LAYER_ID        = "tripjournal-country-fill";
-const COUNTRY_OUTLINE_LAYER_ID = "tripjournal-country-outline";
-const COUNTRY_SOURCE_ID        = "tripjournal-countries-geojson";
-const USER_LOCATION_PIN_COLOR  = "#50300d";
-const USER_LOCATION_PIN_STROKE = "#eab681";
-const DEFAULT_INITIAL_GLOBE_ZOOM = 1.35;
-const MIN_GLOBE_ZOOM = 0.5;
 
 export type MapProps = {
   countriesData: CountriesGeoJson | null;
@@ -165,7 +110,7 @@ const Map: React.FC<MapProps> = ({
   const initialGlobeZoomRef           = useRef<number>(Math.max(MIN_GLOBE_ZOOM, initialGlobeZoom));
   const showGlobeBackdropRef          = useRef<boolean>(showGlobeBackdrop);
 
-  const globeSize    = sizeVariant === "compact" ? "60vw" : "min(82vw, 82vh)";
+  const globeSize    = sizeVariant === "compact" ? "60vw" : "min(78vw, 78vh)";
   const flatMapWidth  = "min(100%, 800px)";
   const flatMapHeight = "min(48vh, 560px)";
 
@@ -174,86 +119,78 @@ const Map: React.FC<MapProps> = ({
 
   const applyTransparentBackdrop = React.useCallback((map: maptilersdk.Map) => {
     const canvas = map.getCanvas();
+    if (!canvas) return;
+
     canvas.style.backgroundColor = "transparent";
     canvas.style.setProperty("background", "transparent", "important");
-    map.getContainer().style.background = "transparent";
-    map.getContainer().style.setProperty("background", "transparent", "important");
+
+    const container = map.getContainer();
+    if (container) {
+      container.style.background = "transparent";
+      container.style.setProperty("background", "transparent", "important");
+    }
+
+    const setPropIfChanged = (id: string, type: 'paint' | 'layout', key: string, value: string | number | boolean | null) => {
+      try {
+        const current = type === 'paint' ? map.getPaintProperty(id, key) : map.getLayoutProperty(id, key);
+        if (current === value) return;
+        if (type === 'paint') {
+          map.setPaintProperty(id, key, value);
+        } else {
+          map.setLayoutProperty(id, key, value);
+        }
+      } catch { /* ignore */ }
+    };
 
     try {
-      map.getStyle().layers?.forEach((layer) => {
+      type StyleLayer = { id: string; type: string };
+      const layers = (map.getStyle().layers ?? []) as StyleLayer[];
+      layers.forEach((layer) => {
         // Never touch our own country highlight layers
         if (layer.id === COUNTRY_LAYER_ID || layer.id === COUNTRY_OUTLINE_LAYER_ID) return;
 
-        const layerId    = layer.id.toLowerCase();
-        const isGlobe    = viewModeRef.current === "globe";
+        const layerId = layer.id.toLowerCase();
+        const isGlobe = viewModeRef.current === "globe";
         const showBackdrop = showGlobeBackdropRef.current;
 
         if (layer.type === "background") {
           if (isGlobe && showBackdrop) {
-            map.setLayoutProperty(layer.id, "visibility", "visible");
-            map.setPaintProperty(layer.id, "background-color", GLOBE_BACKGROUND_COLOR);
-            map.setPaintProperty(layer.id, "background-opacity", 1);
+            setPropIfChanged(layer.id, "paint", "background-opacity", 1);
           } else {
-            map.setLayoutProperty(layer.id, "visibility", "none");
-            map.setPaintProperty(layer.id, "background-color", "rgba(0,0,0,0)");
-            map.setPaintProperty(layer.id, "background-opacity", 0);
+            setPropIfChanged(layer.id, "paint", "background-opacity", 0);
           }
         }
 
-        if (layerId.includes("water") || layerId.includes("ocean") || layerId.includes("sea")) {
-          try {
-            if (layer.type === "fill") {
-              if (isGlobe && showBackdrop) {
-                map.setPaintProperty(layer.id, "fill-color", GLOBE_WATER_COLOR);
-                map.setPaintProperty(layer.id, "fill-opacity", 1);
-              } else {
-                map.setPaintProperty(layer.id, "fill-color", "rgba(0,0,0,0)");
-                map.setPaintProperty(layer.id, "fill-opacity", 0);
-              }
-            }
-            if (layer.type === "line") {
-              if (isGlobe && showBackdrop) {
-                map.setPaintProperty(layer.id, "line-color", GLOBE_WATER_COLOR);
-                map.setPaintProperty(layer.id, "line-opacity", 1);
-              } else {
-                map.setPaintProperty(layer.id, "line-opacity", 0);
-              }
-            }
-            if (layer.type === "raster") {
-              if (isGlobe && showBackdrop) {
-                map.setPaintProperty(layer.id, "raster-opacity", 1);
-                map.setPaintProperty(layer.id, "raster-saturation", -0.35);
-                map.setPaintProperty(layer.id, "raster-brightness-min", 0.78);
-                map.setPaintProperty(layer.id, "raster-brightness-max", 0.9);
-              } else {
-                map.setPaintProperty(layer.id, "raster-opacity", 0);
-              }
-            }
-          } catch { /* ignore */ }
+        if (layer.type === "raster") {
+          if (isGlobe && showBackdrop) {
+            setPropIfChanged(layer.id, "paint", "raster-opacity", 1);
+          } else {
+            setPropIfChanged(layer.id, "paint", "raster-opacity", 0);
+          }
         }
 
-        const maybeSkyLayer = layer as { id: string; type?: string };
-        if (maybeSkyLayer.type === "sky") {
-          map.setLayoutProperty(maybeSkyLayer.id, "visibility", "none");
+        if (layer.type === "fill" && (layerId.includes("water") || layerId.includes("ocean") || layerId.includes("sea"))) {
+          if (isGlobe && showBackdrop) {
+            setPropIfChanged(layer.id, "paint", "fill-opacity", 1);
+          } else {
+            setPropIfChanged(layer.id, "paint", "fill-opacity", 0);
+          }
+        }
+
+        if (layer.type === "line" && (layerId.includes("water") || layerId.includes("ocean"))) {
+          if (isGlobe && showBackdrop) {
+            setPropIfChanged(layer.id, "paint", "line-color", GLOBE_WATER_COLOR);
+            setPropIfChanged(layer.id, "paint", "line-opacity", 1);
+          } else {
+            setPropIfChanged(layer.id, "paint", "line-opacity", 0);
+          }
+        }
+
+        if (layer.type === "sky") {
+          setPropIfChanged(layer.id, "layout", "visibility", "none");
         }
       });
     } catch { /* ignore */ }
-
-    if (!showGlobeBackdropRef.current) {
-      try {
-        const layers = map.getStyle().layers || [];
-        for (const layer of layers) {
-          if (!layer?.id) continue;
-          const id = layer.id as string;
-          if (id === COUNTRY_LAYER_ID || id === COUNTRY_OUTLINE_LAYER_ID) continue;
-          try {
-            if (layer.type === "fill")   map.setPaintProperty(id, "fill-opacity", 0);
-            if (layer.type === "line")   map.setPaintProperty(id, "line-opacity", 0);
-            if (layer.type === "raster") map.setPaintProperty(id, "raster-opacity", 0);
-          } catch { /* ignore */ }
-        }
-      } catch { /* ignore */ }
-    }
   }, []);
 
   const ensureHighlightLayers = React.useCallback((map: maptilersdk.Map) => {
@@ -261,7 +198,7 @@ const Map: React.FC<MapProps> = ({
       map.addSource(COUNTRY_SOURCE_ID, { type: "geojson", data: EMPTY_FEATURE_COLLECTION });
     }
 
-    const layers = map.getStyle().layers || [];
+    const layers = (map.getStyle().layers || []) as maptilersdk.LayerSpecification[];
     let beforeId: string | undefined;
     for (const layer of layers) {
       if (layer.type === "symbol" || (layer.id && layer.id.toLowerCase().includes("label"))) {
@@ -286,10 +223,10 @@ const Map: React.FC<MapProps> = ({
           ],
           "fill-opacity": [
             "match", ["get", "status"],
-            "visited",             0.85,
-            "want-to-visit-again", 0.85,
-            "want-to-go",          0.85,
-            "not-explored",        0.85,
+            "visited",             1.0,
+            "want-to-visit-again", 1.0,
+            "want-to-go",          1.0,
+            "not-explored",        1.0,
             0  // no-status: invisible
           ],
           "fill-outline-color": "rgba(0,0,0,0)"
@@ -327,62 +264,44 @@ const Map: React.FC<MapProps> = ({
     }
   }, []);
 
-  const createUserLocationPinElement = () => {
-    const marker = document.createElement("div");
-    marker.setAttribute("aria-hidden", "true");
-    marker.className = "user-location-marker";
-    marker.style.setProperty("--user-location-color", USER_LOCATION_PIN_COLOR);
-    marker.style.setProperty("--user-location-stroke", USER_LOCATION_PIN_STROKE);
-    const ringOuter = document.createElement("div");
-    ringOuter.className = "user-location-ring user-location-ring-outer";
-    const ringInner = document.createElement("div");
-    ringInner.className = "user-location-ring user-location-ring-inner";
-    const dot = document.createElement("div");
-    dot.className = "user-location-dot";
-    marker.appendChild(ringOuter);
-    marker.appendChild(ringInner);
-    marker.appendChild(dot);
-    return marker;
-  };
-
-  const isLocationOnVisibleSide = (center: { lng: number; lat: number }, loc: { lng: number; lat: number }) => {
-    const toRad = (d: number) => (d * Math.PI) / 180;
-    const phi1 = toRad(center.lat), phi2 = toRad(loc.lat);
-    const deltaLambda = toRad(loc.lng - center.lng);
-    const cosAngle = Math.sin(phi1) * Math.sin(phi2) + Math.cos(phi1) * Math.cos(phi2) * Math.cos(deltaLambda);
-    return Math.acos(Math.max(-1, Math.min(1, cosAngle))) <= Math.PI / 2 + 1e-6;
-  };
-
-  const ensureUserLocationOverlay = () => {
+  const ensureUserLocationOverlay = React.useCallback(() => {
     if (userLocationOverlayRef.current || !mapContainer.current) return;
     const overlay = createUserLocationPinElement();
     overlay.classList.add("user-location-overlay");
     mapContainer.current.appendChild(overlay);
     userLocationOverlayRef.current = overlay;
-  };
+  }, []);
 
-  const updateUserLocationOverlay = (map: maptilersdk.Map) => {
+  const updateUserLocationOverlay = React.useCallback((map: maptilersdk.Map) => {
     const overlay = userLocationOverlayRef.current;
     const location = userLocationRef.current;
     if (!overlay) return;
     if (!location || !map.isStyleLoaded()) {
-      overlay.style.opacity = "0"; overlay.dataset.visible = "false"; return;
+      overlay.style.opacity = "0";
+      overlay.dataset.visible = "false";
+      return;
     }
     let visible = true;
     try {
       if (viewModeRef.current === "globe") {
         const center = map.getCenter();
-        visible = isLocationOnVisibleSide({ lng: center.lng, lat: center.lat }, location);
+        visible = isLocationOnVisibleSide(center, location);
       }
-    } catch { visible = true; }
-    if (!visible) { overlay.style.opacity = "0"; overlay.dataset.visible = "false"; return; }
+    } catch {
+      visible = true;
+    }
+    if (!visible) {
+      overlay.style.opacity = "0";
+      overlay.dataset.visible = "false";
+      return;
+    }
     const point = map.project([location.lng, location.lat]);
     overlay.style.opacity = "1";
     overlay.style.left = `${point.x}px`;
     overlay.style.top = `${point.y}px`;
     overlay.style.transform = "translate(-50%, -50%)";
     overlay.dataset.visible = "true";
-  };
+  }, []);
 
   const syncUserLocationOverlay = React.useCallback((map: maptilersdk.Map) => {
     ensureUserLocationOverlay();
@@ -393,24 +312,12 @@ const Map: React.FC<MapProps> = ({
     map.easeTo({ center: [location.lng, location.lat], zoom: Math.max(map.getZoom(), 2.2), duration: 900, essential: true });
   }, [ensureUserLocationOverlay, updateUserLocationOverlay]);
 
-  const syncUserLocationOverlayAndCenter = React.useCallback((map: maptilersdk.Map) => {
-    syncUserLocationOverlay(map);
-    if (!hasCenteredOnUserLocationRef.current) {
-      const location = userLocationRef.current;
-      if (!location) return;
-      hasCenteredOnUserLocationRef.current = true;
-      map.easeTo({ center: [location.lng, location.lat], zoom: Math.max(map.getZoom(), 2.2), duration: 900, essential: true });
-    }
-  }, [syncUserLocationOverlay]);
-
   const syncHighlightedCountries = React.useCallback(() => {
     const map = mapRef.current;
     if (!map || !map.isStyleLoaded()) return;
     ensureHighlightLayers(map);
     const source = map.getSource(COUNTRY_SOURCE_ID);
     if (!source || !("setData" in source)) return;
-    void selectedCountriesRef.current;
-
     // Only include countries that have an explicit status assigned
     const statusMap = countryStatusesRef.current;
     const highlightedFeatures =
@@ -427,43 +334,8 @@ const Map: React.FC<MapProps> = ({
         };
       }).filter((f): f is typeof f & object => f !== null) ?? [];
 
-    (source as { setData: (data: unknown) => void }).setData({ type: "FeatureCollection", features: highlightedFeatures });
+    (source as maptilersdk.GeoJSONSource).setData({ type: "FeatureCollection", features: highlightedFeatures });
 
-    // Re-assert paint props to prevent styledata resets
-    try {
-      if (map.getLayer(COUNTRY_LAYER_ID)) {
-        map.setPaintProperty(COUNTRY_LAYER_ID, "fill-color", [
-          "match", ["get", "status"],
-          "visited",             COLOR_VISITED,
-          "want-to-visit-again", COLOR_WANT_RETURN,
-          "want-to-go",          COLOR_TO_BE_VISITED,
-          "not-explored",        COLOR_NOT_EXPLORED_BADGE,
-          "rgba(0,0,0,0)"
-        ]);
-        map.setPaintProperty(COUNTRY_LAYER_ID, "fill-opacity", [
-          "match", ["get", "status"],
-          "visited", 0.85, "want-to-visit-again", 0.85, "want-to-go", 0.85, "not-explored", 0.85,
-          0
-        ]);
-      }
-      if (map.getLayer(COUNTRY_OUTLINE_LAYER_ID)) {
-        map.setPaintProperty(COUNTRY_OUTLINE_LAYER_ID, "line-color", [
-          "match", ["get", "status"],
-          "visited",             OUTLINE_VISITED,
-          "want-to-visit-again", OUTLINE_WANT_RETURN,
-          "want-to-go",          OUTLINE_TO_BE_VISITED,
-          "not-explored",        OUTLINE_NOT_EXPLORED_BADGE,
-          "rgba(0,0,0,0)"
-        ]);
-        map.setPaintProperty(COUNTRY_OUTLINE_LAYER_ID, "line-opacity", [
-          "match", ["get", "status"],
-          "visited", 0.95, "want-to-visit-again", 0.95, "want-to-go", 0.95, "not-explored", 0.95,
-          0
-        ]);
-      }
-    } catch { /* ignore transient failures */ }
-
-    try { map.moveLayer(COUNTRY_LAYER_ID); map.moveLayer(COUNTRY_OUTLINE_LAYER_ID); } catch { /* ignore */ }
   }, [ensureHighlightLayers]);
 
   const scheduleHighlightRefresh = React.useCallback(() => {
@@ -503,19 +375,23 @@ const Map: React.FC<MapProps> = ({
   }, [calculateCountryCenter]);
 
   useEffect(() => {
+    const oldMode = viewModeRef.current;
     viewModeRef.current = viewMode;
     const map = mapRef.current;
     if (!map) return;
-    if (viewMode === "globe") {
-      try { (map as unknown as { setProjection?: (p: string) => void }).setProjection?.("globe"); } catch { /* ignore */ }
-      map.jumpTo({ center: [0, 20], zoom: initialGlobeZoomRef.current, pitch: 0 });
-    } else {
-      try { (map as unknown as { setProjection?: (p: string) => void }).setProjection?.("mercator"); } catch { /* ignore */ }
+
+    if (oldMode !== viewMode) {
+      if (viewMode === "globe") {
+        try { map.setProjection("globe"); } catch { /* ignore */ }
+        map.jumpTo({ center: [0, 20], zoom: initialGlobeZoomRef.current, pitch: 0, bearing: 0 });
+      } else {
+        try { map.setProjection("mercator"); } catch { /* ignore */ }
+      }
     }
-    applyTransparentBackdrop(map);
+    map.once('styledata', () => applyTransparentBackdrop(map));
     map.resize();
     map.triggerRepaint();
-  }, [viewMode, applyTransparentBackdrop, initialGlobeZoom]);
+  }, [viewMode, applyTransparentBackdrop]);
 
   useEffect(() => {
     focusCountryRef.current = focusCountry?.trim() || null;
@@ -557,10 +433,11 @@ const Map: React.FC<MapProps> = ({
       container: mapContainer.current,
       style: STYLE_URL,
       canvasContextAttributes: { alpha: true },
+      terrain: false,
       projection: viewModeRef.current === "globe" ? "globe" : "mercator",
       center: [0, 20],
       zoom: viewModeRef.current === "globe" ? initialGlobeZoomRef.current : 1.15,
-      minZoom: 0.5,
+      minZoom: 0,
       renderWorldCopies: false,
       pitch: 0,
       navigationControl: false,
@@ -578,10 +455,12 @@ const Map: React.FC<MapProps> = ({
       if (!lastFrameTime) lastFrameTime = timestamp;
       const deltaSeconds = (timestamp - lastFrameTime) / 1000;
       lastFrameTime = timestamp;
-      if (isUserInteracting || Boolean(userLocationRef.current) || Boolean(focusCountryRef.current) || viewModeRef.current !== "globe") {
+      
+      if (isUserInteracting || Boolean(userLocationRef.current) || Boolean(focusCountryRef.current) || viewModeRef.current !== "globe" || document.hidden) {
         animationFrameId = window.requestAnimationFrame(animateRotation);
         return;
       }
+
       const center = map.getCenter();
       const nextLng = (((center.lng - deltaSeconds * rotationSpeedDegPerSec) + 540) % 360) - 180;
       map.setCenter([nextLng, center.lat]);
@@ -596,25 +475,14 @@ const Map: React.FC<MapProps> = ({
         canvasEl.style.backgroundColor = "transparent";
       } catch { /* ignore */ }
 
-      let triedFallback = false;
-      map.on("error", (err: unknown) => {
-        try {
-          console.warn("TripJournal: Map error", err);
-          if (!map.isStyleLoaded() && !triedFallback) {
-            triedFallback = true;
-            try { map.setStyle(SAFE_FALLBACK_STYLE); } catch { /* ignore */ }
-          }
-        } catch { /* ignore */ }
-      });
-
-      if (viewModeRef.current === "globe") map.jumpTo({ center: [0, 20], zoom: initialGlobeZoomRef.current, pitch: 0 });
+      if (viewModeRef.current === "globe") map.jumpTo({ center: [0, 20], zoom: initialGlobeZoomRef.current, pitch: 0, bearing: 0 });
 
       map.resize();
       map.triggerRepaint();
       applyTransparentBackdrop(map);
 
-      try { (map as unknown as { setFog?: (f: null) => void }).setFog?.(null); } catch { /* ignore */ }
-      try { (map as unknown as { setTerrain?: (t: null) => void }).setTerrain?.(null); } catch { /* ignore */ }
+      // try { map.setFog(null); } catch { /* ignore */ }
+      try { map.setTerrain(null); } catch { /* ignore */ }
 
       const gl =
         (map.getCanvas().getContext("webgl2", { alpha: true }) as WebGL2RenderingContext | null) ??
@@ -622,7 +490,7 @@ const Map: React.FC<MapProps> = ({
       if (gl) gl.clearColor(0, 0, 0, 0);
 
       ensureHighlightLayers(map);
-      syncUserLocationOverlayAndCenter(map);
+      syncUserLocationOverlay(map);
       scheduleHighlightRefresh();
 
       if (focusCountryRef.current) {
@@ -633,8 +501,6 @@ const Map: React.FC<MapProps> = ({
       map.on("styledata", () => {
         if (!map.isStyleLoaded()) return;
         applyTransparentBackdrop(map);
-        try { (map as unknown as { setFog?: (f: null) => void }).setFog?.(null); } catch { /* ignore */ }
-        try { (map as unknown as { setTerrain?: (t: null) => void }).setTerrain?.(null); } catch { /* ignore */ }
         ensureHighlightLayers(map);
         syncUserLocationOverlay(map);
         scheduleHighlightRefresh();
@@ -655,12 +521,18 @@ const Map: React.FC<MapProps> = ({
     });
 
     return () => {
+      if (highlightRefreshFrameRef.current !== null) {
+        window.cancelAnimationFrame(highlightRefreshFrameRef.current);
+      }
       window.cancelAnimationFrame(animationFrameId);
       userLocationOverlayRef.current?.remove();
       userLocationOverlayRef.current = null;
-      map.remove();
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
     };
-  }, [applyTransparentBackdrop, centerMapOnCountry, ensureHighlightLayers, scheduleHighlightRefresh, syncUserLocationOverlay, syncUserLocationOverlayAndCenter, updateUserLocationOverlay]);
+  }, [applyTransparentBackdrop, centerMapOnCountry, ensureHighlightLayers, scheduleHighlightRefresh, syncUserLocationOverlay, updateUserLocationOverlay]);
 
   return (
     <div

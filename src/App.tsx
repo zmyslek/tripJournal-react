@@ -12,7 +12,6 @@ const HelpCenter = lazy(() => import("./pages/HelpCenter.tsx"));
 const Policies = lazy(() => import("./pages/Policies.tsx"));
 const CountryTrips = lazy(() => import("./pages/CountryTrips.tsx"));
 const Itineraries = lazy(() => import("./pages/Itineraries.tsx"));
-const AdminSeed = lazy(() => import("./pages/AdminSeed.tsx"));
 const COUNTRY_STATUS_CACHE_KEY = "tripjournal:country-statuses:v1";
 const COUNTRY_ADDED_CACHE_KEY = "tripjournal:country-added-dates:v1";
 
@@ -190,7 +189,6 @@ function App() {
             <Route path="/gallery" element={<Gallery />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/settings" element={<Settings />} />
-            <Route path="/admin-seed" element={<AdminSeed />} />
             <Route path="/help-center" element={<HelpCenter />} />
             <Route path="/policies/:policySlug" element={<Policies />} />
           </Route>

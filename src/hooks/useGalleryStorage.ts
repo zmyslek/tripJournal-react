@@ -26,8 +26,6 @@ export function useGalleryStorage() {
 
     const loadGallery = useCallback(async () => {
         try {
-            // Defer ALL state updates past the synchronous effect body to avoid
-            // the "setState synchronously within an effect" lint error.
             await Promise.resolve();
 
             setIsLoading(true);

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useEffect, useMemo, useReducer, useState } from "react";
 import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode, SelectHTMLAttributes, TextareaHTMLAttributes } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
@@ -16,6 +15,7 @@ import {
     seedItinerariesFromCatalog
 } from "../utils/itineraryStorage";
 import { supabase } from "../lib/supabase/client";
+import SpotifyPlaylistGenerator from "../components/SpotifyPlaylistGenerator";
 
 type CountryStatusMap = Record<string, CountryStatus>;
 type CountryAddedDateMap = Record<string, string>;
@@ -56,12 +56,6 @@ const STATUS_LABELS: Record<ItineraryStatus, string> = {
 function extensionOf(path: string): string {
     const match = path.match(/\.([a-z0-9]+)(?:$|[?#])/i);
     return match ? match[1].toLowerCase() : "";
-}
-
-function normalize(value: string): string {
-    return value
-        .toLowerCase()
-        .normalize("NFD")
 }
 
 function itineraryReducer(state: ItineraryItem[], action: ItineraryAction): ItineraryItem[] {
@@ -188,7 +182,7 @@ function SectionShell({ eyebrow, title, action, children }: { eyebrow: string; t
     );
 }
 
-function Itineraries(props: ItinerariesProps) {
+function Itineraries(_props: ItinerariesProps) {
     const { countryName: encodedCountryName = "" } = useParams();
     const routeCountryName = decodeCountryParam(encodedCountryName).trim();
     const { countriesData } = useCountriesData();
@@ -200,6 +194,7 @@ function Itineraries(props: ItinerariesProps) {
     const [photoUrls, setPhotoUrls] = useState<TripGalleryItem[]>([]);
     const [isGalleryLoading, setIsGalleryLoading] = useState(false);
     const [editingItineraryId, setEditingItineraryId] = useState<string | null>(null);
+    const [supabasePlaylistId, setSupabasePlaylistId] = useState<string | null>(null);
 
     const countryNames = useMemo(() => {
         if (!countriesData) return [];
@@ -247,6 +242,23 @@ function Itineraries(props: ItinerariesProps) {
 
         return itineraries[0] ?? null;
     }, [focusedItineraryId, itineraries]);
+
+    // Sync Spotify Playlist ID from Supabase (Patterns from TripDetails)
+    useEffect(() => {
+        async function syncSpotifyData() {
+            if (!primaryItinerary?.id) return;
+            const { data, error } = await supabase
+                .from('itineraries') // Or 'trips' based on your schema preference
+                .select('id, spotify_playlist_id')
+                .eq('id', primaryItinerary.id)
+                .single();
+
+            if (!error && data?.spotify_playlist_id) {
+                setSupabasePlaylistId(data.spotify_playlist_id);
+            }
+        }
+        syncSpotifyData();
+    }, [primaryItinerary?.id]);
 
     const canShowGallery = primaryItinerary?.status !== "planned";
 
@@ -503,183 +515,197 @@ function Itineraries(props: ItinerariesProps) {
                 )}
             </section>
 
-            <div className="mt-8 grid gap-8">
-                <SectionShell
-                    eyebrow="Journey plan"
-                    title="Summary database"
-                    action={isEditing ? <SmallButton type="button" tone="solid" onClick={() => updateSummary([...summary, { label: "New detail", value: "" }])}>Add row</SmallButton> : undefined}
-                >
-                    {isEditing ? (
-                        <div className="grid gap-3 md:grid-cols-2">
-                            {summary.map((item, index) => (
-                                <article key={`${item.label}-${index}`} className="grid gap-3 rounded-[0.75rem] border border-[#8f5a20]/15 bg-[#ffead4]/60 p-4">
-                                    <TextInput value={item.label} onChange={(event) => updateSummary(summary.map((entry, entryIndex) => entryIndex === index ? { ...entry, label: event.target.value } : entry))} />
-                                    <TextArea rows={3} value={item.value} onChange={(event) => updateSummary(summary.map((entry, entryIndex) => entryIndex === index ? { ...entry, value: event.target.value } : entry))} />
-                                    <SmallButton type="button" tone="danger" onClick={() => updateSummary(summary.filter((_, entryIndex) => entryIndex !== index))}>Delete row</SmallButton>
-                                </article>
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="grid gap-3 md:grid-cols-2">
-                            {summary.map((item, index) => (
-                                <article key={`${item.label}-${index}`} className="rounded-[0.75rem] border border-[#8f5a20]/15 bg-[#ffead4]/60 p-4">
-                                    <p className="font-[Adamina] text-[0.75rem] uppercase tracking-[0.12em] text-[#8f5a20]">{item.label}</p>
-                                    <p className="mt-3 font-[Cormorant_Garamond] text-[1.08rem] leading-[1.35] text-[#50300d] whitespace-pre-wrap">{displayValue(item.value)}</p>
-                                </article>
-                            ))}
-                        </div>
-                    )}
-                </SectionShell>
-
-                <SectionShell
-                    eyebrow="Itinerary database"
-                    title="Day-by-day plan"
-                    action={isEditing ? <SmallButton type="button" tone="solid" onClick={() => updateDays([...dayPlan, { day: `Day ${dayPlan.length + 1}`, date: "", title: "New activity", time: "", location: "", notes: "", log: "" }])}>Add day</SmallButton> : undefined}
-                >
-                    {isEditing ? (
-                        <div className="space-y-4">
-                            {dayPlan.map((day, index) => (
-                                <article key={`${day.day}-${index}`} className="rounded-[0.85rem] border border-[#8f5a20]/15 bg-[#ffead4]/55 p-4">
-                                    <div className="grid gap-3 lg:grid-cols-[0.6fr_0.75fr_1fr_0.75fr]">
-                                        <TextInput value={day.day} onChange={(event) => updateDays(dayPlan.map((entry, entryIndex) => entryIndex === index ? { ...entry, day: event.target.value } : entry))} />
-                                        <TextInput value={day.date} placeholder="Date" onChange={(event) => updateDays(dayPlan.map((entry, entryIndex) => entryIndex === index ? { ...entry, date: event.target.value } : entry))} />
-                                        <TextInput value={day.title} placeholder="Title" onChange={(event) => updateDays(dayPlan.map((entry, entryIndex) => entryIndex === index ? { ...entry, title: event.target.value } : entry))} />
-                                        <TextInput value={day.time} placeholder="Time" onChange={(event) => updateDays(dayPlan.map((entry, entryIndex) => entryIndex === index ? { ...entry, time: event.target.value } : entry))} />
-                                    </div>
-                                    <div className="mt-3 grid gap-3 lg:grid-cols-[0.8fr_1fr]">
-                                        <TextInput value={day.location} placeholder="Location" onChange={(event) => updateDays(dayPlan.map((entry, entryIndex) => entryIndex === index ? { ...entry, location: event.target.value } : entry))} />
-                                        <TextInput value={day.log ?? ""} placeholder="Travel log note" onChange={(event) => updateDays(dayPlan.map((entry, entryIndex) => entryIndex === index ? { ...entry, log: event.target.value } : entry))} />
-                                    </div>
-                                    <TextArea className="mt-3" rows={3} value={day.notes} placeholder="Notes" onChange={(event) => updateDays(dayPlan.map((entry, entryIndex) => entryIndex === index ? { ...entry, notes: event.target.value } : entry))} />
-                                    <div className="mt-3 flex flex-wrap justify-end gap-2">
-                                        <SmallButton type="button" disabled={index === 0} onClick={() => {
-                                            const next = [...dayPlan];
-                                            [next[index - 1], next[index]] = [next[index], next[index - 1]];
-                                            updateDays(next);
-                                        }}>Move up</SmallButton>
-                                        <SmallButton type="button" disabled={index === dayPlan.length - 1} onClick={() => {
-                                            const next = [...dayPlan];
-                                            [next[index + 1], next[index]] = [next[index], next[index + 1]];
-                                            updateDays(next);
-                                        }}>Move down</SmallButton>
-                                        <SmallButton type="button" tone="danger" onClick={() => updateDays(dayPlan.filter((_, entryIndex) => entryIndex !== index))}>Delete</SmallButton>
-                                    </div>
-                                </article>
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="space-y-4">
-                            {dayPlan.map((day, index) => (
-                                <article key={`${day.day}-${index}`} className="rounded-[0.85rem] border border-[#8f5a20]/15 bg-[#ffead4]/55 p-5">
-                                    <div className="flex flex-wrap items-start justify-between gap-3">
-                                        <div>
-                                            <p className="font-[Adamina] text-[0.72rem] uppercase tracking-[0.12em] text-[#8f5a20]">{displayValue(day.day)}</p>
-                                            <h3 className="mt-2 font-[Adamina] text-[1.2rem] text-[#50300d]">{displayValue(day.title)}</h3>
-                                        </div>
-                                        <div className="text-right">
-                                            <p className="font-[Cormorant_Garamond] text-[1rem] text-[#50300d]">{displayValue(day.date)}</p>
-                                            <p className="font-[Cormorant_Garamond] text-[0.98rem] text-[#6a4630]">{displayValue(day.time)}</p>
-                                        </div>
-                                    </div>
-                                    <p className="mt-3 font-[Cormorant_Garamond] text-[1.05rem] text-[#6a4630]">{displayValue(day.location)}</p>
-                                    <p className="mt-3 font-[Cormorant_Garamond] text-[1.08rem] leading-[1.35] text-[#50300d] whitespace-pre-wrap">{displayValue(day.notes)}</p>
-                                    {day.log && <p className="mt-3 rounded-[0.7rem] bg-[#fffaf4] px-3 py-2 font-[Cormorant_Garamond] text-[1rem] italic text-[#6a4630]">{day.log}</p>}
-                                </article>
-                            ))}
-                        </div>
-                    )}
-                </SectionShell>
-
-                <section className="grid gap-8 lg:grid-cols-2">
+            <div className={`mt-8 grid gap-8 ${!isEditing ? 'md:grid-cols-3' : ''}`}>
+                <div className={`${!isEditing ? 'md:col-span-2' : ''} space-y-8`}>
                     <SectionShell
-                        eyebrow="Packing list"
-                        title="Categories and items"
-                        action={isEditing ? <SmallButton type="button" tone="solid" onClick={() => updatePacking([...packingList, { group: "New category", done: false, items: [] }])}>Add category</SmallButton> : undefined}
+                        eyebrow="Journey plan"
+                        title="Summary database"
+                        action={isEditing ? <SmallButton type="button" tone="solid" onClick={() => updateSummary([...summary, { label: "New detail", value: "" }])}>Add row</SmallButton> : undefined}
+                    >
+                        {isEditing ? (
+                            <div className="grid gap-3 md:grid-cols-2">
+                                {summary.map((item, index) => (
+                                    <article key={`${item.label}-${index}`} className="grid gap-3 rounded-[0.75rem] border border-[#8f5a20]/15 bg-[#ffead4]/60 p-4">
+                                        <TextInput value={item.label} onChange={(event) => updateSummary(summary.map((entry, entryIndex) => entryIndex === index ? { ...entry, label: event.target.value } : entry))} />
+                                        <TextArea rows={3} value={item.value} onChange={(event) => updateSummary(summary.map((entry, entryIndex) => entryIndex === index ? { ...entry, value: event.target.value } : entry))} />
+                                        <SmallButton type="button" tone="danger" onClick={() => updateSummary(summary.filter((_, entryIndex) => entryIndex !== index))}>Delete row</SmallButton>
+                                    </article>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="grid gap-3 md:grid-cols-2">
+                                {summary.map((item, index) => (
+                                    <article key={`${item.label}-${index}`} className="rounded-[0.75rem] border border-[#8f5a20]/15 bg-[#ffead4]/60 p-4">
+                                        <p className="font-[Adamina] text-[0.75rem] uppercase tracking-[0.12em] text-[#8f5a20]">{item.label}</p>
+                                        <p className="mt-3 font-[Cormorant_Garamond] text-[1.08rem] leading-[1.35] text-[#50300d] whitespace-pre-wrap">{displayValue(item.value)}</p>
+                                    </article>
+                                ))}
+                            </div>
+                        )}
+                    </SectionShell>
+
+                    <SectionShell
+                        eyebrow="Itinerary database"
+                        title="Day-by-day plan"
+                        action={isEditing ? <SmallButton type="button" tone="solid" onClick={() => updateDays([...dayPlan, { day: `Day ${dayPlan.length + 1}`, date: "", title: "New activity", time: "", location: "", notes: "", log: "" }])}>Add day</SmallButton> : undefined}
                     >
                         {isEditing ? (
                             <div className="space-y-4">
-                                {packingList.map((group, groupIndex) => (
-                                    <article key={`${group.group}-${groupIndex}`} className="rounded-[0.85rem] border border-[#8f5a20]/15 bg-[#ffead4]/55 p-4">
-                                        <div className="flex items-center gap-3">
-                                            <button type="button" onClick={() => updatePacking(packingList.map((entry, entryIndex) => entryIndex === groupIndex ? { ...entry, done: !entry.done } : entry))}>
-                                                <CheckMark done={group.done} />
-                                            </button>
-                                            <TextInput value={group.group} onChange={(event) => updatePacking(packingList.map((entry, entryIndex) => entryIndex === groupIndex ? { ...entry, group: event.target.value } : entry))} />
+                                {dayPlan.map((day, index) => (
+                                    <article key={`${day.day}-${index}`} className="rounded-[0.85rem] border border-[#8f5a20]/15 bg-[#ffead4]/55 p-4">
+                                        <div className="grid gap-3 lg:grid-cols-[0.6fr_0.75fr_1fr_0.75fr]">
+                                            <TextInput value={day.day} onChange={(event) => updateDays(dayPlan.map((entry, entryIndex) => entryIndex === index ? { ...entry, day: event.target.value } : entry))} />
+                                            <TextInput value={day.date} placeholder="Date" onChange={(event) => updateDays(dayPlan.map((entry, entryIndex) => entryIndex === index ? { ...entry, date: event.target.value } : entry))} />
+                                            <TextInput value={day.title} placeholder="Title" onChange={(event) => updateDays(dayPlan.map((entry, entryIndex) => entryIndex === index ? { ...entry, title: event.target.value } : entry))} />
+                                            <TextInput value={day.time} placeholder="Time" onChange={(event) => updateDays(dayPlan.map((entry, entryIndex) => entryIndex === index ? { ...entry, time: event.target.value } : entry))} />
                                         </div>
-                                        <div className="mt-3 space-y-2">
-                                            {group.items.map((item, itemIndex) => (
-                                                <div key={`${item.name}-${itemIndex}`} className="grid gap-2 sm:grid-cols-[auto_1fr_7rem_auto]">
-                                                    <button type="button" onClick={() => updatePacking(packingList.map((entry, entryIndex) => entryIndex === groupIndex ? { ...entry, items: entry.items.map((innerItem, innerIndex) => innerIndex === itemIndex ? { ...innerItem, done: !innerItem.done } : innerItem) } : entry))}>
-                                                        <CheckMark done={item.done} />
-                                                    </button>
-                                                    <TextInput value={item.name} onChange={(event) => updatePacking(packingList.map((entry, entryIndex) => entryIndex === groupIndex ? { ...entry, items: entry.items.map((innerItem, innerIndex) => innerIndex === itemIndex ? { ...innerItem, name: event.target.value } : innerItem) } : entry))} />
-                                                    <TextInput value={item.quantity ?? ""} placeholder="Qty" onChange={(event) => updatePacking(packingList.map((entry, entryIndex) => entryIndex === groupIndex ? { ...entry, items: entry.items.map((innerItem, innerIndex) => innerIndex === itemIndex ? { ...innerItem, quantity: event.target.value } : innerItem) } : entry))} />
-                                                    <SmallButton type="button" tone="danger" onClick={() => updatePacking(packingList.map((entry, entryIndex) => entryIndex === groupIndex ? { ...entry, items: entry.items.filter((_, innerIndex) => innerIndex !== itemIndex) } : entry))}>Delete</SmallButton>
-                                                </div>
-                                            ))}
+                                        <div className="mt-3 grid gap-3 lg:grid-cols-[0.8fr_1fr]">
+                                            <TextInput value={day.location} placeholder="Location" onChange={(event) => updateDays(dayPlan.map((entry, entryIndex) => entryIndex === index ? { ...entry, location: event.target.value } : entry))} />
+                                            <TextInput value={day.log ?? ""} placeholder="Travel log note" onChange={(event) => updateDays(dayPlan.map((entry, entryIndex) => entryIndex === index ? { ...entry, log: event.target.value } : entry))} />
                                         </div>
+                                        <TextArea className="mt-3" rows={3} value={day.notes} placeholder="Notes" onChange={(event) => updateDays(dayPlan.map((entry, entryIndex) => entryIndex === index ? { ...entry, notes: event.target.value } : entry))} />
                                         <div className="mt-3 flex flex-wrap justify-end gap-2">
-                                            <SmallButton type="button" onClick={() => updatePacking(packingList.map((entry, entryIndex) => entryIndex === groupIndex ? { ...entry, items: [...entry.items, { name: "New item", done: false }] } : entry))}>Add item</SmallButton>
-                                            <SmallButton type="button" tone="danger" onClick={() => updatePacking(packingList.filter((_, entryIndex) => entryIndex !== groupIndex))}>Delete category</SmallButton>
+                                            <SmallButton type="button" disabled={index === 0} onClick={() => {
+                                                const next = [...dayPlan];
+                                                [next[index - 1], next[index]] = [next[index], next[index - 1]];
+                                                updateDays(next);
+                                            }}>Move up</SmallButton>
+                                            <SmallButton type="button" disabled={index === dayPlan.length - 1} onClick={() => {
+                                                const next = [...dayPlan];
+                                                [next[index + 1], next[index]] = [next[index], next[index + 1]];
+                                                updateDays(next);
+                                            }}>Move down</SmallButton>
+                                            <SmallButton type="button" tone="danger" onClick={() => updateDays(dayPlan.filter((_, entryIndex) => entryIndex !== index))}>Delete</SmallButton>
                                         </div>
-                                    </article>
+                                    </div>
                                 ))}
                             </div>
                         ) : (
                             <div className="space-y-4">
-                                {packingList.map((group, groupIndex) => (
-                                    <article key={`${group.group}-${groupIndex}`} className="rounded-[0.85rem] border border-[#8f5a20]/15 bg-[#ffead4]/55 p-4">
-                                        <div className="flex items-center gap-3">
-                                            <CheckMark done={group.done} />
-                                            <h3 className="font-[Adamina] text-[1rem] text-[#50300d]">{displayValue(group.group)}</h3>
+                                {dayPlan.map((day, index) => (
+                                    <article key={`${day.day}-${index}`} className="rounded-[0.85rem] border border-[#8f5a20]/15 bg-[#ffead4]/55 p-5">
+                                        <div className="flex flex-wrap items-start justify-between gap-3">
+                                            <div>
+                                                <p className="font-[Adamina] text-[0.72rem] uppercase tracking-[0.12em] text-[#8f5a20]">{displayValue(day.day)}</p>
+                                                <h3 className="mt-2 font-[Adamina] text-[1.2rem] text-[#50300d]">{displayValue(day.title)}</h3>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="font-[Cormorant_Garamond] text-[1rem] text-[#50300d]">{displayValue(day.date)}</p>
+                                                <p className="font-[Cormorant_Garamond] text-[0.98rem] text-[#6a4630]">{displayValue(day.time)}</p>
+                                            </div>
                                         </div>
-                                        <div className="mt-3 space-y-2">
-                                            {group.items.map((item, itemIndex) => (
-                                                <div key={`${item.name}-${itemIndex}`} className="grid gap-2 sm:grid-cols-[auto_1fr_7rem]">
-                                                    <CheckMark done={item.done} />
-                                                    <p className="font-[Cormorant_Garamond] text-[1.05rem] text-[#50300d]">{displayValue(item.name)}</p>
-                                                    <p className="font-[Cormorant_Garamond] text-[1rem] text-[#6a4630]">{displayValue(item.quantity)}</p>
-                                                </div>
-                                            ))}
-                                        </div>
+                                        <p className="mt-3 font-[Cormorant_Garamond] text-[1.05rem] text-[#6a4630]">{displayValue(day.location)}</p>
+                                        <p className="mt-3 font-[Cormorant_Garamond] text-[1.08rem] leading-[1.35] text-[#50300d] whitespace-pre-wrap">{displayValue(day.notes)}</p>
+                                        {day.log && <p className="mt-3 rounded-[0.7rem] bg-[#fffaf4] px-3 py-2 font-[Cormorant_Garamond] text-[1rem] italic text-[#6a4630]">{day.log}</p>}
                                     </article>
                                 ))}
                             </div>
                         )}
                     </SectionShell>
 
-                    <SectionShell
-                        eyebrow="Checklist"
-                        title="Custom tasks"
-                        action={isEditing ? <SmallButton type="button" tone="solid" onClick={() => updateChecklist([...checklist, { task: "New task", done: false, due: "" }])}>Add task</SmallButton> : undefined}
-                    >
-                        {isEditing ? (
-                            <div className="space-y-3">
-                                {checklist.map((item, index) => (
-                                    <div key={`${item.task}-${index}`} className="grid gap-2 rounded-[0.75rem] border border-[#8f5a20]/15 bg-[#ffead4]/55 p-3 sm:grid-cols-[auto_1fr_8rem_auto]">
-                                        <button type="button" onClick={() => updateChecklist(checklist.map((entry, entryIndex) => entryIndex === index ? { ...entry, done: !entry.done } : entry))}>
-                                            <CheckMark done={item.done} />
-                                        </button>
-                                        <TextInput value={item.task} onChange={(event) => updateChecklist(checklist.map((entry, entryIndex) => entryIndex === index ? { ...entry, task: event.target.value } : entry))} />
-                                        <TextInput value={item.due ?? ""} placeholder="Due" onChange={(event) => updateChecklist(checklist.map((entry, entryIndex) => entryIndex === index ? { ...entry, due: event.target.value } : entry))} />
-                                        <SmallButton type="button" tone="danger" onClick={() => updateChecklist(checklist.filter((_, entryIndex) => entryIndex !== index))}>Delete</SmallButton>
-                                    </div>
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="space-y-3">
-                                {checklist.map((item, index) => (
-                                    <div key={`${item.task}-${index}`} className="grid gap-2 rounded-[0.75rem] border border-[#8f5a20]/15 bg-[#ffead4]/55 p-3 sm:grid-cols-[auto_1fr_8rem]">
-                                        <CheckMark done={item.done} />
-                                        <p className="font-[Cormorant_Garamond] text-[1.05rem] text-[#50300d]">{displayValue(item.task)}</p>
-                                        <p className="font-[Cormorant_Garamond] text-[1rem] text-[#6a4630]">{displayValue(item.due)}</p>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </SectionShell>
-                </section>
+                    <section className="grid gap-8 lg:grid-cols-2">
+                        <SectionShell
+                            eyebrow="Packing list"
+                            title="Categories and items"
+                            action={isEditing ? <SmallButton type="button" tone="solid" onClick={() => updatePacking([...packingList, { group: "New category", done: false, items: [] }])}>Add category</SmallButton> : undefined}
+                        >
+                            {isEditing ? (
+                                <div className="space-y-4">
+                                    {packingList.map((group, groupIndex) => (
+                                        <article key={`${group.group}-${groupIndex}`} className="rounded-[0.85rem] border border-[#8f5a20]/15 bg-[#ffead4]/55 p-4">
+                                            <div className="flex items-center gap-3">
+                                                <button type="button" onClick={() => updatePacking(packingList.map((entry, entryIndex) => entryIndex === groupIndex ? { ...entry, done: !entry.done } : entry))}>
+                                                    <CheckMark done={group.done} />
+                                                </button>
+                                                <TextInput value={group.group} onChange={(event) => updatePacking(packingList.map((entry, entryIndex) => entryIndex === groupIndex ? { ...entry, group: event.target.value } : entry))} />
+                                            </div>
+                                            <div className="mt-3 space-y-2">
+                                                {group.items.map((item, itemIndex) => (
+                                                    <div key={`${item.name}-${itemIndex}`} className="grid gap-2 sm:grid-cols-[auto_1fr_7rem_auto]">
+                                                        <button type="button" onClick={() => updatePacking(packingList.map((entry, entryIndex) => entryIndex === groupIndex ? { ...entry, items: entry.items.map((innerItem, innerIndex) => innerIndex === itemIndex ? { ...innerItem, done: !innerItem.done } : innerItem) } : entry))}>
+                                                            <CheckMark done={item.done} />
+                                                        </button>
+                                                        <TextInput value={item.name} onChange={(event) => updatePacking(packingList.map((entry, entryIndex) => entryIndex === groupIndex ? { ...entry, items: entry.items.map((innerItem, innerIndex) => innerIndex === itemIndex ? { ...innerItem, name: event.target.value } : innerItem) } : entry))} />
+                                                        <TextInput value={item.quantity ?? ""} placeholder="Qty" onChange={(event) => updatePacking(packingList.map((entry, entryIndex) => entryIndex === groupIndex ? { ...entry, items: entry.items.map((innerItem, innerIndex) => innerIndex === itemIndex ? { ...innerItem, quantity: event.target.value } : innerItem) } : entry))} />
+                                                        <SmallButton type="button" tone="danger" onClick={() => updatePacking(packingList.map((entry, entryIndex) => entryIndex === groupIndex ? { ...entry, items: entry.items.filter((_, innerIndex) => innerIndex !== itemIndex) } : entry))}>Delete</SmallButton>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                            <div className="mt-3 flex flex-wrap justify-end gap-2">
+                                                <SmallButton type="button" onClick={() => updatePacking(packingList.map((entry, entryIndex) => entryIndex === groupIndex ? { ...entry, items: [...entry.items, { name: "New item", done: false }] } : entry))}>Add item</SmallButton>
+                                                <SmallButton type="button" tone="danger" onClick={() => updatePacking(packingList.filter((_, entryIndex) => entryIndex !== groupIndex))}>Delete category</SmallButton>
+                                            </div>
+                                        </article>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="space-y-4">
+                                    {packingList.map((group, groupIndex) => (
+                                        <article key={`${group.group}-${groupIndex}`} className="rounded-[0.85rem] border border-[#8f5a20]/15 bg-[#ffead4]/55 p-4">
+                                            <div className="flex items-center gap-3">
+                                                <CheckMark done={group.done} />
+                                                <h3 className="font-[Adamina] text-[1rem] text-[#50300d]">{displayValue(group.group)}</h3>
+                                            </div>
+                                            <div className="mt-3 space-y-2">
+                                                {group.items.map((item, itemIndex) => (
+                                                    <div key={`${item.name}-${itemIndex}`} className="grid gap-2 sm:grid-cols-[auto_1fr_7rem]">
+                                                        <CheckMark done={item.done} />
+                                                        <p className="font-[Cormorant_Garamond] text-[1.05rem] text-[#50300d]">{displayValue(item.name)}</p>
+                                                        <p className="font-[Cormorant_Garamond] text-[1rem] text-[#6a4630]">{displayValue(item.quantity)}</p>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </article>
+                                    ))}
+                                </div>
+                            )}
+                        </SectionShell>
 
+                        <SectionShell
+                            eyebrow="Checklist"
+                            title="Custom tasks"
+                            action={isEditing ? <SmallButton type="button" tone="solid" onClick={() => updateChecklist([...checklist, { task: "New task", done: false, due: "" }])}>Add task</SmallButton> : undefined}
+                        >
+                            {isEditing ? (
+                                <div className="space-y-3">
+                                    {checklist.map((item, index) => (
+                                        <div key={`${item.task}-${index}`} className="grid gap-2 rounded-[0.75rem] border border-[#8f5a20]/15 bg-[#ffead4]/55 p-3 sm:grid-cols-[auto_1fr_8rem_auto]">
+                                            <button type="button" onClick={() => updateChecklist(checklist.map((entry, entryIndex) => entryIndex === index ? { ...entry, done: !entry.done } : entry))}>
+                                                <CheckMark done={item.done} />
+                                            </button>
+                                            <TextInput value={item.task} onChange={(event) => updateChecklist(checklist.map((entry, entryIndex) => entryIndex === index ? { ...entry, task: event.target.value } : entry))} />
+                                            <TextInput value={item.due ?? ""} placeholder="Due" onChange={(event) => updateChecklist(checklist.map((entry, entryIndex) => entryIndex === index ? { ...entry, due: event.target.value } : entry))} />
+                                            <SmallButton type="button" tone="danger" onClick={() => updateChecklist(checklist.filter((_, entryIndex) => entryIndex !== index))}>Delete</SmallButton>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="space-y-3">
+                                    {checklist.map((item, index) => (
+                                        <div key={`${item.task}-${index}`} className="grid gap-2 rounded-[0.75rem] border border-[#8f5a20]/15 bg-[#ffead4]/55 p-3 sm:grid-cols-[auto_1fr_8rem]">
+                                            <CheckMark done={item.done} />
+                                            <p className="font-[Cormorant_Garamond] text-[1.05rem] text-[#50300d]">{displayValue(item.task)}</p>
+                                            <p className="font-[Cormorant_Garamond] text-[1rem] text-[#6a4630]">{displayValue(item.due)}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </SectionShell>
+                    </section>
+                </div>
+
+                {!isEditing && (
+                    <aside className="space-y-6">
+                        <SpotifyPlaylistGenerator 
+                            tripId={primaryItinerary.id} 
+                            currentPlaylistId={supabasePlaylistId || (primaryItinerary as any).spotify_playlist_id} 
+                            countryCode={resolvedCountryName || 'Globetrotting'} 
+                        />
+                    </aside>
+                )}
+            </div>
+
+            <div className="mt-8 space-y-8">
                 <section className="grid gap-8 lg:grid-cols-2">
                     <SectionShell
                         eyebrow="Bookings"

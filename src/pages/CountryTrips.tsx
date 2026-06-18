@@ -8,6 +8,7 @@ import paperBackground from "../assets/wrinkled-paper.png";
 import type { CountryStatus } from "./Home";
 import { decodeCountryParam } from "../utils/countryRouting";
 import { itineraryKey, readItineraries, seedItinerariesFromCatalog, type ItineraryItem } from "../utils/itineraryStorage";
+import SpotifyPlaylistGenerator from "../components/SpotifyPlaylistGenerator";
 
 type CountryStatusMap = Record<string, CountryStatus>;
 type GalleryMediaKind = "image" | "video" | "unsupported";
@@ -554,12 +555,12 @@ function CountryTrips({ countryStatuses }: CountryTripsProps) {
 
                 <div className="bg-[#ffead4]/85 p-6 sm:p-8">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        <div className="rounded-[1rem] border-2 border-[#cf8d45]/60 bg-[#fff4e7] p-6">
-                            <p className="font-[Adamina] text-[0.85rem] uppercase tracking-[0.08em] text-[#7a3f00]">🎵 Spotify</p>
-                            <h3 className="mt-3 font-[Adamina] text-[1.1rem] text-[#50300d]">Trip Soundtrack</h3>
-                            <p className="mt-2 font-[Cormorant_Garamond] text-[0.95rem] text-[#6a4630] max-w-2xl">Sync your Spotify account to see music from your travels. We&apos;ll show you songs listened to during this trip and create personalized playlists by location.</p>
-                            <button type="button" className="mt-4 rounded-full border border-[#cf8d45] bg-[#cf8d45] px-4 py-2 font-[Adamina] text-[0.82rem] uppercase tracking-[0.08em] text-[#5a392b] transition hover:bg-[#eab681]">Connect Spotify</button>
-                        </div>
+                        <SpotifyPlaylistGenerator 
+                            tripId={itineraryPreviewItems[0]?.id} 
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            currentPlaylistId={(itineraryPreviewItems[0] as any)?.spotify_playlist_id}
+                            countryName={resolvedCountryName}
+                        />
 
                         <div className="rounded-[1rem] border-2 border-[#eab681]/60 bg-[#fff4e7] p-6">
                             <p className="font-[Adamina] text-[0.85rem] uppercase tracking-[0.08em] text-[#7a3f00]">👟 Step Counter</p>

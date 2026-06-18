@@ -115,11 +115,15 @@ function Welcome() {
   const [questionnaire, setQuestionnaire] = useState({ firstName: "", lastName: "" });
   const [isQuestionnaireLoading, setIsQuestionnaireLoading] = useState(false);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const isProfileIncomplete = (user: any) => {
+  const isProfileIncomplete = (user: { 
+    user_metadata?: { 
+      full_name?: string; 
+      first_name?: string; 
+      last_name?: string 
+    } 
+  } | null) => {
     if (!user) return false;
     const metadata = user.user_metadata;
-    // Profile is incomplete if there's no full name or first/last name pair
     const hasName = metadata?.full_name || (metadata?.first_name && metadata?.last_name);
     return !hasName;
   };
@@ -165,6 +169,17 @@ function Welcome() {
       }
 
       saveAuth(getAuthUserFromSession(session.user));
+
+      // Capture successful login event
+      if (_event === 'SIGNED_IN') {
+        try {
+          posthog.capture('user_login', {
+            method: session.user.app_metadata?.provider || 'email',
+            is_social: !!session.user.app_metadata?.provider && session.user.app_metadata.provider !== 'email'
+          });
+        } catch { /* ignore analytics errors */ }
+      }
+
       if (isProfileIncomplete(session.user)) {
         setShowQuestionnaire(true);
       } else {
@@ -353,7 +368,7 @@ function Welcome() {
       }
 
       if (data?.url) {
-        console.log('Redirecting user to Microsoft login screen...', data.url);
+        console.log(`Redirecting user to ${provider} login screen...`, data.url);
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : "Social sign-in failed. Please try again.";
@@ -561,8 +576,15 @@ function Welcome() {
               Loading globe...
             </div>
           ) : (
-            <div className="w-full max-w-[820px] relative aspect-square">
-              <Map countriesData={countriesData} selectedCountries={[]} viewMode="globe" />
+            <div className="w-full max-w-[min(92vw,820px)] rounded-[2.25rem] border border-[#EAB681]/35 bg-[#5A392B]/35 p-3 shadow-[0_28px_80px_rgba(0,0,0,0.42)] backdrop-blur-[1px]">
+              <div className="relative aspect-[4/5] overflow-hidden rounded-[1.5rem] sm:aspect-square">
+                <Map
+                  countriesData={countriesData}
+                  selectedCountries={[]}
+                  viewMode="globe"
+                  sizeVariant="compact"
+                />
+              </div>
             </div>
           )}
         </div>

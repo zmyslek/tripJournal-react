@@ -1,5 +1,4 @@
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { useMemo, useState, useEffect, useCallback } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import { Settings, HelpCircle, Edit, Loader2 } from "lucide-react";
 import type { ChangeEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -97,6 +96,11 @@ export function Profile() {
     const [isEditing, setIsEditing] = useState(false);
     const { showScrollTop, scrollToTop } = useScrollToTop();
     const [scrollBtnBottom, setScrollBtnBottom] = useState(window.innerHeight * 0.02);
+    const profileRef = useRef(profile);
+
+    useEffect(() => {
+        profileRef.current = profile;
+    }, [profile, profileRef]);
 
     useEffect(() => {
         async function syncUser() {
@@ -105,13 +109,14 @@ export function Profile() {
             if (sbUser) {
                 setUser(sbUser);
                 const metadata = sbUser.user_metadata;
+                const currentProfile = profileRef.current;
                 
                 const syncedProfile: ProfileForm = {
-                    name: metadata.username || metadata.full_name || sbUser.email?.split("@")[0] || profile.name,
-                    email: sbUser.email || profile.email,
-                    travelStyle: metadata.travelStyle || profile.travelStyle,
-                    currentFocus: metadata.currentFocus || profile.currentFocus,
-                    avatar: metadata.avatar_url || metadata.avatar || profile.avatar
+                    name: metadata.username || metadata.full_name || sbUser.email?.split("@")[0] || currentProfile.name,
+                    email: sbUser.email || currentProfile.email,
+                    travelStyle: metadata.travelStyle || currentProfile.travelStyle,
+                    currentFocus: metadata.currentFocus || currentProfile.currentFocus,
+                    avatar: metadata.avatar_url || metadata.avatar || currentProfile.avatar
                 };
 
                 setProfile(syncedProfile);
@@ -154,7 +159,7 @@ export function Profile() {
             window.removeEventListener("scroll", adjustScrollButton);
             window.removeEventListener("resize", adjustScrollButton);
         };
-    }, []);
+    }, [navigate, profileRef]);
 
     const initials = useMemo(() => {
         return profile.name
