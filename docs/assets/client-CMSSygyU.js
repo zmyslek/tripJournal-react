@@ -1,1 +1,0 @@
-import"./vendor-BSguqU59.js";throw Error(`Missing Supabase environment variables. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.`);export{e as t};var e;
