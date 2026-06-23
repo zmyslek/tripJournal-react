@@ -576,12 +576,15 @@ function Welcome() {
               Loading globe...
             </div>
           ) : (
-            <div className="w-full max-w-[820px]">
-              <Map
-                countriesData={countriesData}
-                selectedCountries={[]}
-                viewMode="globe"
-              />
+            <div className="w-full max-w-[min(92vw,820px)] rounded-[2.25rem] border border-[#EAB681]/35 bg-[#5A392B]/35 p-3 shadow-[0_28px_80px_rgba(0,0,0,0.42)] backdrop-blur-[1px]">
+              <div className="relative aspect-[4/5] overflow-hidden rounded-[1.5rem] sm:aspect-square">
+                <Map
+                  countriesData={countriesData}
+                  selectedCountries={[]}
+                  viewMode="globe"
+                  sizeVariant="compact"
+                />
+              </div>
             </div>
           )}
         </div>

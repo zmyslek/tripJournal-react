@@ -1,12 +1,5 @@
-node_modules/
-dist/
-tmp-pages-publish/
-.codex-temp/
-documentation/
-.vscode/
 .idea/
 .env.local
-.env.*.local
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -15,13 +8,7 @@ pnpm-debug.log*
 Thumbs.db
 .DS_Store
 Desktop.ini
+
 ~$*.xlsx
 ~$*.xls
 *.tmp
-
-# Keep local gallery videos that are too heavy for GitHub Pages out of commits.
-public/temporary-gallery/Spain/Valencia/*.mp4
-docs/temporary-gallery/Spain/Valencia/*.mp4
-
-documentation/Google.txt
-documentation/links.txt
