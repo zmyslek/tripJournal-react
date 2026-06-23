@@ -12,3 +12,4 @@ Desktop.ini
 ~$*.xlsx
 ~$*.xls
 *.tmp
+node_modules

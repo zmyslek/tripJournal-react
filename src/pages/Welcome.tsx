@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useCountriesData } from "../hooks/useCountriesData";
+import { useCountriesData } from "../hooks/useCountriesData"; // Assuming this hook exists
 import darkLeatherTexture from "../assets/dark-leather.jpg";
 import Map from "../components/Map";
 import { supabase } from "../lib/supabase/client";
@@ -11,6 +11,10 @@ interface WelcomeFormState {
   email: string;
   password: string;
   error: string;
+  isLoading: boolean;
+}
+
+interface QuestionnaireFormState {
   isLoading: boolean;
 }
 
@@ -103,14 +107,14 @@ function Welcome() {
   const navigate = useNavigate();
   const location = useLocation();
   const { countriesData, isLoading: isCountriesLoading } = useCountriesData();
-  const [isAuthReady, setIsAuthReady] = useState(() => Boolean(getStoredAuth()));
+  const [isAuthReady, setIsAuthReady] = useState<boolean>(() => Boolean(getStoredAuth()));
   const [formState, setFormState] = useState<WelcomeFormState>({
     email: "",
     password: "",
     error: "",
     isLoading: false,
   });
-  const [showSignUp, setShowSignUp] = useState(false);
+  const [showSignUp, setShowSignUp] = useState<boolean>(false);
   const [showQuestionnaire, setShowQuestionnaire] = useState(false);
   const [questionnaire, setQuestionnaire] = useState({ firstName: "", lastName: "" });
   const [isQuestionnaireLoading, setIsQuestionnaireLoading] = useState(false);
@@ -127,6 +131,13 @@ function Welcome() {
     const hasName = metadata?.full_name || (metadata?.first_name && metadata?.last_name);
     return !hasName;
   };
+
+  // This useEffect has a lot of responsibility.
+  // Consider extracting auth logic into a custom hook `useAuth`
+  // which could return { sessionUser, isAuthReady, error }
+  // and handle the onAuthStateChange subscription internally.
+  // This would simplify the Welcome component significantly.
+  // e.g. const { user, isAuthReady, error } = useAuth();
 
   useEffect(() => {
     let isMounted = true;
@@ -215,6 +226,10 @@ function Welcome() {
     return emailRegex.test(email);
   };
 
+  // This handler could be part of a `useQuestionnaire` hook or a separate `QuestionnaireForm` component
+  // to separate concerns from the main Welcome page logic.
+  // The hook could expose: `submitProfile`, `isLoading`, `error`.
+  // e.g. const { submitProfile, isLoading, error } = useQuestionnaire();
   const handleQuestionnaireSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!questionnaire.firstName.trim() || !questionnaire.lastName.trim()) {
@@ -247,6 +262,9 @@ function Welcome() {
     }
   };
 
+  // This handler is very large and handles both sign-up and sign-in.
+  // It could be simplified by moving it into the proposed `useAuth` hook
+  // as two separate methods, e.g., `signInWithPassword` and `signUpWithEmail`.
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormState((prev) => ({ ...prev, error: "" }));
@@ -349,6 +367,8 @@ function Welcome() {
     }
   };
 
+  // This could also be part of the `useAuth` hook.
+  // e.g., `signInWithGoogle`, `signInWithAzure`.
   const handleSocialAuth = async (provider: "google" | "azure") => {
     setFormState((prev) => ({ ...prev, isLoading: true, error: "" }));
 
@@ -380,6 +400,8 @@ function Welcome() {
     navigate("/countries", { replace: true });
   };
 
+  // This entire block could be a separate component, e.g., `<QuestionnaireScreen />`
+  // which would be rendered conditionally in your router or App component.
   if (showQuestionnaire) {
     return (
       <div
@@ -433,6 +455,9 @@ function Welcome() {
     );
   }
 
+  // The main return block is also very large.
+  // It could be broken down into smaller components like:
+  // <WelcomeContent />, <AuthForm />, <GlobePreview />
   return (
     <div
       className="relative min-h-screen overflow-hidden text-[#FFEAD4]"
