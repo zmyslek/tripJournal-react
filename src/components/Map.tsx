@@ -80,6 +80,7 @@ export type MapProps = {
   sizeVariant?: "default" | "compact";
   initialGlobeZoom?: number;
   showGlobeBackdrop?: boolean;
+  globeBorderRadius?: string;
 };
 
 const EMPTY_FEATURE_COLLECTION: CountriesGeoJson = { type: "FeatureCollection", features: [] };
@@ -93,7 +94,8 @@ const Map: React.FC<MapProps> = ({
   focusCountry = null,
   sizeVariant = "default",
   initialGlobeZoom = DEFAULT_INITIAL_GLOBE_ZOOM,
-  showGlobeBackdrop = true
+  showGlobeBackdrop = true,
+  globeBorderRadius
 }) => {
   const mapContainer   = useRef<HTMLDivElement | null>(null);
   const mapRef         = useRef<maptilersdk.Map | null>(null);
@@ -544,7 +546,7 @@ const Map: React.FC<MapProps> = ({
         backgroundColor: "transparent",
         width:  viewMode === "globe" ? globeSize : flatMapWidth,
         height: viewMode === "globe" ? globeSize : flatMapHeight,
-        borderRadius: viewMode === "globe" ? "9999px" : "0.85rem",
+        borderRadius: viewMode === "globe" ? (globeBorderRadius ?? "9999px") : "0.85rem",
       }}
     />
   );
