@@ -9,6 +9,8 @@ import type { CountryStatus } from "./Home";
 import { decodeCountryParam } from "../utils/countryRouting";
 import { itineraryKey, readItineraries, seedItinerariesFromCatalog, type ItineraryItem } from "../utils/itineraryStorage";
 import SpotifyPlaylistGenerator from "../components/SpotifyPlaylistGenerator";
+import { supabase } from "../lib/supabase/client";
+import { loadGalleryItems } from "../lib/supabase/journal";
 
 type CountryStatusMap = Record<string, CountryStatus>;
 type GalleryMediaKind = "image" | "video" | "unsupported";
@@ -32,20 +34,6 @@ interface HeicPreviewProps {
     src: string;
     alt?: string;
     eager?: boolean;
-}
-
-const galleryManifestUrl = `${import.meta.env.BASE_URL}temporary-gallery/manifest.json`;
-const galleryPublicRoot = `${import.meta.env.BASE_URL}temporary-gallery/`;
-const imageExtensions = new Set(["jpeg", "jpg", "png", "webp", "gif", "avif", "bmp", "svg"]);
-const videoExtensions = new Set(["mp4", "mov", "webm", "m4v", "avi", "mkv", "wmv", "flv", "3gp", "mpeg"]);
-
-function extensionOf(src: string): string {
-    try {
-        const match = src.match(/\.([a-z0-9]+)(?:$|[?#])/i);
-        return match ? match[1].toLowerCase() : "";
-    } catch {
-        return "";
-    }
 }
 
 function formatDate(dateValue: string | undefined): string {
@@ -87,58 +75,43 @@ function itineraryPreviewNote(item: ItineraryItem): string {
 }
 
 function loadCountryGallery(countryName: string): Promise<CountryGalleryItem[]> {
-    return fetch(galleryManifestUrl)
-        .then((response) => {
-            if (!response.ok) {
-                throw new Error(`Manifest fetch failed: ${response.status}`);
-            }
-
-            return response.json() as Promise<unknown>;
-        })
-        .then((manifest) => {
-            // Manifest can be either { country: [...] } or an array of paths
-            const entries: string[] = [];
-
-            if (Array.isArray(manifest)) {
-                // manifest is an array of paths like "Spain/Valencia/...")
-                for (const p of manifest) {
-                    if (typeof p === "string") entries.push(p);
-                }
-            } else if (manifest && typeof manifest === "object") {
-                // object keyed by country
-                for (const key of Object.keys(manifest as Record<string, unknown>)) {
-                    const val = (manifest as Record<string, unknown>)[key];
-                    if (Array.isArray(val)) {
-                        for (const p of val) if (typeof p === "string") entries.push(p);
-                    }
-                }
-            }
-
+    return loadGalleryItems()
+        .then(async (rows) => {
             const countryLower = countryName.toLowerCase();
-
-            const paths = entries.filter((p) => {
-                const normalized = p.replaceAll('\\', '/');
-                const first = normalized.split('/')[0] ?? "";
-                return first.toLowerCase() === countryLower;
+            const countryRows = rows.filter((row) => {
+                const label = row.location_label?.toLowerCase() ?? "";
+                const path = row.storage_path.toLowerCase();
+                return label.includes(countryLower) || path.includes(`/${countryLower}/`) || path.startsWith(`${countryLower}/`);
             });
 
-            return paths
-                .map((path) => {
-                    const ext = extensionOf(path);
-                    const kind: GalleryMediaKind = videoExtensions.has(ext)
-                        ? "video"
-                        : imageExtensions.has(ext)
-                            ? "image"
-                            : "unsupported";
+            if (countryRows.length === 0) {
+                return [];
+            }
+
+            const { data, error } = await supabase.storage.from("USER-CONTENT").createSignedUrls(
+                countryRows.map((row) => row.storage_path),
+                3600
+            );
+
+            if (error) {
+                throw error;
+            }
+
+            return countryRows
+                .map((row, index) => {
+                    const signedUrl = data?.[index]?.signedUrl;
+                    if (!signedUrl) {
+                        return null;
+                    }
 
                     return {
-                        id: path,
-                        src: `${galleryPublicRoot}${path}`,
-                        label: path,
-                        kind
+                        id: row.id,
+                        src: signedUrl,
+                        label: row.location_label || row.storage_path,
+                        kind: row.media_kind as GalleryMediaKind
                     };
                 })
-                .filter((item) => item.kind !== "unsupported");
+                .filter((item): item is CountryGalleryItem => item !== null);
         })
         .catch(() => []);
 }

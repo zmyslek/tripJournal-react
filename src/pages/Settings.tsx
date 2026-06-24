@@ -1,48 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
-import type { ChangeEvent } from "react";
-import { Link } from "react-router-dom";
-import { useScrollToTop } from "../hooks/useScrollToTop";
+import { useEffect, useMemo, useState, type ChangeEvent } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import paperBackground from "../assets/wrinkled-paper.png";
 import PremiumPlans from "../components/PremiumPlans";
+import { supabase } from "../lib/supabase/client";
+import { loadJournalProfile, saveUserPreferences, type JournalProfile, type UserPreferences } from "../lib/supabase/journal";
+import { useScrollToTop } from "../hooks/useScrollToTop";
 
 export type SettingsProps = Record<string, never>;
-
-interface AccountSettings {
-    firstName: string;
-    lastName: string;
-    username: string;
-    email: string;
-    secondaryEmail: string;
-}
-
-interface NotificationSettings {
-    weeklyDigest: boolean;
-    itineraryReminders: boolean;
-    featureAnnouncements: boolean;
-    paymentAlerts: boolean;
-}
-
-interface PremiumSettings {
-    plan: "free" | "monthly" | "yearly";
-    autoRenew: boolean;
-    billingEmail: string;
-    paymentMethod: string;
-    renewalDate: string;
-}
-
-interface AppSettings {
-    theme: "heritage" | "modern-preview";
-    language: "english" | "polish";
-    mapAutoRotate: boolean;
-    compactCards: boolean;
-}
-
-interface UserSettings {
-    account: AccountSettings;
-    notifications: NotificationSettings;
-    premium: PremiumSettings;
-    app: AppSettings;
-}
 
 type SettingsSectionId = "account" | "notifications" | "premium" | "about";
 
@@ -52,8 +16,6 @@ interface SettingsSection {
     description: string;
 }
 
-const SETTINGS_CACHE_KEY = "tripjournal:settings:v1";
-
 const sections: SettingsSection[] = [
     { id: "account", label: "Account", description: "Profile details and contact info" },
     { id: "notifications", label: "Notifications", description: "Email and billing alerts" },
@@ -61,100 +23,93 @@ const sections: SettingsSection[] = [
     { id: "about", label: "About & policies", description: "Help and legal pages" }
 ];
 
-const defaultSettings: UserSettings = {
-    account: {
-        firstName: "John",
-        lastName: "Doe",
-        username: "journey.john",
-        email: "john.doe@example.com",
-        secondaryEmail: ""
-    },
-    notifications: {
-        weeklyDigest: true,
-        itineraryReminders: true,
-        featureAnnouncements: false,
-        paymentAlerts: true
-    },
-    premium: {
-        plan: "free",
-        autoRenew: false,
-        billingEmail: "john.doe@example.com",
-        paymentMethod: "Visa ending in 4242",
-        renewalDate: "No active renewal"
-    },
-    app: {
-        theme: "heritage",
-        language: "english",
-        mapAutoRotate: true,
-        compactCards: false
-    }
+type SettingsDraft = {
+    firstName: string;
+    lastName: string;
+    secondaryEmail: string;
+    weeklyDigest: boolean;
+    itineraryReminders: boolean;
+    featureAnnouncements: boolean;
+    paymentAlerts: boolean;
+    theme: "heritage" | "modern-preview";
+    language: "english" | "polish";
+    mapAutoRotate: boolean;
+    compactCards: boolean;
 };
 
-function getCachedSettings(): UserSettings {
-    try {
-        const cachedSettings = localStorage.getItem(SETTINGS_CACHE_KEY);
-        if (!cachedSettings) {
-            return defaultSettings;
-        }
-
-        const parsedSettings = JSON.parse(cachedSettings);
-        if (!parsedSettings || typeof parsedSettings !== "object") {
-            return defaultSettings;
-        }
-
-        return {
-            account: {
-                firstName: typeof parsedSettings.account?.firstName === "string" ? parsedSettings.account.firstName : defaultSettings.account.firstName,
-                lastName: typeof parsedSettings.account?.lastName === "string" ? parsedSettings.account.lastName : defaultSettings.account.lastName,
-                username: typeof parsedSettings.account?.username === "string" ? parsedSettings.account.username : defaultSettings.account.username,
-                email: typeof parsedSettings.account?.email === "string" ? parsedSettings.account.email : defaultSettings.account.email,
-                secondaryEmail: typeof parsedSettings.account?.secondaryEmail === "string" ? parsedSettings.account.secondaryEmail : defaultSettings.account.secondaryEmail
-            },
-            notifications: {
-                weeklyDigest: Boolean(parsedSettings.notifications?.weeklyDigest),
-                itineraryReminders: Boolean(parsedSettings.notifications?.itineraryReminders),
-                featureAnnouncements: Boolean(parsedSettings.notifications?.featureAnnouncements),
-                paymentAlerts: Boolean(parsedSettings.notifications?.paymentAlerts)
-            },
-            premium: {
-                plan: parsedSettings.premium?.plan === "monthly" || parsedSettings.premium?.plan === "yearly" ? parsedSettings.premium.plan : "free",
-                autoRenew: Boolean(parsedSettings.premium?.autoRenew),
-                billingEmail: typeof parsedSettings.premium?.billingEmail === "string" ? parsedSettings.premium.billingEmail : defaultSettings.premium.billingEmail,
-                paymentMethod: typeof parsedSettings.premium?.paymentMethod === "string" ? parsedSettings.premium.paymentMethod : defaultSettings.premium.paymentMethod,
-                renewalDate: typeof parsedSettings.premium?.renewalDate === "string" ? parsedSettings.premium.renewalDate : defaultSettings.premium.renewalDate
-            },
-            app: {
-                theme: parsedSettings.app?.theme === "modern-preview" ? "modern-preview" : "heritage",
-                language: parsedSettings.app?.language === "polish" ? "polish" : "english",
-                mapAutoRotate: parsedSettings.app?.mapAutoRotate !== false,
-                compactCards: Boolean(parsedSettings.app?.compactCards)
-            }
-        };
-    } catch {
-        return defaultSettings;
-    }
-}
+const defaultDraft: SettingsDraft = {
+    firstName: "",
+    lastName: "",
+    secondaryEmail: "",
+    weeklyDigest: true,
+    itineraryReminders: true,
+    featureAnnouncements: false,
+    paymentAlerts: true,
+    theme: "heritage",
+    language: "english",
+    mapAutoRotate: true,
+    compactCards: false
+};
 
 function fieldValue(event: ChangeEvent<HTMLInputElement | HTMLSelectElement>): string {
     return event.target.value;
 }
 
 export function Settings() {
-    const [settings, setSettings] = useState<UserSettings>(() => getCachedSettings());
+    const navigate = useNavigate();
     const [activeSection, setActiveSection] = useState<SettingsSectionId>("account");
-    const { showScrollTop, scrollToTop } = useScrollToTop();
+    const [profile, setProfile] = useState<JournalProfile | null>(null);
+    const [preferences, setPreferences] = useState<UserPreferences | null>(null);
+    const [draft, setDraft] = useState<SettingsDraft>(defaultDraft);
+    const [isSaving, setIsSaving] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     const [scrollBtnBottom, setScrollBtnBottom] = useState(window.innerHeight * 0.02);
+    const { showScrollTop, scrollToTop } = useScrollToTop();
 
     useEffect(() => {
-        try {
-            localStorage.setItem(SETTINGS_CACHE_KEY, JSON.stringify(settings));
-        } catch {
-            // Ignore cache write failures.
-        }
-    }, [settings]);
+        let mounted = true;
 
-    // Keep the scroll button clear of the footer overlap area.
-    useEffect(() => {
+        const load = async () => {
+            try {
+                const [{ profile: loadedProfile, preferences: loadedPreferences }, session] = await Promise.all([
+                    loadJournalProfile(),
+                    supabase.auth.getUser()
+                ]);
+
+                if (!mounted) {
+                    return;
+                }
+
+                setProfile(loadedProfile);
+                setPreferences(loadedPreferences);
+                setDraft({
+                    firstName: loadedPreferences?.firstName ?? "",
+                    lastName: loadedPreferences?.lastName ?? "",
+                    secondaryEmail: loadedPreferences?.secondaryEmail ?? "",
+                    weeklyDigest: loadedPreferences?.weeklyDigest ?? true,
+                    itineraryReminders: loadedPreferences?.itineraryReminders ?? true,
+                    featureAnnouncements: loadedPreferences?.featureAnnouncements ?? false,
+                    paymentAlerts: loadedPreferences?.paymentAlerts ?? true,
+                    theme: loadedPreferences?.theme ?? "heritage",
+                    language: loadedPreferences?.language ?? "english",
+                    mapAutoRotate: loadedPreferences?.mapAutoRotate ?? true,
+                    compactCards: loadedPreferences?.compactCards ?? false
+                });
+
+                if (!session.data.user) {
+                    navigate("/welcome", { replace: true });
+                }
+            } catch (loadError) {
+                if (!mounted) {
+                    return;
+                }
+
+                setError(loadError instanceof Error ? loadError.message : "Failed to load settings.");
+            }
+        };
+
+        void load();
+
         function adjustScrollButton() {
             const footer = document.querySelector("footer");
             const baseBottom = window.innerHeight * 0.02;
@@ -166,26 +121,56 @@ export function Settings() {
             const rect = footer.getBoundingClientRect();
             const overlap = Math.max(0, window.innerHeight - rect.top);
             const padding = window.innerHeight * 0.01;
-            if (overlap > 0) {
-                setScrollBtnBottom(baseBottom + overlap + padding);
-            } else {
-                setScrollBtnBottom(baseBottom);
-            }
+            setScrollBtnBottom(overlap > 0 ? baseBottom + overlap + padding : baseBottom);
         }
 
         adjustScrollButton();
         window.addEventListener("scroll", adjustScrollButton, { passive: true });
         window.addEventListener("resize", adjustScrollButton);
+
         return () => {
+            mounted = false;
             window.removeEventListener("scroll", adjustScrollButton);
             window.removeEventListener("resize", adjustScrollButton);
         };
-    }, []);
+    }, [navigate]);
 
-    const accountName = useMemo(
-        () => `${settings.account.firstName} ${settings.account.lastName}`.trim() || "Traveler",
-        [settings.account.firstName, settings.account.lastName]
-    );
+    const accountName = useMemo(() => {
+        return `${draft.firstName} ${draft.lastName}`.trim() || profile?.username || "Traveler";
+    }, [draft.firstName, draft.lastName, profile?.username]);
+
+    const updateDraft = (patch: Partial<SettingsDraft>) => {
+        setDraft((current) => ({ ...current, ...patch }));
+    };
+
+    const save = async () => {
+        setIsSaving(true);
+        setError(null);
+
+        try {
+            const saved = await saveUserPreferences({
+                firstName: draft.firstName.trim() || null,
+                lastName: draft.lastName.trim() || null,
+                travelStyle: preferences?.travelStyle ?? null,
+                currentFocus: preferences?.currentFocus ?? null,
+                secondaryEmail: draft.secondaryEmail.trim() || null,
+                weeklyDigest: draft.weeklyDigest,
+                itineraryReminders: draft.itineraryReminders,
+                featureAnnouncements: draft.featureAnnouncements,
+                paymentAlerts: draft.paymentAlerts,
+                theme: draft.theme,
+                language: draft.language,
+                mapAutoRotate: draft.mapAutoRotate,
+                compactCards: draft.compactCards
+            });
+
+            setPreferences(saved ?? preferences);
+        } catch (saveError) {
+            setError(saveError instanceof Error ? saveError.message : "Failed to save settings.");
+        } finally {
+            setIsSaving(false);
+        }
+    };
 
     return (
         <section className="mx-auto w-full max-w-[min(96vw,1320px)] px-[max(1.25rem,5%)] py-[max(2rem,6vh)] text-[#50300d]" aria-labelledby="settings-title">
@@ -199,7 +184,7 @@ export function Settings() {
                         Account center
                     </h1>
                     <p className="mt-4 max-w-[46rem] font-[Cormorant_Garamond] text-[1.25rem] leading-[1.35] text-[#f7dfca]">
-                        Manage your traveler identity, notification preferences, and premium details in one place.
+                        Manage traveler details, notification preferences, and live subscription state from Supabase.
                     </p>
                 </div>
 
@@ -226,32 +211,32 @@ export function Settings() {
                     </aside>
 
                     <div className="space-y-5">
+                        {error && (
+                            <div className="rounded-[0.9rem] border border-red-300 bg-red-50 px-4 py-3 font-[Cormorant_Garamond] text-red-800">
+                                {error}
+                            </div>
+                        )}
+
                         {activeSection === "account" && (
                             <article className="rounded-[1rem] border border-[#cf8d45]/35 bg-[#fff4e7]/72 p-5 shadow-[inset_0_0_18px_rgb(143_90_32_/_8%)]">
-                                <div className="flex flex-wrap items-center justify-between gap-3">
-                                    <h2 className="font-[Adamina] text-[1.4rem] text-[#50300d]">User account settings</h2>
-                                    <p className="font-[Cormorant_Garamond] text-[1.05rem] text-[#7a3f00]">Signed in as {accountName}</p>
-                                </div>
+                                <h2 className="font-[Adamina] text-[1.4rem] text-[#50300d]">User account settings</h2>
+                                <p className="mt-2 font-[Cormorant_Garamond] text-[1.1rem] text-[#7a3f00]">Signed in as {accountName}</p>
                                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
                                     <label className="block">
                                         <span className="mb-1.5 block font-[Adamina] text-[0.72rem] uppercase tracking-[0.18em] text-[#7a3f00]">First name</span>
-                                        <input value={settings.account.firstName} onChange={(event) => setSettings((prev) => ({ ...prev, account: { ...prev.account, firstName: fieldValue(event) } }))} className="w-full rounded-[0.7rem] border border-[#cf8d45]/55 bg-[#fff7ee] px-3 py-2 font-[Cormorant_Garamond] text-[1.08rem] text-[#50300d] outline-none focus:border-[#7a3f00] focus:ring-2 focus:ring-[#cf8d45]/35" />
+                                        <input value={draft.firstName} onChange={(event) => updateDraft({ firstName: fieldValue(event) })} className="w-full rounded-[0.7rem] border border-[#cf8d45]/55 bg-[#fff7ee] px-3 py-2 font-[Cormorant_Garamond] text-[1.08rem] text-[#50300d] outline-none focus:border-[#7a3f00] focus:ring-2 focus:ring-[#cf8d45]/35" />
                                     </label>
                                     <label className="block">
                                         <span className="mb-1.5 block font-[Adamina] text-[0.72rem] uppercase tracking-[0.18em] text-[#7a3f00]">Last name</span>
-                                        <input value={settings.account.lastName} onChange={(event) => setSettings((prev) => ({ ...prev, account: { ...prev.account, lastName: fieldValue(event) } }))} className="w-full rounded-[0.7rem] border border-[#cf8d45]/55 bg-[#fff7ee] px-3 py-2 font-[Cormorant_Garamond] text-[1.08rem] text-[#50300d] outline-none focus:border-[#7a3f00] focus:ring-2 focus:ring-[#cf8d45]/35" />
+                                        <input value={draft.lastName} onChange={(event) => updateDraft({ lastName: fieldValue(event) })} className="w-full rounded-[0.7rem] border border-[#cf8d45]/55 bg-[#fff7ee] px-3 py-2 font-[Cormorant_Garamond] text-[1.08rem] text-[#50300d] outline-none focus:border-[#7a3f00] focus:ring-2 focus:ring-[#cf8d45]/35" />
                                     </label>
-                                    <label className="block">
-                                        <span className="mb-1.5 block font-[Adamina] text-[0.72rem] uppercase tracking-[0.18em] text-[#7a3f00]">Username</span>
-                                        <input value={settings.account.username} onChange={(event) => setSettings((prev) => ({ ...prev, account: { ...prev.account, username: fieldValue(event) } }))} className="w-full rounded-[0.7rem] border border-[#cf8d45]/55 bg-[#fff7ee] px-3 py-2 font-[Cormorant_Garamond] text-[1.08rem] text-[#50300d] outline-none focus:border-[#7a3f00] focus:ring-2 focus:ring-[#cf8d45]/35" />
-                                    </label>
-                                    <label className="block">
+                                    <label className="block sm:col-span-2">
                                         <span className="mb-1.5 block font-[Adamina] text-[0.72rem] uppercase tracking-[0.18em] text-[#7a3f00]">Primary email</span>
-                                        <input type="email" value={settings.account.email} onChange={(event) => setSettings((prev) => ({ ...prev, account: { ...prev.account, email: fieldValue(event) } }))} className="w-full rounded-[0.7rem] border border-[#cf8d45]/55 bg-[#fff7ee] px-3 py-2 font-[Cormorant_Garamond] text-[1.08rem] text-[#50300d] outline-none focus:border-[#7a3f00] focus:ring-2 focus:ring-[#cf8d45]/35" />
+                                        <input value={profile?.email ?? ""} readOnly className="w-full rounded-[0.7rem] border border-[#cf8d45]/40 bg-[#f6ebdd] px-3 py-2 font-[Cormorant_Garamond] text-[1.08rem] text-[#7a3f00] outline-none" />
                                     </label>
                                     <label className="block sm:col-span-2">
                                         <span className="mb-1.5 block font-[Adamina] text-[0.72rem] uppercase tracking-[0.18em] text-[#7a3f00]">Secondary email</span>
-                                        <input type="email" value={settings.account.secondaryEmail} onChange={(event) => setSettings((prev) => ({ ...prev, account: { ...prev.account, secondaryEmail: fieldValue(event) } }))} placeholder="Optional backup email" className="w-full rounded-[0.7rem] border border-[#cf8d45]/55 bg-[#fff7ee] px-3 py-2 font-[Cormorant_Garamond] text-[1.08rem] text-[#50300d] outline-none focus:border-[#7a3f00] focus:ring-2 focus:ring-[#cf8d45]/35" />
+                                        <input type="email" value={draft.secondaryEmail} onChange={(event) => updateDraft({ secondaryEmail: fieldValue(event) })} placeholder="Optional backup email" className="w-full rounded-[0.7rem] border border-[#cf8d45]/55 bg-[#fff7ee] px-3 py-2 font-[Cormorant_Garamond] text-[1.08rem] text-[#50300d] outline-none focus:border-[#7a3f00] focus:ring-2 focus:ring-[#cf8d45]/35" />
                                     </label>
                                 </div>
                             </article>
@@ -264,19 +249,19 @@ export function Settings() {
                                 <div className="mt-5 space-y-3">
                                     <label className="flex items-center justify-between gap-3 rounded-[0.8rem] border border-[#cf8d45]/30 bg-[#ffead4]/60 px-4 py-3">
                                         <span className="font-[Cormorant_Garamond] text-[1.15rem] text-[#50300d]">Weekly travel digest</span>
-                                        <input type="checkbox" checked={settings.notifications.weeklyDigest} onChange={(event) => setSettings((prev) => ({ ...prev, notifications: { ...prev.notifications, weeklyDigest: event.target.checked } }))} className="h-4 w-4 accent-[#7a3f00]" />
+                                        <input type="checkbox" checked={draft.weeklyDigest} onChange={(event) => updateDraft({ weeklyDigest: event.target.checked })} className="h-4 w-4 accent-[#7a3f00]" />
                                     </label>
                                     <label className="flex items-center justify-between gap-3 rounded-[0.8rem] border border-[#cf8d45]/30 bg-[#ffead4]/60 px-4 py-3">
                                         <span className="font-[Cormorant_Garamond] text-[1.15rem] text-[#50300d]">Itinerary reminders</span>
-                                        <input type="checkbox" checked={settings.notifications.itineraryReminders} onChange={(event) => setSettings((prev) => ({ ...prev, notifications: { ...prev.notifications, itineraryReminders: event.target.checked } }))} className="h-4 w-4 accent-[#7a3f00]" />
+                                        <input type="checkbox" checked={draft.itineraryReminders} onChange={(event) => updateDraft({ itineraryReminders: event.target.checked })} className="h-4 w-4 accent-[#7a3f00]" />
                                     </label>
                                     <label className="flex items-center justify-between gap-3 rounded-[0.8rem] border border-[#cf8d45]/30 bg-[#ffead4]/60 px-4 py-3">
                                         <span className="font-[Cormorant_Garamond] text-[1.15rem] text-[#50300d]">Feature announcements</span>
-                                        <input type="checkbox" checked={settings.notifications.featureAnnouncements} onChange={(event) => setSettings((prev) => ({ ...prev, notifications: { ...prev.notifications, featureAnnouncements: event.target.checked } }))} className="h-4 w-4 accent-[#7a3f00]" />
+                                        <input type="checkbox" checked={draft.featureAnnouncements} onChange={(event) => updateDraft({ featureAnnouncements: event.target.checked })} className="h-4 w-4 accent-[#7a3f00]" />
                                     </label>
                                     <label className="flex items-center justify-between gap-3 rounded-[0.8rem] border border-[#cf8d45]/30 bg-[#ffead4]/60 px-4 py-3">
                                         <span className="font-[Cormorant_Garamond] text-[1.15rem] text-[#50300d]">Payment and subscription alerts</span>
-                                        <input type="checkbox" checked={settings.notifications.paymentAlerts} onChange={(event) => setSettings((prev) => ({ ...prev, notifications: { ...prev.notifications, paymentAlerts: event.target.checked } }))} className="h-4 w-4 accent-[#7a3f00]" />
+                                        <input type="checkbox" checked={draft.paymentAlerts} onChange={(event) => updateDraft({ paymentAlerts: event.target.checked })} className="h-4 w-4 accent-[#7a3f00]" />
                                     </label>
                                 </div>
                             </article>
@@ -284,7 +269,7 @@ export function Settings() {
 
                         {activeSection === "premium" && (
                             <article className="rounded-[1rem] border border-[#cf8d45]/35 bg-[#fff4e7]/72 p-5 shadow-[inset_0_0_18px_rgb(143_90_32_/_8%)]">
-                                    <PremiumPlans />
+                                <PremiumPlans />
                             </article>
                         )}
 
@@ -316,28 +301,41 @@ export function Settings() {
                                 <div className="mt-6 grid gap-4 rounded-[0.9rem] border border-[#cf8d45]/30 bg-[#ffead4]/60 p-4 sm:grid-cols-2">
                                     <label className="block">
                                         <span className="mb-1.5 block font-[Adamina] text-[0.72rem] uppercase tracking-[0.18em] text-[#7a3f00]">Theme</span>
-                                        <select value={settings.app.theme} onChange={(event) => setSettings((prev) => ({ ...prev, app: { ...prev.app, theme: event.target.value as AppSettings["theme"] } }))} className="w-full rounded-[0.7rem] border border-[#cf8d45]/55 bg-[#fff7ee] px-3 py-2 font-[Cormorant_Garamond] text-[1.08rem] text-[#50300d] outline-none focus:border-[#7a3f00] focus:ring-2 focus:ring-[#cf8d45]/35">
+                                        <select value={draft.theme} onChange={(event) => updateDraft({ theme: fieldValue(event) as SettingsDraft["theme"] })} className="w-full rounded-[0.7rem] border border-[#cf8d45]/55 bg-[#fff7ee] px-3 py-2 font-[Cormorant_Garamond] text-[1.08rem] text-[#50300d] outline-none focus:border-[#7a3f00] focus:ring-2 focus:ring-[#cf8d45]/35">
                                             <option value="heritage">Heritage brown</option>
                                             <option value="modern-preview">Modern grey preview</option>
                                         </select>
                                     </label>
                                     <label className="block">
                                         <span className="mb-1.5 block font-[Adamina] text-[0.72rem] uppercase tracking-[0.18em] text-[#7a3f00]">Language</span>
-                                        <select value={settings.app.language} onChange={(event) => setSettings((prev) => ({ ...prev, app: { ...prev.app, language: event.target.value as AppSettings["language"] } }))} className="w-full rounded-[0.7rem] border border-[#cf8d45]/55 bg-[#fff7ee] px-3 py-2 font-[Cormorant_Garamond] text-[1.08rem] text-[#50300d] outline-none focus:border-[#7a3f00] focus:ring-2 focus:ring-[#cf8d45]/35">
+                                        <select value={draft.language} onChange={(event) => updateDraft({ language: fieldValue(event) as SettingsDraft["language"] })} className="w-full rounded-[0.7rem] border border-[#cf8d45]/55 bg-[#fff7ee] px-3 py-2 font-[Cormorant_Garamond] text-[1.08rem] text-[#50300d] outline-none focus:border-[#7a3f00] focus:ring-2 focus:ring-[#cf8d45]/35">
                                             <option value="english">English</option>
                                             <option value="polish">Polski</option>
                                         </select>
                                     </label>
                                     <label className="flex items-center justify-between gap-3 rounded-[0.8rem] border border-[#cf8d45]/30 bg-[#fff7ee] px-4 py-3">
                                         <span className="font-[Cormorant_Garamond] text-[1.12rem] text-[#50300d]">Map auto-rotate</span>
-                                        <input type="checkbox" checked={settings.app.mapAutoRotate} onChange={(event) => setSettings((prev) => ({ ...prev, app: { ...prev.app, mapAutoRotate: event.target.checked } }))} className="h-4 w-4 accent-[#7a3f00]" />
+                                        <input type="checkbox" checked={draft.mapAutoRotate} onChange={(event) => updateDraft({ mapAutoRotate: event.target.checked })} className="h-4 w-4 accent-[#7a3f00]" />
                                     </label>
                                     <label className="flex items-center justify-between gap-3 rounded-[0.8rem] border border-[#cf8d45]/30 bg-[#fff7ee] px-4 py-3">
                                         <span className="font-[Cormorant_Garamond] text-[1.12rem] text-[#50300d]">Compact cards</span>
-                                        <input type="checkbox" checked={settings.app.compactCards} onChange={(event) => setSettings((prev) => ({ ...prev, app: { ...prev.app, compactCards: event.target.checked } }))} className="h-4 w-4 accent-[#7a3f00]" />
+                                        <input type="checkbox" checked={draft.compactCards} onChange={(event) => updateDraft({ compactCards: event.target.checked })} className="h-4 w-4 accent-[#7a3f00]" />
                                     </label>
                                 </div>
                             </article>
+                        )}
+
+                        {activeSection !== "premium" && (
+                            <div className="flex justify-end">
+                                <button
+                                    type="button"
+                                    onClick={() => void save()}
+                                    disabled={isSaving}
+                                    className="rounded-full border border-[#7a3f00] bg-[#5a392b] px-5 py-2.5 font-[Adamina] text-[0.92rem] text-[#ffead4] transition hover:bg-[#7a3f00] disabled:cursor-not-allowed disabled:opacity-60"
+                                >
+                                    {isSaving ? "Saving..." : "Save changes"}
+                                </button>
+                            </div>
                         )}
                     </div>
                 </div>

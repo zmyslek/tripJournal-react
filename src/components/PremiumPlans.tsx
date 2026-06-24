@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Check, CreditCard, Loader2, Lock, X } from 'lucide-react';
-import { SUBSCRIPTION_TIERS, getUserSubscription, type SubscriptionPlan } from '../types/subscription';
+import { SUBSCRIPTION_TIERS, type SubscriptionPlan } from '../types/subscription';
 import { capturePostHogEvent } from '../lib/posthog';
 import { redirectToBillingPortal, redirectToCheckout, refreshCachedSubscription, type CheckoutPlan } from '../lib/stripeCheckout';
+import { loadJournalProfile } from '../lib/supabase/journal';
 
 export type PremiumPlansProps = Record<string, never>;
 
@@ -55,7 +56,7 @@ function isCheckoutPlan(plan: SubscriptionPlan | null): plan is CheckoutPlan {
 }
 
 export function PremiumPlans() {
-    const currentSubscription = getUserSubscription();
+    const [currentSubscription, setCurrentSubscription] = useState<{ plan: SubscriptionPlan }>({ plan: 'free' });
     const [isPlanModalOpen, setIsPlanModalOpen] = useState(false);
     const [requestedPlan, setRequestedPlan] = useState<SubscriptionPlan | null>(null);
     const [checkoutPlan, setCheckoutPlan] = useState<CheckoutPlan | null>(null);
@@ -72,6 +73,14 @@ export function PremiumPlans() {
     const hasPremium = useMemo(() => currentSubscription.plan !== 'free', [currentSubscription.plan]);
 
     useEffect(() => {
+        void loadJournalProfile()
+            .then(({ profile }) => {
+                setCurrentSubscription({ plan: profile.subscriptionTier });
+            })
+            .catch(() => {
+                // Fall back to the default plan if profile data is still loading.
+            });
+
         const params = new URLSearchParams(window.location.search);
         const checkoutStatus = params.get('checkout');
 
@@ -80,7 +89,12 @@ export function PremiumPlans() {
         }
 
         if (checkoutStatus === 'success') {
-            void refreshCachedSubscription().then(() => setRefreshCount((count) => count + 1));
+            void refreshCachedSubscription().then(() => {
+                void loadJournalProfile()
+                    .then(({ profile }) => setCurrentSubscription({ plan: profile.subscriptionTier }))
+                    .catch(() => undefined);
+                setRefreshCount((count) => count + 1);
+            });
             capturePostHogEvent('stripe_checkout_returned', { status: 'success' });
         }
 

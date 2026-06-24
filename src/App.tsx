@@ -2,6 +2,8 @@ import { lazy, Suspense, useEffect, useState } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import posthog from "posthog-js";
 import MainLayout from "./components/MainLayout.tsx";
+import { supabase } from "./lib/supabase/client";
+import { loadCountryStatuses, setCountryStatus as saveCountryStatus, type CountryVisitStatus } from "./lib/supabase/journal";
 
 const Home = lazy(() => import("./pages/Home.tsx"));
 const Welcome = lazy(() => import("./pages/Welcome.tsx"));
@@ -12,78 +14,9 @@ const HelpCenter = lazy(() => import("./pages/HelpCenter.tsx"));
 const Policies = lazy(() => import("./pages/Policies.tsx"));
 const CountryTrips = lazy(() => import("./pages/CountryTrips.tsx"));
 const Itineraries = lazy(() => import("./pages/Itineraries.tsx"));
-const COUNTRY_STATUS_CACHE_KEY = "tripjournal:country-statuses:v1";
-const COUNTRY_ADDED_CACHE_KEY = "tripjournal:country-added-dates:v1";
-
-export type CountryStatus = "want-to-go" | "visited" | "want-to-visit-again";
+export type CountryStatus = CountryVisitStatus;
 type CountryStatusMap = Record<string, CountryStatus>;
 type CountryAddedDateMap = Record<string, string>;
-
-function getCachedCountryStatuses(): CountryStatusMap {
-    try {
-        const cachedStatuses = localStorage.getItem(COUNTRY_STATUS_CACHE_KEY);
-        if (!cachedStatuses) {
-            return {};
-        }
-
-        const parsedStatuses = JSON.parse(cachedStatuses) as Record<string, unknown>;
-        if (!parsedStatuses || typeof parsedStatuses !== "object") {
-            return {};
-        }
-
-        const normalizedStatuses: CountryStatusMap = {};
-
-        Object.entries(parsedStatuses).forEach(([countryName, statusValue]) => {
-            if (typeof countryName !== "string" || countryName.trim().length === 0) {
-                return;
-            }
-
-            if (statusValue === "want-to-go" || statusValue === "visited" || statusValue === "want-to-visit-again") {
-                normalizedStatuses[countryName] = statusValue;
-            }
-        });
-
-        return normalizedStatuses;
-    } catch {
-        return {};
-    }
-}
-
-function getCachedCountryAddedDates(): CountryAddedDateMap {
-    try {
-        const cachedDates = localStorage.getItem(COUNTRY_ADDED_CACHE_KEY);
-        if (!cachedDates) {
-            return {};
-        }
-
-        const parsedDates = JSON.parse(cachedDates) as Record<string, unknown>;
-        if (!parsedDates || typeof parsedDates !== "object") {
-            return {};
-        }
-
-        const normalizedDates: CountryAddedDateMap = {};
-        Object.entries(parsedDates).forEach(([countryName, dateValue]) => {
-            if (typeof countryName !== "string" || !countryName.trim()) {
-                return;
-            }
-
-            if (typeof dateValue !== "string") {
-                return;
-            }
-
-            const parsedDate = new Date(dateValue);
-            if (Number.isNaN(parsedDate.getTime())) {
-                return;
-            }
-
-            normalizedDates[countryName] = parsedDate.toISOString();
-        });
-
-        return normalizedDates;
-    } catch {
-        return {};
-    }
-}
 
 function PostHogPageView() {
     const location = useLocation();
@@ -98,54 +31,76 @@ function RouteFallback() {
 }
 
 function App() {
-    const [countryStatuses, setCountryStatuses] = useState<CountryStatusMap>(() => getCachedCountryStatuses());
-    const [countryAddedDates, setCountryAddedDates] = useState<CountryAddedDateMap>(() => getCachedCountryAddedDates());
+    const [countryStatuses, setCountryStatuses] = useState<CountryStatusMap>({});
+    const [countryAddedDates, setCountryAddedDates] = useState<CountryAddedDateMap>({});
 
     useEffect(() => {
-        try {
-            localStorage.setItem(COUNTRY_STATUS_CACHE_KEY, JSON.stringify(countryStatuses));
-        } catch {
-            // Ignore cache write failures.
-        }
-    }, [countryStatuses]);
+        let mounted = true;
 
-    useEffect(() => {
-        try {
-            localStorage.setItem(COUNTRY_ADDED_CACHE_KEY, JSON.stringify(countryAddedDates));
-        } catch {
-            // Ignore cache write failures.
-        }
-    }, [countryAddedDates]);
+        const loadCountryState = async () => {
+            try {
+                const rows = await loadCountryStatuses();
+                if (!mounted) {
+                    return;
+                }
+
+                const nextStatuses: CountryStatusMap = {};
+                const nextDates: CountryAddedDateMap = {};
+
+                rows.forEach((row) => {
+                    nextStatuses[row.country_name] = row.status;
+                    nextDates[row.country_name] = row.added_at;
+                });
+
+                setCountryStatuses(nextStatuses);
+                setCountryAddedDates(nextDates);
+            } catch {
+                if (!mounted) {
+                    return;
+                }
+
+                setCountryStatuses({});
+                setCountryAddedDates({});
+            }
+        };
+
+        void loadCountryState();
+
+        const { data: subscription } = supabase.auth.onAuthStateChange(() => {
+            void loadCountryState();
+        });
+
+        return () => {
+            mounted = false;
+            subscription.subscription.unsubscribe();
+        };
+    }, []);
 
     const setCountryStatus = (countryName: string, status: CountryStatus | null) => {
-        setCountryStatuses((prevStatuses) => {
-            if (status === null) {
-                const nextStatuses = { ...prevStatuses };
-                delete nextStatuses[countryName];
-                return nextStatuses;
-            }
+        const currentAddedAt = countryAddedDates[countryName] ?? null;
 
-            return {
-                ...prevStatuses,
-                [countryName]: status
-            };
+        setCountryStatuses((prevStatuses) => {
+            const nextStatuses = { ...prevStatuses };
+            if (status === null) {
+                delete nextStatuses[countryName];
+            } else {
+                nextStatuses[countryName] = status;
+            }
+            return nextStatuses;
         });
 
         setCountryAddedDates((prevDates) => {
+            const nextDates = { ...prevDates };
             if (status === null) {
-                const nextDates = { ...prevDates };
                 delete nextDates[countryName];
-                return nextDates;
+            } else {
+                nextDates[countryName] = currentAddedAt ?? new Date().toISOString();
             }
+            return nextDates;
+        });
 
-            if (prevDates[countryName]) {
-                return prevDates;
-            }
-
-            return {
-                ...prevDates,
-                [countryName]: new Date().toISOString()
-            };
+        void saveCountryStatus(countryName, status, currentAddedAt).catch((error) => {
+            console.error("Failed to save country status:", error);
         });
     };
 

@@ -5,58 +5,12 @@ import darkLeatherTexture from "../assets/dark-leather.jpg";
 import Map from "../components/Map";
 import { supabase } from "../lib/supabase/client";
 import posthog from 'posthog-js'
-import { createStoredUserProfileFromSession, saveStoredUserProfile, type AuthProvider } from "../types/user";
 
 interface WelcomeFormState {
   email: string;
   password: string;
   error: string;
   isLoading: boolean;
-}
-
-interface QuestionnaireFormState {
-  isLoading: boolean;
-}
-
-const AUTH_CACHE_KEY = "tripjournal:auth:v1";
-
-export interface AuthUser {
-  id: string;
-  email: string;
-  provider: AuthProvider;
-  loginTime: string;
-}
-
-function getStoredAuth(): AuthUser | null {
-  try {
-    const stored = localStorage.getItem(AUTH_CACHE_KEY);
-    if (!stored) return null;
-    const parsed = JSON.parse(stored);
-    return parsed && typeof parsed === "object" && parsed.email ? parsed : null;
-  } catch {
-    return null;
-  }
-}
-
-function saveAuth(user: AuthUser): void {
-  try {
-    localStorage.setItem(AUTH_CACHE_KEY, JSON.stringify(user));
-  } catch {
-    // Silently fail if localStorage unavailable
-  }
-}
-
-function getAuthUserFromSession(sessionUser: { id: string; email?: string | null; app_metadata?: { provider?: string } }): AuthUser {
-  const profile = createStoredUserProfileFromSession(sessionUser);
-
-  saveStoredUserProfile(profile);
-
-  return {
-    id: profile.id,
-    email: profile.email,
-    provider: profile.authProvider,
-    loginTime: profile.loginTime
-  };
 }
 
 function GoogleIcon() {
@@ -107,7 +61,7 @@ function Welcome() {
   const navigate = useNavigate();
   const location = useLocation();
   const { countriesData, isLoading: isCountriesLoading } = useCountriesData();
-  const [isAuthReady, setIsAuthReady] = useState<boolean>(() => Boolean(getStoredAuth()));
+  const [isAuthReady, setIsAuthReady] = useState<boolean>(false);
   const [formState, setFormState] = useState<WelcomeFormState>({
     email: "",
     password: "",
@@ -162,7 +116,6 @@ function Welcome() {
 
       const sessionUser = data.session?.user;
       if (sessionUser) {
-        saveAuth(getAuthUserFromSession(sessionUser));
         if (isProfileIncomplete(sessionUser)) {
           setShowQuestionnaire(true);
         } else {
@@ -178,8 +131,6 @@ function Welcome() {
       if (!session?.user) {
         return;
       }
-
-      saveAuth(getAuthUserFromSession(session.user));
 
       // Capture successful login event
       if (_event === 'SIGNED_IN') {
@@ -239,7 +190,7 @@ function Welcome() {
 
     setIsQuestionnaireLoading(true);
     try {
-      const { data, error } = await supabase.auth.updateUser({
+      const { error } = await supabase.auth.updateUser({
         data: {
           first_name: questionnaire.firstName.trim(),
           last_name: questionnaire.lastName.trim(),
@@ -249,9 +200,6 @@ function Welcome() {
       });
 
       if (error) throw error;
-      if (data.user) {
-        saveAuth(getAuthUserFromSession(data.user));
-      }
       setIsAuthReady(true);
       navigate("/countries", { replace: true });
     } catch (error) {
@@ -321,7 +269,6 @@ function Welcome() {
           if (isProfileIncomplete(sessionUser)) {
             setShowQuestionnaire(true);
           } else {
-            saveAuth(getAuthUserFromSession(sessionUser));
             setIsAuthReady(true);
             navigate("/countries", { replace: true });
           }
@@ -353,7 +300,6 @@ function Welcome() {
           if (isProfileIncomplete(data.session.user)) {
             setShowQuestionnaire(true);
           } else {
-            saveAuth(getAuthUserFromSession(data.session.user));
             setIsAuthReady(true);
             navigate("/countries", { replace: true });
           }

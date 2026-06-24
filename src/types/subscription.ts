@@ -1,4 +1,4 @@
-import { getCachedUserRecord, saveCachedUserRecord, type UserRecord, type UserSubscriptionPlan } from './user';
+import type { UserSubscriptionPlan } from "./user";
 
 export type SubscriptionPlan = UserSubscriptionPlan;
 
@@ -90,73 +90,15 @@ export const SUBSCRIPTION_TIERS: Record<SubscriptionPlan, SubscriptionTier> = {
     }
 };
 
-const SUBSCRIPTION_STORAGE_KEY = 'tripjournal:subscription:v1';
-
-function mapRecordToSubscription(record: UserRecord): UserSubscription {
-    return {
-        plan: record.subscriptionTier,
-        renewalDate: record.subscriptionEndsAt ?? record.trialEndsAt,
-        startDate: record.createdAt,
-        cancelledAt: record.subscriptionStatus === 'canceled' ? record.subscriptionEndsAt ?? record.trialEndsAt : null
-    };
-}
-
-function updateCachedUserRecord(subscription: UserSubscription): void {
-    const cachedUser = getCachedUserRecord();
-    if (!cachedUser) {
-        return;
-    }
-
-    saveCachedUserRecord({
-        ...cachedUser,
-        subscriptionTier: subscription.plan,
-        subscriptionStatus: subscription.plan === 'free' ? 'inactive' : 'active',
-        subscriptionEndsAt: subscription.renewalDate,
-        trialEndsAt: subscription.plan === 'free' ? cachedUser.trialEndsAt : cachedUser.trialEndsAt
-    });
-}
-
-export function getUserSubscription(): UserSubscription {
-    const cachedUser = getCachedUserRecord();
-    if (cachedUser) {
-        return mapRecordToSubscription(cachedUser);
-    }
-
-    try {
-        const stored = localStorage.getItem(SUBSCRIPTION_STORAGE_KEY);
-        if (stored) {
-            return JSON.parse(stored) as UserSubscription;
-        }
-    } catch (err) {
-        console.error('[Subscription] Failed to load subscription:', err);
-    }
-    
-    return {
-        plan: 'free',
-        renewalDate: null,
-        startDate: new Date().toISOString(),
-        cancelledAt: null
-    };
-}
-
-export function saveUserSubscription(subscription: UserSubscription): void {
-    try {
-        localStorage.setItem(SUBSCRIPTION_STORAGE_KEY, JSON.stringify(subscription));
-        updateCachedUserRecord(subscription);
-    } catch (err) {
-        console.error('[Subscription] Failed to save subscription:', err);
-    }
-}
-
 export function getFormattedRenewalDate(renewalDate: string | null): string {
     if (!renewalDate) return '';
-    
+
     try {
         const date = new Date(renewalDate);
-        return date.toLocaleDateString('en-US', { 
-            year: 'numeric', 
-            month: 'short', 
-            day: 'numeric' 
+        return date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
         });
     } catch {
         return renewalDate;

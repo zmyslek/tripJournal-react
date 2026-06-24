@@ -1,17 +1,39 @@
+import { useEffect, useState } from "react";
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
-import { getUserSubscription, getFormattedRenewalDate, SUBSCRIPTION_TIERS } from '../types/subscription';
-import { getStoredUserProfile } from '../types/user';
+import { getFormattedRenewalDate, SUBSCRIPTION_TIERS } from '../types/subscription';
+import { loadJournalProfile } from "../lib/supabase/journal";
 
 export function SubscriptionStatus() {
-    const storedUser = getStoredUserProfile();
-    const subscription = getUserSubscription();
-    const plan = storedUser?.subscriptionTier ?? subscription.plan;
+    const [plan, setPlan] = useState<keyof typeof SUBSCRIPTION_TIERS>("free");
+    const [renewalDate, setRenewalDate] = useState<string | null>(null);
+    const [isBeta, setIsBeta] = useState(false);
+
+    useEffect(() => {
+        let mounted = true;
+
+        void loadJournalProfile()
+            .then(({ profile }) => {
+                if (!mounted) {
+                    return;
+                }
+
+                setPlan(profile.subscriptionTier);
+                setRenewalDate(profile.subscriptionEndsAt ?? profile.trialEndsAt);
+                setIsBeta(profile.subscriptionTier === "beta-lifetime" || profile.isLifetimeFree);
+            })
+            .catch(() => {
+                // Keep the fallback subscription data if Supabase is unavailable.
+            });
+
+        return () => {
+            mounted = false;
+        };
+    }, []);
+
     const tier = SUBSCRIPTION_TIERS[plan];
-    
-    const isBeta = plan === 'beta-lifetime' || storedUser?.isLifetimeFree === true;
     const isPremium = plan !== 'free' || isBeta;
-    const renewalDate = getFormattedRenewalDate(storedUser?.subscriptionEndsAt ?? subscription.renewalDate);
+    const renewalLabel = getFormattedRenewalDate(renewalDate);
 
     return (
         <div className="mt-8 space-y-4">
@@ -42,11 +64,11 @@ export function SubscriptionStatus() {
                         </div>
                         
                         <p className="mt-2 font-cormorant text-[#7A3F00]/70">
-                            {isPremium && renewalDate && subscription.plan !== 'lifetime' && !isBeta ? (
+                            {isPremium && renewalLabel && plan !== 'lifetime' && !isBeta ? (
                                 <>
-                                    Renews on <span className="font-semibold">{renewalDate}</span>
+                                    Renews on <span className="font-semibold">{renewalLabel}</span>
                                 </>
-                            ) : isPremium && subscription.plan === 'lifetime' ? (
+                            ) : isPremium && plan === 'lifetime' ? (
                                 'Lifetime access'
                             ) : isPremium && isBeta ? (
                                 'Unlimited premium access'

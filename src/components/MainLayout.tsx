@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, NavLink, Outlet } from "react-router-dom";
 import leatherBackground from "../assets/dark-leather.jpg";
 import paperBackground from "../assets/wrinkled-paper.png";
 import { Settings, HelpCircle } from "lucide-react";
-import { getStoredUserProfile } from "../types/user";
+import { supabase } from "../lib/supabase/client";
 
 const COOKIE_CONSENT_KEY = "tripjournal:cookie-consent:v1";
 const policyLinks = [
@@ -24,6 +24,7 @@ function getSavedCookieConsent(): "accepted" | "rejected" | null {
 
 function MainLayout() {
     const [cookieConsent, setCookieConsent] = useState<"accepted" | "rejected" | null>(() => getSavedCookieConsent());
+    const [profileInitials, setProfileInitials] = useState("JD");
 
     useEffect(() => {
         if (cookieConsent === null) {
@@ -36,6 +37,70 @@ function MainLayout() {
             // Ignore storage failures.
         }
     }, [cookieConsent]);
+
+    useEffect(() => {
+        let mounted = true;
+
+        const loadInitials = async () => {
+            const { data } = await supabase.auth.getUser();
+            if (!mounted || !data.user) {
+                return;
+            }
+
+            const metadata = data.user.user_metadata ?? {};
+            const displayName = [
+                metadata.first_name,
+                metadata.last_name
+            ].filter((part): part is string => typeof part === "string" && part.trim().length > 0).join(" ")
+                || metadata.username
+                || metadata.full_name
+                || data.user.email
+                || "";
+
+            const initials = displayName
+                .split(/\s+/)
+                .filter(Boolean)
+                .slice(0, 2)
+                .map((part) => part[0]?.toUpperCase())
+                .join("");
+
+            setProfileInitials(initials || "JD");
+        };
+
+        void loadInitials();
+
+        const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
+            if (!mounted || !session?.user) {
+                return;
+            }
+
+            const metadata = session.user.user_metadata ?? {};
+            const displayName = [
+                metadata.first_name,
+                metadata.last_name
+            ].filter((part): part is string => typeof part === "string" && part.trim().length > 0).join(" ")
+                || metadata.username
+                || metadata.full_name
+                || session.user.email
+                || "";
+
+            const initials = displayName
+                .split(/\s+/)
+                .filter(Boolean)
+                .slice(0, 2)
+                .map((part) => part[0]?.toUpperCase())
+                .join("");
+
+            setProfileInitials(initials || "JD");
+        });
+
+        return () => {
+            mounted = false;
+            subscription.subscription.unsubscribe();
+        };
+    }, []);
+
+    const profileInitialsLabel = useMemo(() => profileInitials, [profileInitials]);
 
     return (
         <div className="flex min-h-screen w-full flex-col overflow-x-hidden">
@@ -75,12 +140,7 @@ function MainLayout() {
                     >
                         {(() => {
                             try {
-                                const user = getStoredUserProfile();
-                                const name = user?.username || user?.email || '';
-                                const parts = name.split(/\s+/).filter(Boolean);
-                                if (parts.length === 0) return 'JD';
-                                const initials = parts.slice(0,2).map(p => p[0]?.toUpperCase()).join('');
-                                return initials || 'JD';
+                                return profileInitialsLabel;
                             } catch {
                                 return 'JD';
                             }

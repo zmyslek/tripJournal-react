@@ -1,4 +1,4 @@
-import { readdir, stat, writeFile } from 'node:fs/promises';
+import { mkdir, readdir, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 const galleryRoot = path.resolve('public', 'temporary-gallery');
@@ -74,4 +74,5 @@ async function collectMediaFiles(directory, baseDirectory = directory) {
 }
 
 const manifest = await collectMediaFiles(galleryRoot);
+await mkdir(galleryRoot, { recursive: true });
 await writeFile(outputPath, `${JSON.stringify(manifest, null, 2)}\n`);

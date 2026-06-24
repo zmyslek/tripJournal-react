@@ -1,6 +1,5 @@
 import { supabase } from "./supabase/client";
 import type { SubscriptionPlan } from "../types/subscription";
-import { getStoredUserProfile, saveStoredUserProfile } from "../types/user";
 
 export type CheckoutPlan = Extract<SubscriptionPlan, "monthly" | "yearly" | "lifetime">;
 
@@ -11,14 +10,6 @@ interface CheckoutSessionResponse {
 
 interface BillingPortalResponse {
     url: string;
-}
-
-interface UserSubscriptionRow {
-    is_lifetime_free: boolean;
-    subscription_status: "inactive" | "trialing" | "active" | "canceled" | "expired" | "past_due";
-    subscription_tier: SubscriptionPlan;
-    trial_ends_at: string | null;
-    subscription_ends_at: string | null;
 }
 
 async function getAccessToken(): Promise<string> {
@@ -81,34 +72,5 @@ export async function redirectToBillingPortal(): Promise<void> {
 }
 
 export async function refreshCachedSubscription(): Promise<void> {
-    const { data } = await supabase.auth.getUser();
-    const user = data.user;
-
-    if (!user) {
-        return;
-    }
-
-    const { data: row, error } = await supabase
-        .from("users")
-        .select("is_lifetime_free, subscription_status, subscription_tier, trial_ends_at, subscription_ends_at")
-        .eq("id", user.id)
-        .maybeSingle<UserSubscriptionRow>();
-
-    if (error || !row) {
-        return;
-    }
-
-    const cachedProfile = getStoredUserProfile();
-    if (!cachedProfile) {
-        return;
-    }
-
-    saveStoredUserProfile({
-        ...cachedProfile,
-        isLifetimeFree: row.is_lifetime_free,
-        subscriptionStatus: row.subscription_status,
-        subscriptionTier: row.subscription_tier,
-        trialEndsAt: row.trial_ends_at,
-        subscriptionEndsAt: row.subscription_ends_at
-    });
+    await supabase.auth.getSession();
 }
