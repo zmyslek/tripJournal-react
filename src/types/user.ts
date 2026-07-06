@@ -1,4 +1,4 @@
-export type AuthProvider = "email" | "google" | "facebook";
+export type AuthProvider = "email" | "google" | "facebook" | "microsoft";
 export type UserSubscriptionPlan = "free" | "monthly" | "yearly" | "lifetime" | "beta-lifetime";
 
 export type SubscriptionStatus = "inactive" | "trialing" | "active" | "canceled" | "expired" | "past_due";
@@ -25,6 +25,10 @@ export type UserRecord = StoredUserProfile;
 function mapProvider(provider: string | undefined): AuthProvider {
     if (provider === "google" || provider === "facebook") {
         return provider;
+    }
+
+    if (provider === "azure") {
+        return "microsoft";
     }
 
     return "email";

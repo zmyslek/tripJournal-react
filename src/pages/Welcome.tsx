@@ -73,6 +73,8 @@ function Welcome() {
   const [questionnaire, setQuestionnaire] = useState({ firstName: "", lastName: "" });
   const [isQuestionnaireLoading, setIsQuestionnaireLoading] = useState(false);
 
+  const authRedirectUrl = `${window.location.origin}/#/welcome`;
+
   const isProfileIncomplete = (user: { 
     user_metadata?: { 
       full_name?: string; 
@@ -248,7 +250,7 @@ function Welcome() {
           email: formState.email,
           password: formState.password,
           options: {
-            emailRedirectTo: window.location.origin
+            emailRedirectTo: authRedirectUrl
           }
         });
 
@@ -323,7 +325,7 @@ function Welcome() {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: window.location.origin,
+          redirectTo: authRedirectUrl,
           scopes: provider === 'azure' ? 'openid email profile' : undefined,
           queryParams: provider === 'azure' ? { prompt: 'select_account' } : undefined,
         }
@@ -337,7 +339,10 @@ function Welcome() {
         console.log(`Redirecting user to ${provider} login screen...`, data.url);
       }
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Social sign-in failed. Please try again.";
+      const rawMessage = error instanceof Error ? error.message : "Social sign-in failed. Please try again.";
+      const message = /provider.*not enabled|unsupported provider/i.test(rawMessage)
+        ? "This provider is not enabled in Supabase yet. Enable Google and Azure in Auth > Providers, then add this app URL to the allowed redirect URLs."
+        : rawMessage;
       setFormState((prev) => ({ ...prev, error: message, isLoading: false }));
     }
   };
@@ -527,15 +532,6 @@ function Welcome() {
                 <IconButton label="Continue with Microsoft" onClick={() => handleSocialAuth("azure")}>
                   <MicrosoftIcon />
                 </IconButton>
-              </div>
-
-              <div className="mt-4 text-center">
-                <a
-                  href="#"
-                  className="font-cormorant text-xs text-[#EAB681]/70 underline underline-offset-4 transition hover:text-[#FABE7D]"
-                >
-                  Microsoft account login help (placeholder link)
-                </a>
               </div>
             </div>
           </div>

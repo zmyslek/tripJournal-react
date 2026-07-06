@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type ChangeEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Edit, HelpCircle, Loader2, Settings } from "lucide-react";
+import { Edit, HelpCircle, Loader2, LogOut, Settings } from "lucide-react";
 import paperBackground from "../assets/wrinkled-paper.png";
 import SubscriptionStatus from "../components/SubscriptionStatus";
 import { supabase } from "../lib/supabase/client";
@@ -48,6 +48,7 @@ export function Profile() {
     const [scrollBtnBottom, setScrollBtnBottom] = useState(window.innerHeight * 0.02);
     const [isEditing, setIsEditing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
     const [profile, setProfile] = useState<JournalProfile | null>(null);
     const [preferences, setPreferences] = useState<UserPreferences | null>(null);
     const [galleryCount, setGalleryCount] = useState(0);
@@ -214,6 +215,24 @@ export function Profile() {
         }
     };
 
+    const handleLogout = async () => {
+        setIsLoggingOut(true);
+        setError(null);
+
+        try {
+            const { error: signOutError } = await supabase.auth.signOut();
+            if (signOutError) {
+                throw signOutError;
+            }
+
+            navigate("/welcome", { replace: true });
+        } catch (logoutError) {
+            setError(logoutError instanceof Error ? logoutError.message : "Failed to log out.");
+        } finally {
+            setIsLoggingOut(false);
+        }
+    };
+
     useEffect(() => {
         if (!profile && !error) {
             void supabase.auth.getUser().then(({ data }) => {
@@ -292,33 +311,44 @@ export function Profile() {
                     <aside className="flex flex-col gap-3 rounded-[1rem] p-4">
                         <SubscriptionStatus />
 
-                        <Link
-                            to="/settings"
-                            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#7a3f00] bg-[#5a392b] text-[#ffead4] transition hover:bg-[#7a3f00]"
-                            aria-label="Settings"
-                            title="Settings"
-                        >
-                            <Settings size={20} />
-                        </Link>
+                        <div className="rounded-[1rem] border border-[#cf8d45]/45 bg-[#fff7ee]/80 p-4 shadow-[inset_0_0_16px_rgb(143_90_32_/_7%)]">
+                            <p className="font-[Adamina] text-[0.72rem] uppercase tracking-[0.18em] text-[#7a3f00]">Quick actions</p>
+                            <div className="mt-3 grid gap-2">
+                                <Link
+                                    to="/settings"
+                                    className="inline-flex w-full items-center justify-between rounded-[0.8rem] border border-[#7a3f00] bg-[#5a392b] px-3 py-2.5 font-[Adamina] text-[0.85rem] uppercase tracking-[0.08em] text-[#ffead4] transition hover:bg-[#7a3f00]"
+                                >
+                                    Settings <Settings size={16} />
+                                </Link>
 
-                        <Link
-                            to="/help-center"
-                            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#cf8d45] bg-[#fff7ee] text-[#50300d] transition hover:bg-[#f6dfc1]"
-                            aria-label="Help center"
-                            title="Help center"
-                        >
-                            <HelpCircle size={20} />
-                        </Link>
+                                <Link
+                                    to="/help-center"
+                                    className="inline-flex w-full items-center justify-between rounded-[0.8rem] border border-[#cf8d45] bg-[#ffead4] px-3 py-2.5 font-[Adamina] text-[0.85rem] uppercase tracking-[0.08em] text-[#50300d] transition hover:bg-[#f6dfc1]"
+                                >
+                                    Help center <HelpCircle size={16} />
+                                </Link>
 
-                        <button
-                            type="button"
-                            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#7a3f00] bg-[#5a392b] text-[#ffead4] transition hover:bg-[#7a3f00]"
-                            onClick={() => setIsEditing(true)}
-                            aria-label="Edit profile"
-                            title="Edit profile"
-                        >
-                            <Edit size={18} />
-                        </button>
+                                <button
+                                    type="button"
+                                    className="inline-flex w-full items-center justify-between rounded-[0.8rem] border border-[#a56a2f] bg-[#fff4e7] px-3 py-2.5 font-[Adamina] text-[0.85rem] uppercase tracking-[0.08em] text-[#6f3b08] transition hover:bg-[#ffe4c5]"
+                                    onClick={() => setIsEditing(true)}
+                                >
+                                    Edit profile <Edit size={16} />
+                                </button>
+
+                                <button
+                                    type="button"
+                                    disabled={isLoggingOut}
+                                    className="inline-flex w-full items-center justify-between rounded-[0.8rem] border border-[#9e3a1f] bg-[#fff1ee] px-3 py-2.5 font-[Adamina] text-[0.85rem] uppercase tracking-[0.08em] text-[#9e3a1f] transition hover:bg-[#ffe1d9] disabled:cursor-not-allowed disabled:opacity-75"
+                                    onClick={() => {
+                                        void handleLogout();
+                                    }}
+                                >
+                                    {isLoggingOut ? "Logging out..." : "Log out"}
+                                    {isLoggingOut ? <Loader2 size={16} className="animate-spin" /> : <LogOut size={16} />}
+                                </button>
+                            </div>
+                        </div>
                     </aside>
                 </div>
             </div>

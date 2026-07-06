@@ -173,7 +173,7 @@ export function Settings() {
     };
 
     return (
-        <section className="mx-auto w-full max-w-[min(96vw,1320px)] px-[max(1.25rem,5%)] py-[max(2rem,6vh)] text-[#50300d]" aria-labelledby="settings-title">
+        <section className="mx-auto w-full max-w-[min(95vw,1380px)] px-[max(1.25rem,5%)] py-[max(2rem,6vh)] text-[#50300d]" aria-labelledby="settings-title">
             <div className="overflow-hidden rounded-[1.35rem] border border-[#8f5a20]/35 bg-[#ffead4]/95 shadow-[0_18px_42px_rgb(80_48_13_/_20%),inset_0_0_0_1px_rgb(255_244_231_/_55%)]">
                 <div
                     className="relative min-h-[11rem] bg-[#5a392b] px-6 py-7 text-[#ffead4] sm:px-9"
@@ -188,7 +188,7 @@ export function Settings() {
                     </p>
                 </div>
 
-                <div className="grid gap-7 px-6 py-7 sm:px-9 lg:grid-cols-[18rem_minmax(0,1fr)]">
+                <div className="grid gap-7 px-6 py-7 sm:px-9 lg:grid-cols-[16rem_minmax(0,1fr)] xl:grid-cols-[18rem_minmax(0,1fr)]">
                     <aside className="rounded-[1rem] border border-[#cf8d45]/35 bg-[#fff4e7]/72 p-4 shadow-[inset_0_0_16px_rgb(143_90_32_/_8%)]">
                         <p className="font-[Adamina] text-[0.7rem] uppercase tracking-[0.2em] text-[#7a3f00]">General</p>
                         <nav className="mt-3 flex flex-col gap-1.5" aria-label="Settings categories">
@@ -210,7 +210,7 @@ export function Settings() {
                         </nav>
                     </aside>
 
-                    <div className="space-y-5">
+                    <div className="space-y-5 min-w-0">
                         {error && (
                             <div className="rounded-[0.9rem] border border-red-300 bg-red-50 px-4 py-3 font-[Cormorant_Garamond] text-red-800">
                                 {error}
@@ -268,7 +268,7 @@ export function Settings() {
                         )}
 
                         {activeSection === "premium" && (
-                            <article className="rounded-[1rem] border border-[#cf8d45]/35 bg-[#fff4e7]/72 p-5 shadow-[inset_0_0_18px_rgb(143_90_32_/_8%)]">
+                            <article className="rounded-[1rem] border border-[#cf8d45]/35 bg-[#fff4e7]/72 p-5 shadow-[inset_0_0_18px_rgb(143_90_32_/_8%)] lg:px-6 lg:py-6 xl:px-7">
                                 <PremiumPlans />
                             </article>
                         )}

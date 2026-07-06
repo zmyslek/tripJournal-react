@@ -36,61 +36,61 @@ export function SubscriptionStatus() {
     const renewalLabel = getFormattedRenewalDate(renewalDate);
 
     return (
-        <div className="mt-8 space-y-4">
-            {/* Subscription Banner */}
-            <div className={`rounded-lg border-2 p-6 transition ${
-                isBeta 
-                    ? 'border-[#7A3F00] bg-gradient-to-r from-[#EAB681]/10 to-[#CF8D45]/10'
-                    : isPremium
-                    ? 'border-[#CF8D45] bg-[#EAB681]/10'
-                    : 'border-[#8f5a20]/35 bg-[#FFEAD4]/50'
-            }`}>
-                <div className="flex items-start justify-between">
+        <div className="space-y-4">
+            <div
+                className={`relative overflow-hidden rounded-[1rem] border p-5 shadow-[0_12px_32px_rgb(80_48_13_/_12%),inset_0_0_0_1px_rgb(255_244_231_/_45%)] transition ${
+                    isBeta
+                        ? "border-[#7A3F00]/55 bg-[linear-gradient(140deg,rgba(234,182,129,0.42),rgba(143,90,32,0.2))]"
+                        : isPremium
+                          ? "border-[#CF8D45]/65 bg-[linear-gradient(150deg,rgba(255,240,222,0.98),rgba(234,182,129,0.22))]"
+                          : "border-[#8f5a20]/35 bg-[linear-gradient(160deg,rgba(255,247,238,0.98),rgba(255,234,212,0.75))]"
+                }`}
+            >
+                <p className="font-adamina text-[0.68rem] uppercase tracking-[0.22em] text-[#7A3F00]/85">Current plan</p>
+
+                <div className="mt-3 flex items-start justify-between gap-4">
                     <div className="flex-1">
-                        <div className="flex items-center gap-3">
-                            <h3 className="font-adamina text-xl font-bold text-[#7A3F00]">
-                                {tier.name}
-                            </h3>
+                        <div className="flex flex-wrap items-center gap-2">
+                            <h3 className="font-adamina text-[1.35rem] text-[#7A3F00]">{tier.name}</h3>
                             {isBeta && (
-                                <span className="rounded-full bg-[#7A3F00] px-3 py-1 text-xs font-semibold text-[#FFEAD4]">
-                                    Beta Tester ✨
+                                <span className="rounded-full border border-[#7A3F00]/55 bg-[#7A3F00] px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-[#FFEAD4]">
+                                    Beta tester
                                 </span>
                             )}
                             {isPremium && !isBeta && (
-                                <span className="rounded-full border border-[#CF8D45] px-3 py-1 text-xs font-semibold text-[#7A3F00]">
+                                <span className="rounded-full border border-[#CF8D45] bg-[#fff4e7] px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-[#7A3F00]">
                                     Premium
                                 </span>
                             )}
                         </div>
-                        
-                        <p className="mt-2 font-cormorant text-[#7A3F00]/70">
+
+                        <p className="mt-2 font-cormorant text-[1.05rem] text-[#7A3F00]/80">
                             {isPremium && renewalLabel && plan !== 'lifetime' && !isBeta ? (
                                 <>
-                                    Renews on <span className="font-semibold">{renewalLabel}</span>
+                                    Renews on <span className="font-semibold text-[#7A3F00]">{renewalLabel}</span>
                                 </>
                             ) : isPremium && plan === 'lifetime' ? (
-                                'Lifetime access'
+                                'Lifetime access unlocked.'
                             ) : isPremium && isBeta ? (
-                                'Unlimited premium access'
+                                'Unlimited premium access while the beta is active.'
                             ) : (
-                                'Upgrade to unlock premium features'
+                                'Upgrade to unlock premium travel tools and perks.'
                             )}
                         </p>
                     </div>
 
                     <Link
                         to="/settings"
-                        className="flex items-center gap-2 rounded-lg border border-[#7A3F00] px-4 py-2 font-cormorant text-sm font-semibold text-[#7A3F00] transition hover:bg-[#7A3F00]/10"
+                        className="inline-flex items-center gap-2 rounded-[0.75rem] border border-[#7A3F00] bg-[#fff4e7]/90 px-3.5 py-2 font-cormorant text-sm font-semibold text-[#7A3F00] transition hover:bg-[#7A3F00] hover:text-[#fff4e7]"
                     >
                         {isPremium ? 'Manage' : 'Upgrade'} <ArrowRight size={16} />
                     </Link>
                 </div>
             </div>
 
-            {/* Feature Highlights for Free Users */}
             {plan === 'free' && !isBeta && (
-                <div className="rounded-lg bg-[#FFEAD4]/50 p-4 border border-[#8f5a20]/35">
-                    <p className="font-cormorant text-sm font-semibold text-[#7A3F00] mb-2">
+                <div className="rounded-[0.9rem] border border-dashed border-[#b16a24]/55 bg-[#fff4e7]/85 p-4">
+                    <p className="mb-2 font-cormorant text-sm font-semibold text-[#7A3F00]">
                         Premium unlocks:
                     </p>
                     <ul className="space-y-1 text-sm text-[#7A3F00]/80 font-cormorant">

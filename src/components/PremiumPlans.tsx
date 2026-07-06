@@ -176,7 +176,7 @@ export function PremiumPlans() {
             ) : null}
 
             {/* Plans Grid */}
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
                 {selectablePlans.map((planId) => {
                     const tier = SUBSCRIPTION_TIERS[planId];
                     const isCurrentPlan = currentSubscription.plan === planId;
