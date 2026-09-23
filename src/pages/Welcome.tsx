@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useCountriesData } from "../hooks/useCountriesData";
 import darkLeatherTexture from "../assets/dark-leather.jpg";
 import Map from "../components/Map";
-import { supabase } from "../lib/supabase/client";
+import { getAuthRedirectUrl, supabase } from "../lib/supabase/client";
 import { createStoredUserProfileFromSession, saveStoredUserProfile, type AuthProvider } from "../types/user";
 
 interface WelcomeFormState {
@@ -211,7 +211,7 @@ function Welcome() {
           email: formState.email,
           password: formState.password,
           options: {
-            emailRedirectTo: window.location.origin
+            emailRedirectTo: getAuthRedirectUrl()
           }
         });
 
@@ -261,7 +261,7 @@ function Welcome() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: window.location.origin
+          redirectTo: getAuthRedirectUrl()
         }
       });
 

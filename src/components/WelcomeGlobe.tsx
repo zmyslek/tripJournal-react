@@ -115,9 +115,9 @@ export function WelcomeGlobe({ countriesData }: WelcomeGlobeProps): React.ReactE
         </clipPath>
       </defs>
 
-      <circle cx={CENTER} cy={CENTER} r={RADIUS} fill="url(#welcome-globe-ocean)" />
+      <circle cx={CENTER} cy={CENTER} r={RADIUS} fill="url(#welcome-globe-ocean)" fillOpacity={0.5} />
       <g clipPath="url(#welcome-globe-clip)">
-        <rect x="0" y="0" width={SVG_SIZE} height={SVG_SIZE} fill="url(#welcome-globe-ocean)" />
+        <rect x="0" y="0" width={SVG_SIZE} height={SVG_SIZE} fill="url(#welcome-globe-ocean)" fillOpacity={0.5} />
         {paths.map((feature) => (
           <path
             key={feature.name}

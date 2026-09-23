@@ -3,6 +3,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { type CountriesGeoJson } from "../types/countries";
 import type { CountryStatus } from "../pages/Home";
+import WelcomeGlobe from "./WelcomeGlobe";
 
 const DEFAULT_INITIAL_GLOBE_ZOOM = 1.35;
 const MIN_MAP_ZOOM = 0.5;
@@ -79,7 +80,6 @@ const Map: React.FC<MapProps> = ({
   const viewModeRef = useRef(viewMode);
   const initialGlobeZoomRef = useRef(initialGlobeZoom);
   const showGlobeBackdropRef = useRef(showGlobeBackdrop);
-  const rotationFrameRef = useRef<number | null>(null);
   const lastFocusedCountryRef = useRef<string | null>(null);
 
   const globeSize = sizeVariant === "compact" ? "60vw" : "min(82vw, 82vh)";
@@ -150,14 +150,15 @@ const Map: React.FC<MapProps> = ({
     const map = mapRef.current;
     if (!map) return;
     map.invalidateSize();
-    if (viewMode === "globe") map.setView([20, 0], Math.max(MIN_MAP_ZOOM, initialGlobeZoom), { animate: false });
   }, [viewMode, initialGlobeZoom]);
 
   useEffect(() => {
+    if (viewMode !== "map" || !mapContainer.current) return;
+
     if (!mapContainer.current) return;
     const map = L.map(mapContainer.current, {
       center: [20, 0],
-      zoom: viewModeRef.current === "globe" ? Math.max(MIN_MAP_ZOOM, initialGlobeZoomRef.current) : 1.15,
+      zoom: 1.15,
       minZoom: MIN_MAP_ZOOM,
       worldCopyJump: false,
       zoomControl: false
@@ -165,34 +166,23 @@ const Map: React.FC<MapProps> = ({
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
       maxZoom: 19,
-      opacity: showGlobeBackdropRef.current ? 0.9 : 0
+      opacity: showGlobeBackdropRef.current ? 0.5 : 0
     }).addTo(map);
     mapRef.current = map;
     refreshCountries();
 
-    let isUserInteracting = false;
-    const animateRotation = () => {
-      if (viewModeRef.current === "globe" && !userLocationRef.current && !focusCountryRef.current && !isUserInteracting) {
-        const center = map.getCenter();
-        map.panTo([center.lat, center.lng - 0.02], { animate: false, noMoveStart: true });
-      }
-      rotationFrameRef.current = window.requestAnimationFrame(animateRotation);
-    };
-    map.on("dragstart", () => { isUserInteracting = true; });
-    map.on("dragend", () => { isUserInteracting = false; });
-    rotationFrameRef.current = window.requestAnimationFrame(animateRotation);
-
     if (userLocationRef.current) {
       userMarkerRef.current = L.marker([userLocationRef.current.lat, userLocationRef.current.lng], { icon: userLocationIcon, interactive: false }).addTo(map);
     }
+    if (focusCountryRef.current) focusMapOnCountry(focusCountryRef.current);
+
     return () => {
-      if (rotationFrameRef.current !== null) window.cancelAnimationFrame(rotationFrameRef.current);
       userMarkerRef.current = null;
       countryLayerRef.current = null;
       map.remove();
       mapRef.current = null;
     };
-  }, []);
+  }, [viewMode]);
 
   return (
     <div
@@ -205,7 +195,13 @@ const Map: React.FC<MapProps> = ({
         height: viewMode === "globe" ? globeSize : flatMapHeight,
         borderRadius: viewMode === "globe" ? "9999px" : "0.85rem"
       }}
-    />
+    >
+      {viewMode === "globe" && countriesData && (
+        <div className="globe-map-renderer" aria-hidden="true">
+          <WelcomeGlobe countriesData={countriesData} />
+        </div>
+      )}
+    </div>
   );
 };
 

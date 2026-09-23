@@ -1,18 +1,9 @@
 import { useState, useCallback, useEffect } from 'react';
 import idb from '../utils/idb';
 import { inferMediaKindFromName, isSupportedMediaFile } from '../utils/mediaFiles';
+import { createGalleryPhoto, TRANSPARENT_MEDIA_PLACEHOLDER, type GalleryPhoto } from '../domain/gallery/GalleryPhoto';
 
-export interface StoredPhoto {
-  id: string;
-  // url is either a data URL or a placeholder `idb:<key>` for blobs stored in IndexedDB
-  url: string;
-  name: string;
-  type: string;
-  uploadedAt: string;
-  location: string | null;
-  dateAdded: string;
-  blobKey?: string;
-}
+export type StoredPhoto = GalleryPhoto;
 
 const STORAGE_KEY = 'galleryPhotos';
 
@@ -56,8 +47,7 @@ function getStoredPhotos(): StoredPhoto[] {
   }
 }
 
-const TRANSPARENT_PLACEHOLDER =
-  'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
+const TRANSPARENT_PLACEHOLDER = TRANSPARENT_MEDIA_PLACEHOLDER;
 
 function savePhotos(photos: StoredPhoto[]): void {
   try {
@@ -122,16 +112,16 @@ export function useGalleryStorage() {
             blobKey = id;
             // store a safe placeholder immediately; the effect will resolve
             // `blobKey` into an object URL and update the photo entry.
-            newPhotos.push({
+            newPhotos.push(createGalleryPhoto({
               id,
               url: TRANSPARENT_PLACEHOLDER,
               name: file.name,
-              type: displayType || 'video/mp4',
-              uploadedAt: now.toISOString(),
+              type: displayType,
+              kind: 'video',
+              uploadedAt: now,
               location,
-              dateAdded: now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
               blobKey: id
-            });
+            }));
             continue;
           } catch {
             // fall back to data URL
@@ -149,16 +139,16 @@ export function useGalleryStorage() {
           });
         }
 
-        newPhotos.push({
+        newPhotos.push(createGalleryPhoto({
           id,
           url: dataUrl,
           name: file.name,
-          type: displayType || (inferredKind === 'video' ? 'video/mp4' : 'image/png'),
-          uploadedAt: now.toISOString(),
+          type: displayType,
+          kind: inferredKind ?? 'image',
+          uploadedAt: now,
           location,
-          dateAdded: now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
           blobKey
-        });
+        }));
       }
 
       if (newPhotos.length > 0) {

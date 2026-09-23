@@ -21,9 +21,11 @@
   background-color: transparent !important;
 }
 
-.map-canvas-shell[data-view-mode="globe"] .leaflet-container,
-.map-canvas-shell[data-view-mode="globe"] canvas {
-  mix-blend-mode: multiply;
+.globe-map-renderer {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
 }
 
 .map-canvas-shell .leaflet-control-attribution {
