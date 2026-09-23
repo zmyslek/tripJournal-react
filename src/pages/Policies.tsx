@@ -38,7 +38,7 @@ const policies: Record<string, Policy> = {
             {
                 heading: "Maps and external services",
                 body: [
-                    "TripJournal uses MapTiler to display map tiles and styles. When the map loads, your browser may send standard technical information, including your IP address and map request details, to MapTiler.",
+                    "TripJournal uses OpenStreetMap tiles. When the map loads, your browser may send standard technical information, including your IP address and map request details, to the tile provider.",
                     "The app also loads fonts from Google Fonts, which may involve requests from your browser to Google's font servers."
                 ]
             },

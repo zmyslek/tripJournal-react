@@ -14,22 +14,27 @@
 }
 
 .map-canvas-shell,
-.map-canvas-shell .maptiler-map,
-.map-canvas-shell .maplibregl-map,
-.map-canvas-shell .maplibregl-canvas-container,
-.map-canvas-shell .maplibregl-canvas,
-.map-canvas-shell .maplibregl-control-container,
-.map-canvas-shell .maplibregl-ctrl,
+.map-canvas-shell .leaflet-container,
+.map-canvas-shell .leaflet-pane,
 .map-canvas-shell canvas {
   background: transparent !important;
   background-color: transparent !important;
 }
 
-.map-canvas-shell[data-view-mode="globe"] .maplibregl-canvas,
+.map-canvas-shell[data-view-mode="globe"] .leaflet-container,
 .map-canvas-shell[data-view-mode="globe"] canvas {
   mix-blend-mode: multiply;
 }
 
+.map-canvas-shell .leaflet-control-attribution {
+  background: rgba(255, 234, 212, 0.75);
+  color: #5a392b;
+  font-size: 0.6rem;
+}
+
+.map-canvas-shell .leaflet-control-attribution a {
+  color: #7a3f00;
+}
 .map-canvas-shell[data-view-mode="globe"] {
   background: transparent !important;
   background-color: transparent !important;
