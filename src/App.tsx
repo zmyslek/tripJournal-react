@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useState } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import posthog from "posthog-js";
+import { Analytics } from "@vercel/analytics/react";
 import MainLayout from "./components/MainLayout.tsx";
 import { supabase } from "./lib/supabase/client";
 import { loadCountryStatuses, setCountryStatus as saveCountryStatus, type CountryVisitStatus } from "./lib/supabase/journal";
@@ -112,6 +113,7 @@ function App() {
   return (
     <>
       <PostHogPageView />
+      <Analytics />
       <Suspense fallback={<RouteFallback />}>
         <Routes>
           <Route path="/welcome" element={<Welcome />} />
