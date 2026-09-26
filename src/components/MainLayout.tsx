@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
 import { Link, NavLink, Outlet } from "react-router-dom";
-import leatherBackground from "../assets/dark-leather.jpg";
-import paperBackground from "../assets/wrinkled-paper.png";
 import { Settings, HelpCircle } from "lucide-react";
 
 const COOKIE_CONSENT_KEY = "tripjournal:cookie-consent:v1";
@@ -40,7 +38,7 @@ function MainLayout() {
         <div className="flex min-h-screen w-full flex-col overflow-x-hidden">
                 <nav
                     className="w-full max-w-full overflow-x-hidden box-border flex items-center justify-between gap-[max(1rem,4%)] px-[max(1.25rem,5%)] py-[max(0.875rem,2%)] max-sm:gap-2 max-sm:px-[max(0.875rem,3%)]"
-                    style={{ backgroundImage: `url(${leatherBackground})`, backgroundSize: "cover", backgroundPosition: "center" }}
+                    style={{ backgroundColor: "#211b18", backgroundImage: "none" }}
                 >
                     <div className="min-w-0 flex-1 text-center">
                         <NavLink to="/home" className="text-center font-[Adamina] text-[clamp(1.5rem,5vw,1.875rem)] leading-none font-normal text-[#ffead4] no-underline" aria-label="Home">
@@ -107,7 +105,7 @@ function MainLayout() {
 
             <main
                 className="flex-1 w-full overflow-x-hidden bg-no-repeat bg-center bg-fixed"
-                style={{ backgroundImage: `url(${paperBackground})`, backgroundSize: "cover" }}
+                style={{ backgroundColor: "#f4ede6", backgroundImage: "none" }}
             >
                 <Outlet />
             </main>
@@ -147,7 +145,7 @@ function MainLayout() {
 
             <footer
                 className="flex items-start justify-between gap-[max(2rem,8%)] px-[max(1.5rem,6%)] py-[max(1.5rem,4%)] shadow-[0_-10px_28px_rgb(35_18_8_/_18%)] max-sm:flex-col"
-                style={{ backgroundImage: `url(${leatherBackground})`, backgroundSize: "cover", backgroundPosition: "center" }}
+                style={{ backgroundColor: "#211b18", backgroundImage: "none" }}
             >
                 <div>
                     <p className="m-0 font-[Adamina] text-[clamp(1rem,2.5vw,1.15rem)] leading-none text-[#ffead4]">

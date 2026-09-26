@@ -20,8 +20,22 @@ export interface HomeProps {
     pageMode?: "home" | "countries";
 }
 
-const getCountryImageUrl = (countryName: string) =>
-    `https://source.unsplash.com/1200x900/?${encodeURIComponent(countryName)},travel,city`;
+const countryPhotoIds = [
+    "photo-1529260830199-42c24126f198",
+    "photo-1493976040374-85c8e12f0c0e",
+    "photo-1513735492246-483525079686",
+    "photo-1539650116574-75c0c6d73f6e",
+    "photo-1502602898657-3e91760cbb34",
+    "photo-1500534623283-312aade485b7",
+    "photo-1522083165195-3424ed129620",
+    "photo-1470214304380-aadaedcfff1b"
+];
+
+const getCountryImageUrl = (countryName: string) => {
+    const hash = [...countryName].reduce((total, character) => total + character.charCodeAt(0), 0);
+    const photoId = countryPhotoIds[hash % countryPhotoIds.length];
+    return `https://images.unsplash.com/${photoId}?auto=format&fit=crop&w=900&q=78`;
+};
 
 const pointInRing = (lng: number, lat: number, ring: number[][]) => {
     let inside = false;

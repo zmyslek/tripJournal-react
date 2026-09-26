@@ -280,9 +280,9 @@ function Welcome() {
     <div
       className="relative h-screen min-h-screen overflow-hidden bg-[#1f1916] text-[#FFEAD4]"
     >
-      <div className="relative mx-auto grid h-full min-h-0 max-w-none grid-rows-[minmax(0,1fr)_minmax(16rem,36vh)] items-stretch gap-0 px-0 py-0 lg:grid-cols-[44%_56%] lg:grid-rows-none">
-        <div className="relative z-10 flex h-full min-h-0 w-full max-w-lg flex-col justify-center overflow-y-auto px-6 py-10 sm:px-12 lg:mx-auto lg:max-w-[29rem] lg:px-0 lg:py-12">
-          <div className="mb-8 flex items-center gap-4">
+      <div className="relative mx-auto grid h-full min-h-0 max-w-none grid-cols-1 items-stretch gap-0 px-0 py-0 lg:grid-cols-[44%_56%]">
+        <div className="relative z-10 flex h-full min-h-0 w-full max-w-lg flex-col justify-center overflow-hidden px-6 py-6 sm:px-12 lg:mx-auto lg:max-w-[29rem] lg:px-0 lg:py-8">
+          <div className="mb-5 flex items-center gap-4">
             <div className="h-px w-16 bg-[#EAB681]" />
             <span className="font-cormorant text-xs uppercase tracking-[0.4em] text-[#EAB681]/80">Welcome to</span>
           </div>
@@ -291,17 +291,17 @@ function Welcome() {
             TripJournal
           </h1>
 
-          <p className="mt-5 max-w-lg font-cormorant text-lg leading-relaxed text-[#FABE7D] sm:text-xl">
+          <p className="mt-4 max-w-lg font-cormorant text-lg leading-relaxed text-[#FABE7D] sm:text-xl">
             A travel diary for marking countries, storing notes, and keeping the journeys that shaped you.
           </p>
 
-          <div className="mt-6 flex flex-wrap items-center gap-3 text-sm font-cormorant text-[#EAB681]/80">
+          <div className="mt-5 flex flex-wrap items-center gap-3 text-sm font-cormorant text-[#EAB681]/80">
             <span className="rounded-full border border-[#EAB681]/35 bg-[#5A392B]/65 px-3 py-1">Local save</span>
             <span className="rounded-full border border-[#EAB681]/35 bg-[#5A392B]/65 px-3 py-1">Country tracking</span>
             <span className="rounded-full border border-[#EAB681]/35 bg-[#5A392B]/65 px-3 py-1">Diary notes</span>
           </div>
 
-          <div className="mt-6">
+          <div className="mt-5">
             <button
               type="button"
               onClick={handleEnterTripJournal}
@@ -311,9 +311,9 @@ function Welcome() {
             </button>
           </div>
 
-          <div className="mt-10 w-full max-w-[30rem] rounded-[2rem] border border-[#EAB681]/70 bg-[#5A392B] p-5 shadow-[0_30px_90px_rgba(0,0,0,0.55)] lg:p-6">
-            <div className="rounded-[1.5rem] border border-[#FFEAD4]/10 bg-[#5A392B] p-5 lg:p-6">
-              <form onSubmit={handleEmailSubmit} className="space-y-4">
+          <div className="mt-7 w-full max-w-[30rem] rounded-[2rem] border border-[#EAB681]/70 bg-[#2b2623] p-4 shadow-[0_30px_90px_rgba(0,0,0,0.55)] lg:p-5">
+            <div className="rounded-[1.5rem] border border-[#FFEAD4]/10 bg-[#2b2623] p-4 lg:p-5">
+              <form onSubmit={handleEmailSubmit} className="space-y-3">
                 <div>
                   <label className="mb-2 block font-cormorant text-sm text-[#EAB681]">Email</label>
                   <input
@@ -391,7 +391,7 @@ function Welcome() {
           </div>
         </div>
 
-        <div className="relative z-10 flex h-full min-h-0 flex-col items-center justify-center lg:items-end">
+        <div className="relative z-10 hidden h-full min-h-0 flex-col items-center justify-center lg:flex lg:items-end">
           <figure className="group relative h-full min-h-0 w-full max-w-none overflow-hidden bg-[#5A392B]">
             <img
               src={FLORENCE_IMAGE_URL}
