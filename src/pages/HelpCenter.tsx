@@ -153,8 +153,7 @@ function HelpCenter() {
             aria-labelledby="help-title"
         >
             <div
-                className="overflow-hidden rounded-[1.35rem] border border-[#8f5a20]/35 bg-[#ffead4]/95 shadow-[0_18px_42px_rgb(80_48_13_/_20%),inset_0_0_0_1px_rgb(255_244_231_/_55%)]"
-                style={{ backgroundImage: `linear-gradient(rgb(255 234 212 / 0.9), rgb(255 234 212 / 0.9)), url(${paperBackground})`, backgroundSize: "cover" }}
+                className="overflow-hidden rounded-[1.35rem] border border-[#8f5a20]/20 bg-[#fffdf9] shadow-[0_18px_42px_rgb(80_48_13_/_12%)]"
             >
                 <div
                         className="atlas-header relative min-h-[11rem] bg-[#5a392b] px-6 py-7 text-[#ffead4] sm:px-9"

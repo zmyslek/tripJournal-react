@@ -12,7 +12,7 @@
 body {
   margin: 0;
   min-height: 100vh;
-  background-color: #f4ede6;
+  background-color: #fbf8f2;
   position: relative;
 }
 
@@ -21,8 +21,8 @@ body::before {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  background: url("../assets/wrinkled-paper.png") center / cover no-repeat;
-  opacity: 0.24;
+  background: none;
+  opacity: 0;
   z-index: 0;
 }
 
@@ -60,10 +60,13 @@ body,
   transform: rotate(180deg);
 }
 
-@media (max-width: 640px) {
+.atlas-header :is(h1, h2, h3, h4, h5, h6) {
+  color: #FFEAD4;
+}
+
+@media (max-width: 760px) {
   .atlas-header::after {
-    right: 0.75rem;
-    font-size: 0.52rem;
+    display: none;
   }
 }
 

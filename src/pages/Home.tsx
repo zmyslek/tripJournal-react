@@ -324,29 +324,30 @@ function Home({ countryStatuses, countryAddedDates, setCountryStatus, visitedCou
                                 ? "Keep a record of every place, feeling, and route worth remembering."
                                 : "Mark the places you have seen, the places you want to visit, and the ones calling you back."}
                         </p>
+                        {pageMode === "countries" && (
+                            <label className="mt-6 block max-w-[34rem]">
+                                <span className="sr-only">Search countries</span>
+                                <input
+                                    type="search"
+                                    value={searchTerm}
+                                    onChange={(event) => setSearchTerm(event.target.value)}
+                                    placeholder="Search countries..."
+                                    className="w-full rounded-[0.8rem] border border-[#eab681]/70 bg-[#fffdf9] px-4 py-3 font-[Cormorant_Garamond] text-[1rem] text-[#50300d] outline-none transition placeholder:text-[#7a3f00]/60 focus:border-[#f6d7b5] focus:ring-2 focus:ring-[#eab681]/55"
+                                />
+                            </label>
+                        )}
                     </div>
                 </div>
             </section>
 
-            {pageMode === "countries" && (
+            {pageMode === "countries" && searchTerm.trim().length > 0 && (
                 <section className="mx-auto w-full max-w-[min(95vw,1380px)] px-[max(1.25rem,5%)] pt-[max(2rem,6vh)] text-[#50300d]">
                 <div
-                    className="overflow-hidden rounded-t-[1.35rem] border border-[#8f5a20]/35 bg-[#ffead4]/95 shadow-[0_18px_42px_rgb(80_48_13_/_20%),inset_0_0_0_1px_rgb(255_244_231_/_55%)]"
-                    style={{ backgroundImage: `linear-gradient(rgb(255 234 212 / 0.9), rgb(255 234 212 / 0.9)), url(${paperBackground})`, backgroundSize: "cover" }}
+                    className="overflow-hidden rounded-[1.35rem] border border-[#8f5a20]/20 bg-[#fffdf9] shadow-[0_18px_42px_rgb(80_48_13_/_12%)]"
                 >
-                    <div
-                        className="atlas-header relative bg-[#5a392b] px-6 py-7 text-[#ffead4] sm:px-9"
-                        style={{ backgroundImage: `linear-gradient(rgb(90 57 43 / 0.9), rgb(90 57 43 / 0.9)), url(${paperBackground})`, backgroundSize: "cover" }}
-                    >
+                    <div className="px-6 py-6 text-[#50300d] sm:px-9">
                         <div className="relative">
-                            <p className="m-0 font-[Adamina] text-[0.7rem] uppercase tracking-[0.24em] text-[#f6d7b5]">Search destinations</p>
-                            <input
-                                type="search"
-                                value={searchTerm}
-                                onChange={(event) => setSearchTerm(event.target.value)}
-                                placeholder="Search countries..."
-                                className="mt-3 w-full rounded-[0.8rem] border border-[#eab681]/70 bg-[#fff7ee] px-4 py-3 font-[Cormorant_Garamond] text-[1rem] text-[#50300d] outline-none transition focus:border-[#f6d7b5] focus:ring-2 focus:ring-[#eab681]/55"
-                            />
+                            <p className="m-0 font-[Adamina] text-[0.7rem] uppercase tracking-[0.24em] text-[#8f5a20]">Search results</p>
 
                             {searchTerm.trim().length > 0 && (
                                 <div
@@ -355,7 +356,7 @@ function Home({ countryStatuses, countryAddedDates, setCountryStatus, visitedCou
                                     aria-label="Countries to show on map"
                                 >
                                     {filteredCountryNames.length === 0 ? (
-                                        <p className="m-0 font-[Cormorant_Garamond] text-[1.1rem] text-[#f7dfca]">No countries found.</p>
+                                        <p className="m-0 font-[Cormorant_Garamond] text-[1.1rem] text-[#6a4630]">No countries found.</p>
                                     ) : (
                                         filteredCountryNames.map((countryName) => {
                                             const status = countryStatuses[countryName] ?? null;
@@ -368,13 +369,13 @@ function Home({ countryStatuses, countryAddedDates, setCountryStatus, visitedCou
                                                     {status !== null && (
                                                         <Link
                                                             to={buildCountryTripsPath(countryName)}
-                                                            className="rounded-full border border-[#ffead4]/45 bg-[#ffead4]/15 px-2 py-1 font-[Adamina] text-[0.66rem] uppercase tracking-[0.08em] text-[#fff4e7] no-underline transition hover:bg-[#ffead4]/25"
+                                                            className="rounded-full border border-[#8f5a20]/35 bg-[#f7eee3] px-2 py-1 font-[Adamina] text-[0.66rem] uppercase tracking-[0.08em] text-[#6a4630] no-underline transition hover:bg-[#f1dfc8]"
                                                             title={`Open ${countryName} itinerary page`}
                                                         >
                                                             Open
                                                         </Link>
                                                     )}
-                                                    <span className="min-w-0 flex-1 font-[Cormorant_Garamond] text-[0.95rem] text-[#f7dfca]">
+                                                    <span className="min-w-0 flex-1 font-[Cormorant_Garamond] text-[0.95rem] text-[#50300d]">
                                                         {countryName}
                                                     </span>
                                                     <select
@@ -383,7 +384,7 @@ function Home({ countryStatuses, countryAddedDates, setCountryStatus, visitedCou
                                                             const newStatus = e.target.value === "null" ? null : (e.target.value as CountryStatus);
                                                             setCountryStatus(countryName, newStatus);
                                                         }}
-                                                        className="max-w-full rounded-[0.6rem] border border-[#7a3f00]/40 bg-[#5a392b]/60 px-2 py-1 font-[Cormorant_Garamond] text-[0.85rem] text-[#fff4e7] outline-none transition hover:border-[#7a3f00]/60 focus:border-[#cf8d45] focus:ring-2 focus:ring-[#cf8d45]/40"
+                                                        className="max-w-full rounded-[0.6rem] border border-[#8f5a20]/35 bg-white px-2 py-1 font-[Cormorant_Garamond] text-[0.85rem] text-[#50300d] outline-none transition hover:border-[#7a3f00]/60 focus:border-[#cf8d45] focus:ring-2 focus:ring-[#cf8d45]/40"
                                                         aria-label={`Status for ${countryName}`}
                                                     >
                                                         <option value="null">Not explored</option>
@@ -472,7 +473,7 @@ function Home({ countryStatuses, countryAddedDates, setCountryStatus, visitedCou
                                     )}
                                 </div>
                                 {mapStatusFilters.size === 0 && (
-                                    <p className="mb-3 rounded-xl border border-dashed border-[#b99677] bg-[#f8eee2] px-3 py-2 text-center font-[Cormorant_Garamond] text-base text-[#76543c]">All layers are off. The map is shown in a quiet neutral tone.</p>
+                                    <p className="mb-3 rounded-xl border border-dashed border-[#b99677] bg-[#f8eee2] px-3 py-2 text-center font-[Cormorant_Garamond] text-base text-[#76543c]">All layers are off.</p>
                                 )}
                             <div className="flex flex-wrap justify-center gap-2" role="group" aria-label="Filter map by country status">
                                 <button
