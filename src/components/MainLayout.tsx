@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { Settings, HelpCircle } from "lucide-react";
+import paperBackground from "../assets/wrinkled-paper.png";
 
 const COOKIE_CONSENT_KEY = "tripjournal:cookie-consent:v1";
 const policyLinks = [
@@ -105,7 +106,11 @@ function MainLayout() {
 
             <main
                 className="flex-1 w-full overflow-x-hidden bg-no-repeat bg-center bg-fixed"
-                style={{ backgroundColor: "#f4ede6", backgroundImage: "none" }}
+                style={{
+                    backgroundColor: "#f4ede6",
+                    backgroundImage: `linear-gradient(rgb(244 237 230 / 0.72), rgb(244 237 230 / 0.72)), url(${paperBackground})`,
+                    backgroundSize: "cover"
+                }}
             >
                 <Outlet />
             </main>
