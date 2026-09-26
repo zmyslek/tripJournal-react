@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { Settings, HelpCircle } from "lucide-react";
-import leatherBackground from "../assets/dark-leather.jpg";
+import leatherBackground from "../assets/dark-leather.png";
 import paperBackground from "../assets/wrinkled-paper.png";
 
 const COOKIE_CONSENT_KEY = "tripjournal:cookie-consent:v1";
