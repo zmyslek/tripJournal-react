@@ -1,6 +1,5 @@
 import React, { useEffect, useRef } from "react";
 import { config, ErrorEvent, Map as MapLibreMap, Marker, type GeoJSONSource, type StyleSpecification } from "maplibre-gl";
-import maplibreWorkerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?url";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { type CountriesGeoJson } from "../types/countries";
 import type { CountryStatus } from "../pages/Home";
@@ -11,7 +10,7 @@ const MAPTILER_STYLE_URL = "https://api.maptiler.com/maps/0196a729-51f8-7a04-8b3
 const COUNTRIES_SOURCE_ID = "tripjournal-countries";
 const COUNTRIES_FILL_LAYER_ID = "tripjournal-countries-fill";
 const COUNTRIES_BORDER_LAYER_ID = "tripjournal-countries-border";
-config.WORKER_URL = maplibreWorkerUrl;
+config.WORKER_URL = new URL("maplibre-gl/dist/maplibre-gl-worker.mjs", import.meta.url).href;
 
 export type MapProps = {
   countriesData: CountriesGeoJson | null;
