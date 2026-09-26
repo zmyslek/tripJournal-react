@@ -300,7 +300,7 @@ export function Profile() {
                             </Link>
                             <button
                                 type="button"
-                                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#7a3f00] bg-[#5a392b] text-[#ffead4] transition hover:bg-[#7a3f00]"
+                                className="inline-flex h-10 w-10 items-center justify-left rounded-full border border-[#7a3f00] bg-[#5a392b] text-[#ffead4] transition hover:bg-[#7a3f00]"
                                 onClick={openEditor}
                                 aria-label="Edit profile"
                                 title="Edit profile"
