@@ -218,9 +218,9 @@ export function Profile() {
                     </div>
                 </div>
 
-                <div className="grid gap-7 px-4 py-5 sm:px-7 sm:py-7 lg:grid-cols-[minmax(0,1fr)_20rem]">
+                <div className="grid gap-7 px-4 py-5 sm:px-7 sm:py-7 lg:grid-cols-[minmax(0,1fr)_20rem] bg-[#5a392b]/95">
                     <div>
-                        <div className="rounded-[1rem] border border-[#cf8d45]/35 bg-[#5a392b]/95 p-6 shadow-[inset_0_0_24px_rgb(143_90_32_/_8%)]">
+                        <div className="rounded-[1rem] border border-[#cf8d45]/35 bg-[#5a392b]/95 p-5 shadow-[inset_0_0_24px_rgb(143_90_32_/_8%)]">
                             <div className="grid gap-x-8 gap-y-5 sm:grid-cols-2">
                                 <div className="rounded-[0.8rem] border border-[#cf8d45]/25 bg-[#ffead4]/45 px-4 py-3">
                                     <p className="font-[Adamina] text-[0.78rem] uppercase tracking-[0.18em] text-[#7a3f00]">Traveler name</p>
@@ -237,7 +237,7 @@ export function Profile() {
                             </div>
                         </div>
 
-                        <div className="mt-7 rounded-[1rem] border border-[#cf8d45]/35 bg-[#fff4e7]/72 p-5 shadow-[inset_0_0_16px_rgb(143_90_32_/_7%)]">
+                        <div className="mt-7 rounded-[1rem] border border-[#cf8d45]/35 bg-[#5a392b]/95 p-5 shadow-[inset_0_0_16px_rgb(143_90_32_/_7%)]">
                             <div className="flex flex-wrap items-center justify-between gap-3">
                                 <div>
                                     <p className="font-[Adamina] text-[0.72rem] uppercase tracking-[0.18em] text-[#7a3f00]">User record</p>
