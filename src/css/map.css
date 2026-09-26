@@ -14,27 +14,27 @@
 }
 
 .map-canvas-shell,
-.map-canvas-shell .leaflet-container,
-.map-canvas-shell .leaflet-pane,
+.map-canvas-shell .maplibregl-map,
+.map-canvas-shell .maplibregl-canvas-container,
 .map-canvas-shell canvas {
   background: transparent !important;
   background-color: transparent !important;
 }
 
-.globe-map-renderer {
+.map-canvas-shell .maplibregl-map {
   position: absolute;
   inset: 0;
-  z-index: 2;
-  pointer-events: none;
+  width: 100%;
+  height: 100%;
 }
 
-.map-canvas-shell .leaflet-control-attribution {
+.map-canvas-shell .maplibregl-ctrl-attrib {
   background: rgba(255, 234, 212, 0.75);
   color: #5a392b;
   font-size: 0.6rem;
 }
 
-.map-canvas-shell .leaflet-control-attribution a {
+.map-canvas-shell .maplibregl-ctrl-attrib a {
   color: #7a3f00;
 }
 .map-canvas-shell[data-view-mode="globe"] {

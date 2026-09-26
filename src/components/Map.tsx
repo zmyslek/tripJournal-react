@@ -1,12 +1,15 @@
 import React, { useEffect, useRef } from "react";
-import L from "leaflet";
-import "leaflet/dist/leaflet.css";
+import { ErrorEvent, Map as MapLibreMap, Marker, type GeoJSONSource } from "maplibre-gl";
+import "maplibre-gl/dist/maplibre-gl.css";
 import { type CountriesGeoJson } from "../types/countries";
 import type { CountryStatus } from "../pages/Home";
-import WelcomeGlobe from "./WelcomeGlobe";
 
 const DEFAULT_INITIAL_GLOBE_ZOOM = 1.35;
 const MIN_MAP_ZOOM = 0.5;
+const MAPTILER_STYLE_URL = "https://api.maptiler.com/maps/0196a729-51f8-7a04-8b3a-22b8d925ea1b/style.json?key=FelxstvCdS6k0g9YnLdK";
+const COUNTRIES_SOURCE_ID = "tripjournal-countries";
+const COUNTRIES_FILL_LAYER_ID = "tripjournal-countries-fill";
+const COUNTRIES_BORDER_LAYER_ID = "tripjournal-countries-border";
 
 export type MapProps = {
   countriesData: CountriesGeoJson | null;
@@ -20,24 +23,9 @@ export type MapProps = {
   showGlobeBackdrop?: boolean;
 };
 
-const countryStyle = (status: CountryStatus | undefined): L.PathOptions => {
-  const colors: Record<CountryStatus, { fillColor: string; color: string }> = {
-    visited: { fillColor: "#CF8D45", color: "#7A3F00" },
-    "want-to-visit-again": { fillColor: "#FABE7D", color: "#CF8D45" },
-    "want-to-go": { fillColor: "#7A3F00", color: "#5A392B" },
-  };
-  const color = status ? colors[status] : { fillColor: "#EAB681", color: "#5A392B" };
-  return { color: color.color, fillColor: color.fillColor, fillOpacity: 0.72, opacity: 0.95, weight: 1.2 };
-};
+const userLocationMarkup = `<div class="user-location-ring user-location-ring-outer"></div><div class="user-location-ring user-location-ring-inner"></div><div class="user-location-dot"></div>`;
 
-const userLocationIcon = L.divIcon({
-  className: "user-location-marker",
-  html: `<div class="user-location-ring user-location-ring-outer"></div><div class="user-location-ring user-location-ring-inner"></div><div class="user-location-dot"></div>`,
-  iconSize: [58, 58],
-  iconAnchor: [29, 29]
-});
-
-const calculateCountryCenter = (countriesData: CountriesGeoJson | null, countryName: string): L.LatLngExpression | null => {
+const calculateCountryCenter = (countriesData: CountriesGeoJson | null, countryName: string): [number, number] | null => {
   if (!countriesData || !countryName.trim()) return null;
   const points: Array<[number, number]> = [];
   const addRing = (ring: number[][]) => ring.forEach(([lng, lat]) => {
@@ -65,13 +53,11 @@ const Map: React.FC<MapProps> = ({
   countryStatuses = {},
   focusCountry = null,
   sizeVariant = "default",
-  initialGlobeZoom = DEFAULT_INITIAL_GLOBE_ZOOM,
-  showGlobeBackdrop = true
+  initialGlobeZoom = DEFAULT_INITIAL_GLOBE_ZOOM
 }) => {
   const mapContainer = useRef<HTMLDivElement | null>(null);
-  const mapRef = useRef<L.Map | null>(null);
-  const countryLayerRef = useRef<L.GeoJSON | null>(null);
-  const userMarkerRef = useRef<L.Marker | null>(null);
+  const mapRef = useRef<MapLibreMap | null>(null);
+  const userMarkerRef = useRef<Marker | null>(null);
   const countriesDataRef = useRef(countriesData);
   const selectedCountriesRef = useRef(selectedCountries);
   const countryStatusesRef = useRef(countryStatuses);
@@ -79,7 +65,6 @@ const Map: React.FC<MapProps> = ({
   const focusCountryRef = useRef(focusCountry?.trim() || null);
   const viewModeRef = useRef(viewMode);
   const initialGlobeZoomRef = useRef(initialGlobeZoom);
-  const showGlobeBackdropRef = useRef(showGlobeBackdrop);
   const lastFocusedCountryRef = useRef<string | null>(null);
 
   const globeSize = sizeVariant === "compact" ? "60vw" : "min(82vw, 82vh)";
@@ -88,24 +73,26 @@ const Map: React.FC<MapProps> = ({
 
   const refreshCountries = () => {
     const map = mapRef.current;
-    if (!map) return;
-    countryLayerRef.current?.removeFrom(map);
+    const source = map?.getSource(COUNTRIES_SOURCE_ID) as GeoJSONSource | undefined;
+    if (!source) return;
     const data = countriesDataRef.current;
     if (!data) {
-      countryLayerRef.current = null;
+      source.setData({ type: "FeatureCollection", features: [] });
       return;
     }
 
-    const layer = L.geoJSON(data, {
-      style: (feature) => {
-        const countryName = feature?.properties?.name?.trim() ?? "";
+    source.setData({
+      ...data,
+      features: data.features.map((feature) => {
+        const countryName = feature.properties?.name?.trim() ?? "";
         const status = countryStatusesRef.current[countryName] ??
           (selectedCountriesRef.current.includes(countryName) ? "visited" : undefined);
-        return countryStyle(status);
-      }
+        return {
+          ...feature,
+          properties: { ...feature.properties, tripStatus: status ?? "not-explored" }
+        };
+      })
     });
-    layer.addTo(map);
-    countryLayerRef.current = layer;
   };
 
   const focusMapOnCountry = (countryName: string) => {
@@ -113,13 +100,48 @@ const Map: React.FC<MapProps> = ({
     const center = calculateCountryCenter(countriesDataRef.current, countryName);
     if (!map || !center) return;
     lastFocusedCountryRef.current = countryName;
-    map.flyTo(center, viewModeRef.current === "globe" ? 3.8 : 4.2, { duration: 0.9 });
+    map.flyTo({ center: [center[1], center[0]], zoom: viewModeRef.current === "globe" ? 3.8 : 4.2, duration: 900 });
+  };
+
+  const addCountryLayers = (map: MapLibreMap) => {
+    if (!map.getSource(COUNTRIES_SOURCE_ID)) {
+      map.addSource(COUNTRIES_SOURCE_ID, {
+        type: "geojson",
+        data: { type: "FeatureCollection", features: [] }
+      });
+    }
+    if (!map.getLayer(COUNTRIES_FILL_LAYER_ID)) {
+      map.addLayer({
+        id: COUNTRIES_FILL_LAYER_ID,
+        type: "fill",
+        source: COUNTRIES_SOURCE_ID,
+        paint: {
+          "fill-color": [
+            "match",
+            ["get", "tripStatus"],
+            "visited", "#CF8D45",
+            "want-to-visit-again", "#FABE7D",
+            "want-to-go", "#7A3F00",
+            "#EAB681"
+          ],
+          "fill-opacity": 0.72
+        }
+      });
+    }
+    if (!map.getLayer(COUNTRIES_BORDER_LAYER_ID)) {
+      map.addLayer({
+        id: COUNTRIES_BORDER_LAYER_ID,
+        type: "line",
+        source: COUNTRIES_SOURCE_ID,
+        paint: { "line-color": "#5A392B", "line-opacity": 0.72, "line-width": 1.2 }
+      });
+    }
+    refreshCountries();
   };
 
   useEffect(() => {
     initialGlobeZoomRef.current = initialGlobeZoom;
-    showGlobeBackdropRef.current = showGlobeBackdrop;
-  }, [initialGlobeZoom, showGlobeBackdrop]);
+  }, [initialGlobeZoom]);
 
   useEffect(() => {
     countriesDataRef.current = countriesData;
@@ -136,10 +158,17 @@ const Map: React.FC<MapProps> = ({
     userLocationRef.current = userLocation ?? null;
     const map = mapRef.current;
     if (!map) return;
-    userMarkerRef.current?.removeFrom(map);
+    userMarkerRef.current?.remove();
     if (userLocation) {
-      userMarkerRef.current = L.marker([userLocation.lat, userLocation.lng], { icon: userLocationIcon, interactive: false }).addTo(map);
-      if (!focusCountryRef.current) map.flyTo([userLocation.lat, userLocation.lng], Math.max(map.getZoom(), 2.2), { duration: 0.9 });
+      const markerElement = document.createElement("div");
+      markerElement.className = "user-location-marker";
+      markerElement.innerHTML = userLocationMarkup;
+      userMarkerRef.current = new Marker({ element: markerElement, anchor: "center" })
+        .setLngLat([userLocation.lng, userLocation.lat])
+        .addTo(map);
+      if (!focusCountryRef.current) {
+        map.flyTo({ center: [userLocation.lng, userLocation.lat], zoom: Math.max(map.getZoom(), 2.2), duration: 900 });
+      }
     } else {
       userMarkerRef.current = null;
     }
@@ -149,40 +178,43 @@ const Map: React.FC<MapProps> = ({
     viewModeRef.current = viewMode;
     const map = mapRef.current;
     if (!map) return;
-    map.invalidateSize();
+    map.setProjection({ type: viewMode === "globe" ? "globe" : "mercator" });
+    map.resize();
   }, [viewMode, initialGlobeZoom]);
 
   useEffect(() => {
-    if (viewMode !== "map" || !mapContainer.current) return;
-
     if (!mapContainer.current) return;
-    const map = L.map(mapContainer.current, {
-      center: [20, 0],
-      zoom: 1.15,
+    const map = new MapLibreMap({
+      container: mapContainer.current,
+      style: MAPTILER_STYLE_URL,
+      center: [0, 20],
+      zoom: viewModeRef.current === "globe" ? initialGlobeZoomRef.current : 1.15,
       minZoom: MIN_MAP_ZOOM,
-      worldCopyJump: false,
-      zoomControl: false
+      renderWorldCopies: false
     });
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-      maxZoom: 19,
-      opacity: showGlobeBackdropRef.current ? 0.5 : 0
-    }).addTo(map);
     mapRef.current = map;
-    refreshCountries();
-
-    if (userLocationRef.current) {
-      userMarkerRef.current = L.marker([userLocationRef.current.lat, userLocationRef.current.lng], { icon: userLocationIcon, interactive: false }).addTo(map);
-    }
-    if (focusCountryRef.current) focusMapOnCountry(focusCountryRef.current);
+    map.on("load", () => {
+      map.setProjection({ type: viewModeRef.current === "globe" ? "globe" : "mercator" });
+      addCountryLayers(map);
+      if (userLocationRef.current) {
+        const markerElement = document.createElement("div");
+        markerElement.className = "user-location-marker";
+        markerElement.innerHTML = userLocationMarkup;
+        userMarkerRef.current = new Marker({ element: markerElement, anchor: "center" })
+          .setLngLat([userLocationRef.current.lng, userLocationRef.current.lat])
+          .addTo(map);
+      }
+      if (focusCountryRef.current) focusMapOnCountry(focusCountryRef.current);
+    });
+    map.on("error", (event: ErrorEvent) => console.error("MapTiler map error", event.error));
 
     return () => {
+      userMarkerRef.current?.remove();
       userMarkerRef.current = null;
-      countryLayerRef.current = null;
       map.remove();
       mapRef.current = null;
     };
-  }, [viewMode]);
+  }, []);
 
   return (
     <div
@@ -190,18 +222,11 @@ const Map: React.FC<MapProps> = ({
       ref={mapContainer}
       data-view-mode={viewMode}
       style={{
-        background: showGlobeBackdrop ? "#FFEAD4" : "transparent",
         width: viewMode === "globe" ? globeSize : flatMapWidth,
         height: viewMode === "globe" ? globeSize : flatMapHeight,
         borderRadius: viewMode === "globe" ? "9999px" : "0.85rem"
       }}
-    >
-      {viewMode === "globe" && countriesData && (
-        <div className="globe-map-renderer" aria-hidden="true">
-          <WelcomeGlobe countriesData={countriesData} />
-        </div>
-      )}
-    </div>
+    />
   );
 };
 
