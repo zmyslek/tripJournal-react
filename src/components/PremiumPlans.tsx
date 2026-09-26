@@ -52,17 +52,49 @@ export function PremiumPlans() {
     const currentSubscription = getUserSubscription();
     const [isPlanModalOpen, setIsPlanModalOpen] = useState(false);
     const [requestedPlan, setRequestedPlan] = useState<SubscriptionPlan | null>(null);
+    const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
+    const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
     const hasPremium = useMemo(() => currentSubscription.plan !== 'free', [currentSubscription.plan]);
 
     const openPlanModal = (planId: SubscriptionPlan) => {
         setRequestedPlan(planId);
+        setCheckoutError(null);
         setIsPlanModalOpen(true);
     };
 
     const closePlanModal = () => {
         setIsPlanModalOpen(false);
         setRequestedPlan(null);
+        setCheckoutError(null);
+    };
+
+    const startCheckout = async () => {
+        if (!requestedPlan || requestedPlan === 'free' || requestedPlan === 'beta-lifetime') {
+            closePlanModal();
+            return;
+        }
+
+        setIsCheckoutLoading(true);
+        setCheckoutError(null);
+
+        try {
+            const response = await fetch('/api/create-checkout-session', {
+                method: 'POST',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify({ plan: requestedPlan })
+            });
+            const result = await response.json() as { url?: string; error?: string };
+
+            if (!response.ok || !result.url) {
+                throw new Error(result.error ?? 'Unable to start checkout.');
+            }
+
+            window.location.assign(result.url);
+        } catch (error) {
+            setCheckoutError(error instanceof Error ? error.message : 'Unable to start checkout.');
+            setIsCheckoutLoading(false);
+        }
     };
 
     return (
@@ -219,7 +251,7 @@ export function PremiumPlans() {
                         <div key={method.id} className="rounded-[0.8rem] border border-[#CF8D45]/45 bg-[#FFF4E7] px-4 py-3">
                             <p className="font-adamina text-[0.95rem] text-[#50300D]">{method.label}</p>
                             <p className="mt-1 font-cormorant text-sm text-[#7A3F00]/70">
-                                {method.status === 'preview' ? 'Preview ready' : 'Planned'}
+                                {method.status === 'preview' ? 'Ready for checkout' : 'Planned'}
                             </p>
                         </div>
                     ))}
@@ -281,12 +313,18 @@ export function PremiumPlans() {
                         </div>
 
                         <p className="mt-4 font-cormorant text-[1.08rem] text-[#7A3F00]/80">
-                            Self-serve plan changes are not enabled yet. This request is shown for preview and onboarding flows.
+                            Complete payment securely with Stripe. You will return here after checkout.
                         </p>
+
+                        {checkoutError ? (
+                            <div role="alert" className="mt-5 rounded-[0.85rem] border border-red-700/40 bg-red-50 p-4 font-cormorant text-sm text-red-900">
+                                {checkoutError}
+                            </div>
+                        ) : null}
 
                         <div className="mt-5 rounded-[0.85rem] border border-[#CF8D45]/45 bg-[#FFF4E7] p-4">
                             <p className="font-cormorant text-sm text-[#7A3F00]/80">
-                                Next step: use Stripe checkout once payment wiring is enabled.
+                                Your payment details are handled by Stripe and are never stored by TripJournal.
                             </p>
                         </div>
 
@@ -300,10 +338,11 @@ export function PremiumPlans() {
                             </button>
                             <button
                                 type="button"
-                                onClick={closePlanModal}
-                                className="rounded-full border border-[#7A3F00] bg-[#5A392B] px-4 py-2 text-sm font-semibold text-[#FFEAD4] transition hover:bg-[#7A3F00]"
+                                onClick={startCheckout}
+                                disabled={isCheckoutLoading}
+                                className="rounded-full border border-[#7A3F00] bg-[#5A392B] px-4 py-2 text-sm font-semibold text-[#FFEAD4] transition hover:bg-[#7A3F00] disabled:cursor-wait disabled:opacity-60"
                             >
-                                Request access
+                                {isCheckoutLoading ? 'Opening checkout...' : requestedPlan === 'free' ? 'Choose free plan' : 'Continue to checkout'}
                             </button>
                         </div>
                     </div>
