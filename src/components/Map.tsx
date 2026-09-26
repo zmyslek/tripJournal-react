@@ -19,6 +19,7 @@ export type MapProps = {
   viewMode: "globe" | "map";
   userLocation?: { lng: number; lat: number } | null;
   countryStatuses?: Record<string, CountryStatus>;
+  visibleStatuses?: Set<CountryStatus | "not-explored">;
   focusCountry?: string | null;
   sizeVariant?: "default" | "compact";
   initialGlobeZoom?: number;
@@ -44,6 +45,20 @@ const getCountryFillColors = (mode: "globe" | "map"): ExpressionSpecification =>
     "want-to-go", "#3F6E73",
     "#DCE7E2"
   ] as ExpressionSpecification;
+
+const getFilteredCountryFillColors = (mode: "globe" | "map", visibleStatuses?: Set<CountryStatus | "not-explored">): ExpressionSpecification => {
+  if (!visibleStatuses || visibleStatuses.size === 4) return getCountryFillColors(mode);
+  const base = mode === "globe"
+    ? { visited: "#CF8D45", "want-to-visit-again": "#FABE7D", "want-to-go": "#7A3F00", "not-explored": "#EAB681" }
+    : { visited: "#6D9E9A", "want-to-visit-again": "#A8C7B8", "want-to-go": "#3F6E73", "not-explored": "#DCE7E2" };
+  const muted = mode === "globe" ? "#d8d4cf" : "#c7d2cf";
+  return ["match", ["get", "tripStatus"],
+    "visited", visibleStatuses.has("visited") ? base.visited : muted,
+    "want-to-visit-again", visibleStatuses.has("want-to-visit-again") ? base["want-to-visit-again"] : muted,
+    "want-to-go", visibleStatuses.has("want-to-go") ? base["want-to-go"] : muted,
+    visibleStatuses.has("not-explored") ? base["not-explored"] : muted
+  ] as ExpressionSpecification;
+};
 
 const calculateCountryCenter = (countriesData: CountriesGeoJson | null, countryName: string): [number, number] | null => {
   if (!countriesData || !countryName.trim()) return null;
@@ -71,6 +86,7 @@ const Map: React.FC<MapProps> = ({
   viewMode,
   userLocation,
   countryStatuses = {},
+  visibleStatuses,
   focusCountry = null,
   sizeVariant = "default",
   initialGlobeZoom = DEFAULT_INITIAL_GLOBE_ZOOM
@@ -81,6 +97,7 @@ const Map: React.FC<MapProps> = ({
   const countriesDataRef = useRef(countriesData);
   const selectedCountriesRef = useRef(selectedCountries);
   const countryStatusesRef = useRef(countryStatuses);
+  const visibleStatusesRef = useRef(visibleStatuses);
   const userLocationRef = useRef(userLocation ?? null);
   const focusCountryRef = useRef(focusCountry?.trim() || null);
   const viewModeRef = useRef(viewMode);
@@ -136,7 +153,7 @@ const Map: React.FC<MapProps> = ({
         type: "fill",
         source: COUNTRIES_SOURCE_ID,
         paint: {
-          "fill-color": getCountryFillColors(viewModeRef.current),
+          "fill-color": getFilteredCountryFillColors(viewModeRef.current, visibleStatusesRef.current),
           "fill-opacity": 1
         }
       });
@@ -171,12 +188,13 @@ const Map: React.FC<MapProps> = ({
     countriesDataRef.current = countriesData;
     selectedCountriesRef.current = selectedCountries;
     countryStatusesRef.current = countryStatuses;
+    visibleStatusesRef.current = visibleStatuses;
     focusCountryRef.current = focusCountry?.trim() || null;
     refreshCountries();
     if (focusCountryRef.current && focusCountryRef.current !== lastFocusedCountryRef.current) {
       focusMapOnCountry(focusCountryRef.current);
     }
-  }, [countriesData, selectedCountries, countryStatuses, focusCountry, refreshCountries]);
+  }, [countriesData, selectedCountries, countryStatuses, visibleStatuses, focusCountry, refreshCountries]);
 
   useEffect(() => {
     userLocationRef.current = userLocation ?? null;
@@ -203,7 +221,7 @@ const Map: React.FC<MapProps> = ({
     const map = mapRef.current;
     if (!map) return;
     if (map.getLayer(COUNTRIES_FILL_LAYER_ID)) {
-      map.setPaintProperty(COUNTRIES_FILL_LAYER_ID, "fill-color", getCountryFillColors(viewMode));
+      map.setPaintProperty(COUNTRIES_FILL_LAYER_ID, "fill-color", getFilteredCountryFillColors(viewMode, visibleStatusesRef.current));
     }
     if (map.getLayer(COUNTRIES_BORDER_LAYER_ID)) {
       map.setPaintProperty(COUNTRIES_BORDER_LAYER_ID, "line-color", viewMode === "globe" ? "#5A392B" : "#234A4D");

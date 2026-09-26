@@ -433,6 +433,7 @@ function Home({ countryStatuses, countryAddedDates, setCountryStatus, visitedCou
                                         viewMode={mapViewMode}
                                         userLocation={userLocation}
                                         countryStatuses={countryStatuses}
+                                        visibleStatuses={mapStatusFilters}
                                     />
                                 </div>
                             </Suspense>
@@ -458,51 +459,63 @@ function Home({ countryStatuses, countryAddedDates, setCountryStatus, visitedCou
                                 )}
                             </button>
 
+                            <div className="w-full max-w-[820px] rounded-[1.35rem] border border-[#7a3f00]/20 bg-[#fff8ee]/95 p-4 shadow-[0_12px_30px_#50300d18] sm:p-5">
+                                <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                                    <div>
+                                        <p className="font-[Adamina] text-[0.72rem] uppercase tracking-[0.2em] text-[#8b6246]">Map layers</p>
+                                        <p className="mt-1 font-[Cormorant_Garamond] text-[1.05rem] text-[#6a4630]">Choose which country statuses stand out</p>
+                                    </div>
+                                    {mapStatusFilters.size === 0 ? (
+                                        <button type="button" onClick={() => setMapStatusFilters(new Set(["visited", "want-to-go", "want-to-visit-again", "not-explored"]))} className="rounded-full border border-[#7a3f00]/30 px-3 py-1.5 text-xs font-semibold text-[#7a3f00] transition hover:bg-[#f6dfc1]">Show all layers</button>
+                                    ) : (
+                                        <span className="rounded-full bg-[#f1e3d1] px-3 py-1.5 text-xs font-medium text-[#76543c]">{mapStatusFilters.size} of 4 active</span>
+                                    )}
+                                </div>
+                                {mapStatusFilters.size === 0 && (
+                                    <p className="mb-3 rounded-xl border border-dashed border-[#b99677] bg-[#f8eee2] px-3 py-2 text-center font-[Cormorant_Garamond] text-base text-[#76543c]">All layers are off. The map is shown in a quiet neutral tone.</p>
+                                )}
                             <div className="flex flex-wrap justify-center gap-2" role="group" aria-label="Filter map by country status">
                                 <button
                                     type="button"
                                     onClick={() => toggleMapStatusFilter("visited")}
-                                    className={`px-4 py-2 rounded-full text-sm font-[Cormorant_Garamond] transition ${
+                                    aria-pressed={mapStatusFilters.has("visited")}
+                                    className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-[Cormorant_Garamond] transition ${
                                         mapStatusFilters.has("visited")
-                                            ? "bg-[#CF8D45] text-[#ffead4] border border-[#CF8D45]"
-                                            : "bg-[#CF8D45]/20 text-[#6a4630] border border-[#CF8D45]/40 hover:bg-[#CF8D45]/30"
+                                            ? "border-[#a86624] bg-[#a86624] text-white shadow-[0_4px_12px_#a8662440]"
+                                            : "border-[#a86624]/35 bg-white/70 text-[#6a4630] hover:bg-[#f6e5d1]"
                                     }`}
-                                >
-                                    Visited
-                                </button>
+                                ><span className={`h-2.5 w-2.5 rounded-full ${mapStatusFilters.has("visited") ? "bg-[#ffe1b7]" : "bg-[#CF8D45]"}`} />Visited <span className="text-xs opacity-75">{statusCounts.visited}</span></button>
                                 <button
                                     type="button"
                                     onClick={() => toggleMapStatusFilter("want-to-go")}
-                                    className={`px-4 py-2 rounded-full text-sm font-[Cormorant_Garamond] transition ${
+                                    aria-pressed={mapStatusFilters.has("want-to-go")}
+                                    className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-[Cormorant_Garamond] transition ${
                                         mapStatusFilters.has("want-to-go")
-                                            ? "bg-[#7A3F00] text-[#ffead4] border border-[#7A3F00]"
-                                            : "bg-[#7A3F00]/20 text-[#6a4630] border border-[#7A3F00]/40 hover:bg-[#7A3F00]/30"
+                                            ? "border-[#704019] bg-[#704019] text-white shadow-[0_4px_12px_#70401940]"
+                                            : "border-[#704019]/35 bg-white/70 text-[#6a4630] hover:bg-[#f6e5d1]"
                                     }`}
-                                >
-                                    To be visited
-                                </button>
+                                ><span className={`h-2.5 w-2.5 rounded-full ${mapStatusFilters.has("want-to-go") ? "bg-[#e5b98d]" : "bg-[#7A3F00]"}`} />To be visited <span className="text-xs opacity-75">{statusCounts.wantToGo}</span></button>
                                 <button
                                     type="button"
                                     onClick={() => toggleMapStatusFilter("want-to-visit-again")}
-                                    className={`px-4 py-2 rounded-full text-sm font-[Cormorant_Garamond] transition ${
+                                    aria-pressed={mapStatusFilters.has("want-to-visit-again")}
+                                    className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-[Cormorant_Garamond] transition ${
                                         mapStatusFilters.has("want-to-visit-again")
-                                            ? "bg-[#FABE7D] text-[#50300d] border border-[#FABE7D]"
-                                            : "bg-[#FABE7D]/20 text-[#6a4630] border border-[#FABE7D]/40 hover:bg-[#FABE7D]/30"
+                                            ? "border-[#c98b51] bg-[#c98b51] text-white shadow-[0_4px_12px_#c98b5140]"
+                                            : "border-[#c98b51]/35 bg-white/70 text-[#6a4630] hover:bg-[#f6e5d1]"
                                     }`}
-                                >
-                                    Want to return
-                                </button>
+                                ><span className={`h-2.5 w-2.5 rounded-full ${mapStatusFilters.has("want-to-visit-again") ? "bg-[#ffe0b9]" : "bg-[#FABE7D]"}`} />Want to return <span className="text-xs opacity-75">{statusCounts.wantToVisitAgain}</span></button>
                                 <button
                                     type="button"
                                     onClick={() => toggleMapStatusFilter("not-explored")}
-                                    className={`px-4 py-2 rounded-full text-sm font-[Cormorant_Garamond] transition ${
+                                    aria-pressed={mapStatusFilters.has("not-explored")}
+                                    className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-[Cormorant_Garamond] transition ${
                                         mapStatusFilters.has("not-explored")
-                                            ? "bg-[#7a3f00] text-[#ffead4] border border-[#7a3f00]"
-                                            : "bg-[#7a3f00]/20 text-[#6a4630] border border-[#7a3f00]/40 hover:bg-[#7a3f00]/30"
+                                            ? "border-[#92785f] bg-[#92785f] text-white shadow-[0_4px_12px_#92785f40]"
+                                            : "border-[#92785f]/35 bg-white/70 text-[#6a4630] hover:bg-[#f6e5d1]"
                                     }`}
-                                >
-                                    Not explored
-                                </button>
+                                ><span className={`h-2.5 w-2.5 rounded-full ${mapStatusFilters.has("not-explored") ? "bg-[#eee2d2]" : "bg-[#b9a58e]"}`} />Not explored <span className="text-xs opacity-75">{statusCounts.notInterested}</span></button>
+                            </div>
                             </div>
                         </div>
                     </div>
