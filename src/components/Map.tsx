@@ -173,9 +173,15 @@ const Map: React.FC<MapProps> = ({
   }, [refreshCountries]);
 
   const configureGlobeStyle = (map: MapLibreMap) => {
-    // if (map.getLayer("Background")) {
-    //   map.setPaintProperty("Background", "background-color", "#D6D3CF");
-    // }
+    if (map.getLayer("Background")) {
+      map.setPaintProperty("Background", "background-color", "#D6D3CF");
+    }
+    if (map.getLayer("Water")) {
+      map.setPaintProperty("Water", "fill-color", "#D6D3CF");
+    }
+    if (map.getLayer("Land")) {
+      map.setPaintProperty("Land", "fill-color", "#A97A53");
+    }
     map.setTerrain(null);
   };
 

@@ -20,21 +20,19 @@ export interface HomeProps {
     pageMode?: "home" | "countries";
 }
 
-const countryPhotoIds = [
-    "photo-1529260830199-42c24126f198",
-    "photo-1493976040374-85c8e12f0c0e",
-    "photo-1513735492246-483525079686",
-    "photo-1539650116574-75c0c6d73f6e",
-    "photo-1502602898657-3e91760cbb34",
-    "photo-1500534623283-312aade485b7",
-    "photo-1522083165195-3424ed129620",
-    "photo-1470214304380-aadaedcfff1b"
-];
+const countryImageUrls: Record<string, string> = {
+    Finland: "photo-1500534623283-312aade485b7",
+    Netherlands: "photo-1534351590666-13e3e96b5017",
+    Norway: "photo-1483347756197-71ef80e95f73",
+    Poland: "photo-1519197924294-4ba991a11128",
+    France: "photo-1502602898657-3e91760cbb34",
+    Italy: "photo-1529260830199-42c24126f198",
+    Japan: "photo-1493976040374-85c8e12f0c0e"
+};
 
 const getCountryImageUrl = (countryName: string) => {
-    const hash = [...countryName].reduce((total, character) => total + character.charCodeAt(0), 0);
-    const photoId = countryPhotoIds[hash % countryPhotoIds.length];
-    return `https://images.unsplash.com/${photoId}?auto=format&fit=crop&w=900&q=78`;
+    const photoId = countryImageUrls[countryName];
+    return photoId ? `https://images.unsplash.com/${photoId}?auto=format&fit=crop&w=900&q=78` : undefined;
 };
 
 const pointInRing = (lng: number, lat: number, ring: number[][]) => {
@@ -105,10 +103,12 @@ function Home({ countryStatuses, countryAddedDates, setCountryStatus, visitedCou
     const [mapViewMode, setMapViewMode] = useState<"globe" | "map">("globe");
     const [userLocation, setUserLocation] = useState<{ lng: number; lat: number } | null>(null);
     const [mapStatusFilters, setMapStatusFilters] = useState<Set<CountryStatus | "not-explored">>(
-        new Set(["visited", "want-to-visit-again"])
+        new Set(pageMode === "home"
+            ? ["visited", "want-to-go", "want-to-visit-again", "not-explored"]
+            : ["visited", "want-to-go", "want-to-visit-again"])
     );
     const [listStatusFilters, setListStatusFilters] = useState<Set<CountryStatus | "not-explored">>(
-        new Set(["visited", "want-to-go", "want-to-visit-again", "not-explored"])
+        new Set(["visited", "want-to-go", "want-to-visit-again"])
     );
     const [listSort, setListSort] = useState<"a-z" | "z-a" | "status">("a-z");
     const [scrollBtnBottom, setScrollBtnBottom] = useState(window.innerHeight * 0.02);
