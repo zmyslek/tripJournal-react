@@ -358,6 +358,9 @@ function Gallery() {
                         className="relative min-h-[11rem] bg-[#5a392b] px-6 py-7 text-[#ffead4] sm:px-9"
                         style={{ backgroundImage: `linear-gradient(rgb(90 57 43 / 0.9), rgb(90 57 43 / 0.9)), url(${paperBackground})`, backgroundSize: "cover" }}
                     >
+                        <span className="absolute bottom-5 right-4 z-10 font-[Adamina] text-[0.62rem] uppercase tracking-[0.24em] text-[#bda79c] [writing-mode:vertical-rl] rotate-180 sm:right-7">
+                            TripJournal / Est. 2026
+                        </span>
                         <div className="relative flex flex-wrap items-start justify-between gap-6">
                             <div className="max-w-[46rem]">
                                 <p className="m-0 font-[Adamina] text-[0.7rem] uppercase tracking-[0.24em] text-[#f6d7b5]">Travel moments</p>
