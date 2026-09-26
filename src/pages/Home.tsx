@@ -614,11 +614,14 @@ function Home({ countryStatuses, countryAddedDates, setCountryStatus, visitedCou
                                     return (
                                         <div
                                             key={countryName}
-                                            className="relative min-h-[14rem] overflow-hidden rounded-[1.2rem] border border-[#ffead4]/35 p-4 text-[#fff4e7] shadow-[0_12px_25px_rgb(35_18_8_/_20%)] transition hover:-translate-y-1"
+                                            className="group relative min-h-[14rem] overflow-hidden rounded-[1.2rem] border border-[#ffead4]/35 p-4 text-[#fff4e7] shadow-[0_12px_25px_rgb(35_18_8_/_20%)] transition hover:-translate-y-1"
                                         >
-                                            <div
-                                                className="absolute inset-0 bg-cover bg-center transition duration-500 hover:scale-105"
-                                                style={{ backgroundImage: `url(${getCountryImageUrl(countryName)})` }}
+                                            <img
+                                                src={getCountryImageUrl(countryName)}
+                                                alt=""
+                                                loading="lazy"
+                                                decoding="async"
+                                                className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105"
                                                 aria-hidden="true"
                                             />
                                             <div className="absolute inset-0 bg-[linear-gradient(180deg,rgb(25_16_11_/_18%),rgb(25_16_11_/_88%))]" aria-hidden="true" />

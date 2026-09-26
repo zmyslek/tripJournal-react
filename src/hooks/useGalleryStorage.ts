@@ -198,7 +198,7 @@ export function useGalleryStorage() {
     setPhotos([]);
     localStorage.removeItem(STORAGE_KEY);
     void idb.clearAllBlobs().catch(() => {});
-  }, []);
+  }, [photos]);
 
   useEffect(() => {
     let cancelled = false;

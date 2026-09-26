@@ -278,10 +278,10 @@ function Welcome() {
 
   return (
     <div
-      className="relative min-h-screen overflow-hidden bg-[#1f1916] text-[#FFEAD4]"
+      className="relative h-screen min-h-screen overflow-hidden bg-[#1f1916] text-[#FFEAD4]"
     >
-      <div className="relative mx-auto grid min-h-screen max-w-none items-stretch gap-0 px-0 py-0 lg:grid-cols-[44%_56%]">
-        <div className="relative z-10 flex w-full max-w-lg flex-col justify-center px-6 py-10 sm:px-12 lg:mx-auto lg:max-w-[29rem] lg:px-0 lg:py-12">
+      <div className="relative mx-auto grid h-full min-h-0 max-w-none grid-rows-[minmax(0,1fr)_minmax(16rem,36vh)] items-stretch gap-0 px-0 py-0 lg:grid-cols-[44%_56%] lg:grid-rows-none">
+        <div className="relative z-10 flex h-full min-h-0 w-full max-w-lg flex-col justify-center overflow-y-auto px-6 py-10 sm:px-12 lg:mx-auto lg:max-w-[29rem] lg:px-0 lg:py-12">
           <div className="mb-8 flex items-center gap-4">
             <div className="h-px w-16 bg-[#EAB681]" />
             <span className="font-cormorant text-xs uppercase tracking-[0.4em] text-[#EAB681]/80">Welcome to</span>
@@ -391,8 +391,8 @@ function Welcome() {
           </div>
         </div>
 
-        <div className="relative z-10 flex min-h-[34rem] flex-col items-center justify-center lg:min-h-screen lg:items-end">
-          <figure className="group relative h-full min-h-[34rem] w-full max-w-none overflow-hidden bg-[#5A392B] lg:min-h-screen">
+        <div className="relative z-10 flex h-full min-h-0 flex-col items-center justify-center lg:items-end">
+          <figure className="group relative h-full min-h-0 w-full max-w-none overflow-hidden bg-[#5A392B]">
             <img
               src={FLORENCE_IMAGE_URL}
               alt="Florence, Italy viewed from above"

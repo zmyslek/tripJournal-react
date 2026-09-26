@@ -2,7 +2,10 @@ export const config = { runtime: "edge" };
 
 const jsonHeaders = { "content-type": "application/json; charset=utf-8" };
 
-async function createAuthUser(supabaseUrl: string, serviceKey: string, email: string, password: string) {
+type AuthUserResponse = { id: string };
+type SeedRow = { id: string };
+
+async function createAuthUser(supabaseUrl: string, serviceKey: string, email: string, password: string): Promise<AuthUserResponse> {
     const url = `${supabaseUrl.replace(/\/+$/,'')}/auth/v1/admin/users`;
     const res = await fetch(url, {
         method: "POST",
@@ -19,11 +22,11 @@ async function createAuthUser(supabaseUrl: string, serviceKey: string, email: st
         throw new Error(`createAuthUser failed: ${res.status} ${text}`);
     }
 
-    return await res.json();
+    return await res.json() as AuthUserResponse;
 }
 
 // Use PostgREST to insert/upsert rows with service role key
-async function restInsert(supabaseUrl: string, serviceKey: string, table: string, payload: any) {
+async function restInsert(supabaseUrl: string, serviceKey: string, table: string, payload: unknown): Promise<SeedRow[]> {
     const url = `${supabaseUrl.replace(/\/+$/,'')}/rest/v1/${table}`;
     const res = await fetch(url, {
         method: "POST",
@@ -41,10 +44,10 @@ async function restInsert(supabaseUrl: string, serviceKey: string, table: string
         throw new Error(`restInsert ${table} failed: ${res.status} ${text}`);
     }
 
-    return await res.json();
+    return await res.json() as SeedRow[];
 }
 
-async function restSelectByEmail(supabaseUrl: string, serviceKey: string, table: string, email: string) {
+async function restSelectByEmail(supabaseUrl: string, serviceKey: string, table: string, email: string): Promise<SeedRow[]> {
     const url = `${supabaseUrl.replace(/\/+$/,'')}/rest/v1/${table}?email=eq.${encodeURIComponent(email)}`;
     const res = await fetch(url, {
         method: "GET",
@@ -57,7 +60,7 @@ async function restSelectByEmail(supabaseUrl: string, serviceKey: string, table:
         const text = await res.text();
         throw new Error(`restSelect ${table} failed: ${res.status} ${text}`);
     }
-    return await res.json();
+    return await res.json() as SeedRow[];
 }
 
 export default async function handler(request: Request): Promise<Response> {
@@ -97,7 +100,7 @@ export default async function handler(request: Request): Promise<Response> {
             if (!(user === BASIC_USER && pass === BASIC_PASS)) {
                 return new Response(JSON.stringify({ error: 'Unauthorized: invalid basic credentials' }), { status: 401, headers: jsonHeaders });
             }
-        } catch (e) {
+        } catch {
             return new Response(JSON.stringify({ error: 'Unauthorized: invalid basic auth header' }), { status: 401, headers: jsonHeaders });
         }
 
@@ -184,7 +187,8 @@ export default async function handler(request: Request): Promise<Response> {
         });
 
         return new Response(JSON.stringify({ ok: true, user_id: userId, trip_id: trip.id }), { status: 200, headers: jsonHeaders });
-    } catch (err: any) {
-        return new Response(JSON.stringify({ error: err?.message || String(err) }), { status: 500, headers: jsonHeaders });
+    } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
+        return new Response(JSON.stringify({ error: message }), { status: 500, headers: jsonHeaders });
     }
 }
