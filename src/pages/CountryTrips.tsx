@@ -358,7 +358,7 @@ function CountryTrips({ countryStatuses }: CountryTripsProps) {
         <div className="mx-auto w-full max-w-[min(95vw,1380px)] px-[max(1.25rem,5%)] pb-[max(3rem,8vh)] pt-[max(1.5rem,4vh)]">
             <section className="overflow-hidden rounded-t-[1.35rem] border border-[#8f5a20]/35 shadow-[0_18px_42px_rgb(80_48_13_/_20%)]">
                 <div
-                    className="bg-[#5a392b] px-6 py-6 sm:px-8"
+                    className="atlas-header bg-[#5a392b] px-6 py-6 sm:px-8"
                     style={{
                         backgroundImage: `linear-gradient(rgb(90 57 43 / 0.96), rgb(90 57 43 / 0.96)), url(${paperBackground})`,
                         backgroundSize: "cover"
@@ -367,7 +367,7 @@ function CountryTrips({ countryStatuses }: CountryTripsProps) {
                     <div className="flex items-start justify-between gap-6">
                         <div className="flex-1">
                             <p className="font-[Adamina] text-[0.72rem] uppercase tracking-[0.24em] text-[#f6d7b5]">Your travels</p>
-                            <h1 className="mt-2 font-[Adamina] text-[clamp(1.9rem,4.2vw,3rem)] text-[#fff4e7]">{resolvedCountryName}</h1>
+                            <h1 className="mt-2 font-[Adamina] text-[clamp(1.8rem,4vw,2.8rem)] text-[#fff4e7]">{resolvedCountryName}</h1>
                             {countryDetails && (
                                 <p className="mt-3 font-[Cormorant_Garamond] text-[1.1rem] text-[#f7dfca] max-w-2xl">{countryDetails.description}</p>
                             )}

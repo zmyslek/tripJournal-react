@@ -355,17 +355,14 @@ function Gallery() {
                     style={{ backgroundImage: `linear-gradient(rgb(255 234 212 / 0.9), rgb(255 234 212 / 0.9)), url(${paperBackground})`, backgroundSize: "cover" }}
                 >
                     <div
-                        className="relative min-h-[11rem] bg-[#5a392b] px-6 py-7 text-[#ffead4] sm:px-9"
+                        className="atlas-header relative min-h-[11rem] bg-[#5a392b] px-6 py-7 text-[#ffead4] sm:px-9"
                         style={{ backgroundImage: `linear-gradient(rgb(90 57 43 / 0.9), rgb(90 57 43 / 0.9)), url(${paperBackground})`, backgroundSize: "cover" }}
                     >
-                        <span className="absolute bottom-5 right-4 z-10 font-[Adamina] text-[0.62rem] uppercase tracking-[0.24em] text-[#bda79c] [writing-mode:vertical-rl] rotate-180 sm:right-7">
-                            TripJournal / Est. 2026
-                        </span>
                         <div className="relative flex flex-wrap items-start justify-between gap-6">
                             <div className="max-w-[46rem]">
                                 <p className="m-0 font-[Adamina] text-[0.7rem] uppercase tracking-[0.24em] text-[#f6d7b5]">Travel moments</p>
                                 <div className="mt-3 flex flex-wrap items-center gap-3 sm:gap-4">
-                                    <h1 id="gallery-title" className="font-[Adamina] text-[clamp(2.2rem,5vw,3.8rem)] leading-none text-[#fff4e7]">
+                                    <h1 id="gallery-title" className="font-[Adamina] text-[clamp(1.8rem,4vw,2.8rem)] leading-none text-[#fff4e7]">
                                         Gallery
                                     </h1>
                                     <div className="inline-flex items-center gap-2 rounded-full border border-[#ffead4]/70 bg-[#fff4e7]/10 px-2 py-1 shadow-[0_0_0_1px_rgb(255_234_212_/_14%)]">

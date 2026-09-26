@@ -333,13 +333,13 @@ function Itineraries(props: ItinerariesProps) {
         <div className="mx-auto w-full max-w-[min(96vw,1440px)] px-[max(1rem,4%)] pb-[max(3.5rem,10vh)] pt-[max(1.5rem,4vh)] text-[#50300d]">
             <section className="overflow-hidden rounded-[1.1rem] border border-[#8f5a20]/30 bg-[#fff4e7] shadow-[0_18px_42px_rgb(80_48_13_/_16%)]">
                 <div
-                    className="bg-[#5a392b] p-6 text-[#fff4e7] sm:p-8"
+                    className="atlas-header bg-[#5a392b] p-6 text-[#fff4e7] sm:p-8"
                     style={{ backgroundImage: `linear-gradient(rgb(90 57 43 / 0.95), rgb(90 57 43 / 0.98)), url(${paperBackground})`, backgroundSize: "cover" }}
                 >
                     <div className="flex flex-wrap items-start justify-between gap-5">
                         <div className="max-w-3xl">
                             <p className="font-[Adamina] text-[0.72rem] uppercase tracking-[0.24em] text-[#f6d7b5]">Trip planner</p>
-                            <h1 className="mt-3 font-[Adamina] text-[clamp(2rem,5vw,3.8rem)] leading-tight">{primaryItinerary.title}</h1>
+                            <h1 className="mt-3 font-[Adamina] text-[clamp(1.8rem,4vw,2.8rem)] leading-tight">{primaryItinerary.title}</h1>
                             <p className="mt-4 font-[Cormorant_Garamond] text-[1.22rem] leading-[1.35] text-[#f7dfca]">{primaryItinerary.description}</p>
                         </div>
 

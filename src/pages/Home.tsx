@@ -313,10 +313,10 @@ function Home({ countryStatuses, countryAddedDates, setCountryStatus, visitedCou
     return (
         <>
             <section className="mx-auto w-full max-w-[min(100%,1380px)] px-[max(1.25rem,5%)] pt-[max(1.5rem,4vh)] text-[#fff4e7]" aria-labelledby="home-atlas-title">
-                <div className="relative min-h-[18rem] overflow-hidden rounded-[2rem] bg-[#5a4036] px-6 py-10 shadow-[0_18px_42px_rgb(80_48_13_/_18%)] sm:min-h-[20rem] sm:px-10 sm:py-12 lg:px-16">
+                <div className="atlas-header relative min-h-[16rem] overflow-hidden rounded-[2rem] bg-[#5a4036] px-6 py-10 shadow-[0_18px_42px_rgb(80_48_13_/_18%)] sm:min-h-[18rem] sm:px-10 sm:py-12 lg:px-16">
                     <div className="relative z-10 max-w-[72rem] pr-10 sm:pr-16">
                         <p className="m-0 font-[Adamina] text-[0.72rem] uppercase tracking-[0.28em] text-[#f6d7b5]">Your travel atlas</p>
-                        <h1 id="home-atlas-title" className="mt-6 max-w-[68rem] font-[Adamina] text-[clamp(2.5rem,7vw,5.6rem)] leading-[0.98] text-[#fff4e7]">
+                        <h1 id="home-atlas-title" className="mt-6 max-w-[68rem] font-[Adamina] text-[clamp(2.2rem,5vw,3.8rem)] leading-[0.98] text-[#fff4e7]">
                             {pageMode === "home" ? "Where the road has led" : "Every country has a story"}
                         </h1>
                         <p className="mt-5 max-w-[58rem] font-[Cormorant_Garamond] text-[clamp(1.1rem,2.5vw,1.6rem)] leading-[1.25] text-[#f7dfca]">
@@ -325,9 +325,6 @@ function Home({ countryStatuses, countryAddedDates, setCountryStatus, visitedCou
                                 : "Mark the places you have seen, the places you want to visit, and the ones calling you back."}
                         </p>
                     </div>
-                    <span className="absolute bottom-5 right-4 z-10 font-[Adamina] text-[0.62rem] uppercase tracking-[0.24em] text-[#bda79c] [writing-mode:vertical-rl] rotate-180 sm:right-7">
-                        TripJournal / Est. 2026
-                    </span>
                 </div>
             </section>
 
@@ -338,7 +335,7 @@ function Home({ countryStatuses, countryAddedDates, setCountryStatus, visitedCou
                     style={{ backgroundImage: `linear-gradient(rgb(255 234 212 / 0.9), rgb(255 234 212 / 0.9)), url(${paperBackground})`, backgroundSize: "cover" }}
                 >
                     <div
-                        className="relative bg-[#5a392b] px-6 py-7 text-[#ffead4] sm:px-9"
+                        className="atlas-header relative bg-[#5a392b] px-6 py-7 text-[#ffead4] sm:px-9"
                         style={{ backgroundImage: `linear-gradient(rgb(90 57 43 / 0.9), rgb(90 57 43 / 0.9)), url(${paperBackground})`, backgroundSize: "cover" }}
                     >
                         <div className="relative">

@@ -201,13 +201,13 @@ export function Profile() {
                 style={{ backgroundImage: `linear-gradient(rgb(255 234 212 / 0.9), rgb(255 234 212 / 0.9)), url(${paperBackground})`, backgroundSize: "cover" }}
             >
                 <div
-                    className="relative min-h-[11rem] bg-[#5a392b] px-6 py-7 text-[#ffead4] sm:px-9"
+                        className="atlas-header relative min-h-[11rem] bg-[#5a392b] px-6 py-7 text-[#ffead4] sm:px-9"
                     style={{ backgroundImage: `linear-gradient(rgb(90 57 43 / 0.9), rgb(90 57 43 / 0.9)), url(${paperBackground})`, backgroundSize: "cover" }}
                 >
                     <div className="relative flex flex-wrap items-start justify-between gap-6">
                         <div>
                             <p className="m-0 font-[Adamina] text-[0.7rem] uppercase tracking-[0.24em] text-[#f6d7b5]">Travel profile</p>
-                            <h1 id="profile-title" className="mt-3 font-[Adamina] text-[clamp(2.2rem,5vw,3.8rem)] leading-none text-[#fff4e7]">
+                            <h1 id="profile-title" className="mt-3 font-[Adamina] text-[clamp(1.8rem,4vw,2.8rem)] leading-none text-[#fff4e7]">
                                 {profile.name}
                             </h1>
                             <p className="mt-4 max-w-[42rem] font-[Cormorant_Garamond] text-[1.25rem] leading-[1.35] text-[#f7dfca]">

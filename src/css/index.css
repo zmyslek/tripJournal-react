@@ -40,6 +40,33 @@ body,
   z-index: 1;
 }
 
+.atlas-header {
+  position: relative;
+  overflow: hidden;
+}
+
+.atlas-header::after {
+  content: "TRIPJOURNAL / EST. 2026";
+  position: absolute;
+  right: 1.5rem;
+  bottom: 1.25rem;
+  color: rgb(189 167 156 / 85%);
+  font-family: Adamina, serif;
+  font-size: 0.62rem;
+  letter-spacing: 0.24em;
+  line-height: 1;
+  text-transform: uppercase;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+}
+
+@media (max-width: 640px) {
+  .atlas-header::after {
+    right: 0.75rem;
+    font-size: 0.52rem;
+  }
+}
+
 /* Hide scrollbar while keeping scroll functionality */
 .scrollbar-hide {
   -ms-overflow-style: none;
