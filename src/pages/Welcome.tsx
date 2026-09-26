@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useCountriesData } from "../hooks/useCountriesData";
 import darkLeatherTexture from "../assets/dark-leather.jpg";
-import Map from "../components/Map";
 import { getAuthRedirectUrl, supabase } from "../lib/supabase/client";
 import { createStoredUserProfileFromSession, saveStoredUserProfile, type AuthProvider } from "../types/user";
 
@@ -14,6 +12,8 @@ interface WelcomeFormState {
 }
 
 const AUTH_CACHE_KEY = "tripjournal:auth:v1";
+const FLORENCE_IMAGE_URL =
+  "https://images.unsplash.com/photo-1529260830199-42c24126f198?auto=format&fit=crop&w=1400&q=85";
 
 export interface AuthUser {
   id: string;
@@ -98,7 +98,6 @@ function IconButton({
 function Welcome() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { countriesData, isLoading: isCountriesLoading } = useCountriesData();
   const [isAuthReady, setIsAuthReady] = useState(() => Boolean(getStoredAuth()));
   const [formState, setFormState] = useState<WelcomeFormState>({
     email: "",
@@ -406,16 +405,23 @@ function Welcome() {
           </div>
         </div>
 
-        <div className="relative z-10 mt-6 flex min-h-[420px] flex-col items-center justify-center gap-4 lg:items-end">
-          {isCountriesLoading || !countriesData ? (
-            <div className="flex min-h-[420px] w-full max-w-[820px] items-center justify-center px-6 text-center font-cormorant text-sm text-[#EAB681]/80">
-              Loading globe...
-            </div>
-          ) : (
-            <div className="w-full max-w-[820px] relative aspect-square">
-              <Map countriesData={countriesData} selectedCountries={[]} viewMode="globe" />
-            </div>
-          )}
+        <div className="relative z-10 mt-6 flex min-h-[420px] flex-col items-center justify-center lg:items-end">
+          <figure className="group relative w-full max-w-[820px] overflow-hidden rounded-[2rem] border border-[#EAB681]/55 bg-[#5A392B] shadow-[0_30px_90px_rgba(0,0,0,0.5)] aspect-[4/5] sm:aspect-[5/4] lg:aspect-[4/5]">
+            <img
+              src={FLORENCE_IMAGE_URL}
+              alt="Florence, Italy viewed from above"
+              className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105"
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-[#1a1a1a]/65 via-transparent to-[#1a1a1a]/75" />
+            <figcaption className="absolute inset-x-0 top-0 p-6 sm:p-8 lg:p-10">
+              <p className="font-cormorant text-sm uppercase tracking-[0.28em] text-[#FFEAD4] sm:text-base">
+                01 — Florence, Italy
+              </p>
+              <p className="mt-5 max-w-sm font-adamina text-3xl leading-tight text-[#FFEAD4] sm:text-4xl lg:text-5xl">
+                Keep the places that keep you.
+              </p>
+            </figcaption>
+          </figure>
         </div>
       </div>
     </div>
