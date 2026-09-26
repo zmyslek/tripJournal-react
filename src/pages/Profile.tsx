@@ -276,46 +276,60 @@ export function Profile() {
                         </div>
                     </div>
 
-                                    <aside className="flex flex-col gap-3 rounded-[1rem] p-4">
-                                        {/* Subscription badge (reads from localStorage key `subscriptionStatus`) */}
-                                            <SubscriptionStatus />
-                                        <div className="mt-7 grid gap-1 sm:grid-cols-3">
-                                            <Link
-                                                to="/settings"
-                                                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#7a3f00] bg-[#5a392b] text-[#ffead4] transition hover:bg-[#7a3f00]"
-                                                aria-label="Settings"
-                                                title="Settings"
-                                            >
-                                                <Settings size={20} />
-                                            </Link>
+                    <aside className="flex flex-col gap-3 rounded-[1rem] p-4">
+                        {/* Subscription badge (reads from localStorage key `subscriptionStatus`) */}
+                            <SubscriptionStatus />
+                        <div className="mt-7 grid gap-1 sm:grid-cols-3">
+                            <Link
+                                to="/settings"
+                                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#7a3f00] bg-[#5a392b] text-[#ffead4] transition hover:bg-[#7a3f00]"
+                                aria-label="Settings"
+                                title="Settings"
+                            >
+                                <Settings size={20} />
+                            </Link>
 
-                                            <Link
-                                                to="/help-center"
-                                                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#cf8d45] bg-[#fff7ee] text-[#50300d] transition hover:bg-[#f6dfc1]"
-                                                aria-label="Help center"
-                                                title="Help center"
-                                            >
-                                                <HelpCircle size={20} />
-                                            </Link>
-                                        </div>
-                                        <button
-                                            type="button"
-                                            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#7a3f00] bg-[#5a392b] text-[#ffead4] transition hover:bg-[#7a3f00]"
-                                            onClick={openEditor}
-                                            aria-label="Edit profile"
-                                            title="Edit profile"
-                                        >
-                                            <Edit size={18} />
-                                        </button>
+                            <Link
+                                to="/help-center"
+                                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#cf8d45] bg-[#fff7ee] text-[#50300d] transition hover:bg-[#f6dfc1]"
+                                aria-label="Help center"
+                                title="Help center"
+                            >
+                                <HelpCircle size={20} />
+                            </Link>
+                            <button
+                                type="button"
+                                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#7a3f00] bg-[#5a392b] text-[#ffead4] transition hover:bg-[#7a3f00]"
+                                onClick={openEditor}
+                                aria-label="Edit profile"
+                                title="Edit profile"
+                            >
+                                <Edit size={18} />
+                            </button>
+                        </div>
 
-                                        <button
-                                            type="button"
-                                            className="rounded-full border border-[#cf8d45] bg-[#cf8d45] px-4 py-2.5 font-[Adamina] text-[0.92rem] text-[#fff4e7] transition hover:-translate-y-px hover:bg-[#b97731]"
-                                            onClick={handleLogout}
-                                        >
-                                            Log out
-                                        </button>
-                                        {/* Admin seeding moved to /admin-seed (protected) */}
+                        <button
+                            type="button"
+                            className="rounded-full border border-[#cf8d45] bg-[#cf8d45] px-4 py-2.5 font-[Adamina] text-[0.92rem] text-[#fff4e7] transition hover:-translate-y-px hover:bg-[#b97731]"
+                            onClick={handleLogout}
+                        >
+                            Log out
+                        </button>
+                        {/* Admin seeding moved to /admin-seed (protected) */}
+                        <div className="grid gap-6 px-4 pb-6 sm:px-7 lg:grid-cols-[minmax(0,1fr)_20rem]">
+                            <section className="rounded-[1rem] border border-[#50300d]/15 bg-white p-5 sm:p-7" aria-label="Recent journeys">
+                                <div className="mb-4 flex items-end justify-between gap-3">
+                                    <div><p className="font-[Adamina] text-[0.68rem] uppercase tracking-[0.24em] text-[#936d58]">Recently remembered</p><h2 className="mt-1 font-[Cormorant_Garamond] text-3xl text-[#50300d]">Latest journeys</h2></div>
+                                    <Link to="/gallery" className="font-[Cormorant_Garamond] text-base text-[#936d58] hover:text-[#50300d]">View gallery →</Link>
+                                </div>
+                                <div>
+                                    {[
+                                        //replace with your own journey data or fetch from an API
+                                        { city: "Florence", country: "Italy", date: "A city to wander", image: "photo-1543429257-37a54b3f4c4d" }
+                                    ].map((journey) => <Link key={journey.city} to="/gallery" className="group relative flex min-h-52 items-end overflow-hidden rounded-xl bg-cover bg-center p-4 text-white" style={{ backgroundImage: `linear-gradient(0deg, rgb(20 16 14 / 78%), transparent 72%), url(https://images.unsplash.com/${journey.image}?auto=format&fit=crop&w=700&q=80)` }}><div className="transition group-hover:translate-y-[-2px]"><p className="font-[Adamina] text-[0.6rem] uppercase tracking-[0.18em] text-[#f3d8bd]">{journey.date}</p><h3 className="font-[Cormorant_Garamond] text-3xl leading-tight">{journey.city}</h3><p className="font-[Cormorant_Garamond]">{journey.country}</p></div></Link>)}
+                                </div>
+                            </section>
+                        </div>
                     </aside>
                 </div>
                 
@@ -387,20 +401,6 @@ export function Profile() {
                                     </button>
                                 </div>
                             </form>
-                            <div className="grid gap-6 px-4 pb-6 sm:px-7 lg:grid-cols-[minmax(0,1fr)_20rem]">
-                                <section className="rounded-[1rem] border border-[#50300d]/15 bg-white p-5 sm:p-7" aria-label="Recent journeys">
-                                    <div className="mb-4 flex items-end justify-between gap-3">
-                                        <div><p className="font-[Adamina] text-[0.68rem] uppercase tracking-[0.24em] text-[#936d58]">Recently remembered</p><h2 className="mt-1 font-[Cormorant_Garamond] text-3xl text-[#50300d]">Latest journeys</h2></div>
-                                        <Link to="/gallery" className="font-[Cormorant_Garamond] text-base text-[#936d58] hover:text-[#50300d]">View gallery →</Link>
-                                    </div>
-                                    <div>
-                                        {[
-                                            //replace with your own journey data or fetch from an API
-                                            { city: "Florence", country: "Italy", date: "A city to wander", image: "photo-1543429257-37a54b3f4c4d" }
-                                        ].map((journey) => <Link key={journey.city} to="/gallery" className="group relative flex min-h-52 items-end overflow-hidden rounded-xl bg-cover bg-center p-4 text-white" style={{ backgroundImage: `linear-gradient(0deg, rgb(20 16 14 / 78%), transparent 72%), url(https://images.unsplash.com/${journey.image}?auto=format&fit=crop&w=700&q=80)` }}><div className="transition group-hover:translate-y-[-2px]"><p className="font-[Adamina] text-[0.6rem] uppercase tracking-[0.18em] text-[#f3d8bd]">{journey.date}</p><h3 className="font-[Cormorant_Garamond] text-3xl leading-tight">{journey.city}</h3><p className="font-[Cormorant_Garamond]">{journey.country}</p></div></Link>)}
-                                    </div>
-                                </section>
-                            </div>
                         </div>
                     </div>
                 </div>
