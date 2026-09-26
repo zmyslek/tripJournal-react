@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import { ErrorEvent, Map as MapLibreMap, Marker, type GeoJSONSource } from "maplibre-gl";
+import { config, ErrorEvent, Map as MapLibreMap, Marker, type GeoJSONSource } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { type CountriesGeoJson } from "../types/countries";
 import type { CountryStatus } from "../pages/Home";
@@ -10,6 +10,9 @@ const MAPTILER_STYLE_URL = "https://api.maptiler.com/maps/0196a729-51f8-7a04-8b3
 const COUNTRIES_SOURCE_ID = "tripjournal-countries";
 const COUNTRIES_FILL_LAYER_ID = "tripjournal-countries-fill";
 const COUNTRIES_BORDER_LAYER_ID = "tripjournal-countries-border";
+const MAPLIBRE_WORKER_URL = new URL("maplibre-gl/dist/maplibre-gl-worker.mjs", import.meta.url).toString();
+
+config.WORKER_URL = MAPLIBRE_WORKER_URL;
 
 export type MapProps = {
   countriesData: CountriesGeoJson | null;
@@ -139,6 +142,13 @@ const Map: React.FC<MapProps> = ({
     refreshCountries();
   };
 
+  const configureGlobeStyle = (map: MapLibreMap) => {
+    if (map.getLayer("Background")) {
+      map.setPaintProperty("Background", "background-color", "#2b5662");
+    }
+    map.setTerrain(null);
+  };
+
   useEffect(() => {
     initialGlobeZoomRef.current = initialGlobeZoom;
   }, [initialGlobeZoom]);
@@ -195,6 +205,7 @@ const Map: React.FC<MapProps> = ({
     mapRef.current = map;
     map.on("load", () => {
       map.setProjection({ type: viewModeRef.current === "globe" ? "globe" : "mercator" });
+      configureGlobeStyle(map);
       addCountryLayers(map);
       if (userLocationRef.current) {
         const markerElement = document.createElement("div");
