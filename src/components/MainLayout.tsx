@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { Settings, HelpCircle } from "lucide-react";
 import leatherBackground from "../assets/dark-leather.png";
+import paperBackground from "../assets/wrinkled-paper.png";
 
 const COOKIE_CONSENT_KEY = "tripjournal:cookie-consent:v1";
 const policyLinks = [
@@ -10,6 +11,13 @@ const policyLinks = [
     { to: "/policies/terms", label: "Terms" },
     { to: "/policies/accessibility", label: "Accessibility" }
 ];
+
+const leatherSurfaceStyle = {
+    backgroundColor: "#211b18",
+    backgroundImage: `linear-gradient(rgb(33 27 24 / 0.3), rgb(33 27 24 / 0.3)), url(${leatherBackground})`,
+    backgroundSize: "cover",
+    backgroundPosition: "center"
+};
 
 function getSavedCookieConsent(): "accepted" | "rejected" | null {
     try {
@@ -39,12 +47,7 @@ function MainLayout() {
         <div className="flex min-h-screen w-full flex-col overflow-x-hidden">
                 <nav
                     className="w-full max-w-full overflow-x-hidden box-border flex items-center justify-between gap-[max(1rem,4%)] px-[max(1.25rem,5%)] py-[max(0.875rem,2%)] max-sm:flex-col max-sm:gap-3 max-sm:px-4 lg:flex-nowrap"
-                    style={{
-                        backgroundColor: "#211b18",
-                        backgroundImage: `linear-gradient(rgb(33 27 24 / 0.3), rgb(33 27 24 / 0.3)), url(${leatherBackground})`,
-                        backgroundSize: "cover",
-                        backgroundPosition: "center"
-                    }}
+                    style={leatherSurfaceStyle}
                 >
                     <div className="min-w-0 flex-1 text-center max-sm:flex-none lg:flex-none">
                         <NavLink to="/home" className="whitespace-nowrap text-center font-[Adamina] text-[clamp(1.5rem,5vw,1.875rem)] leading-none font-normal text-[#ffead4] no-underline" aria-label="Home">
@@ -111,6 +114,12 @@ function MainLayout() {
 
             <main
                 className="flex-1 w-full overflow-x-hidden bg-[#fbf8f2]"
+                style={{
+                    backgroundColor: "#fbf8f2",
+                    backgroundImage: `linear-gradient(rgb(251 248 242 / 0.82), rgb(251 248 242 / 0.82)), url(${paperBackground})`,
+                    backgroundSize: "720px auto",
+                    backgroundAttachment: "fixed"
+                }}
             >
                 <Outlet />
             </main>
@@ -150,7 +159,7 @@ function MainLayout() {
 
             <footer
                 className="flex items-start justify-between gap-[max(2rem,8%)] px-[max(1.5rem,6%)] py-[max(1.5rem,4%)] shadow-[0_-10px_28px_rgb(35_18_8_/_18%)] max-sm:flex-col"
-                style={{ backgroundColor: "#211b18", backgroundImage: "none" }}
+                style={leatherSurfaceStyle}
             >
                 <div>
                     <p className="m-0 font-[Adamina] text-[clamp(1rem,2.5vw,1.15rem)] leading-none text-[#ffead4]">
