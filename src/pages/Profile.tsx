@@ -10,7 +10,6 @@ import mountainsAvatar from "../assets/avatars/mountains.png";
 import passportAvatar from "../assets/avatars/passport.png";
 import postcardAvatar from "../assets/avatars/postcard.png";
 import suitcaseAvatar from "../assets/avatars/suitcase.png";
-import paperBackground from "../assets/wrinkled-paper.png";
 import { supabase } from "../lib/supabase/client";
 import { clearStoredUserProfile, getStoredUserProfile, saveStoredUserProfile } from "../types/user";
 
@@ -196,31 +195,29 @@ export function Profile() {
 
     return (
         <section className="mx-auto w-full max-w-[min(95vw,1380px)] px-[max(1.25rem,5%)] py-[max(2rem,6vh)] text-[#50300d]" aria-labelledby="profile-title">
-            <div
-                className="overflow-hidden rounded-[1.35rem] border border-[#8f5a20]/35 bg-[#ffead4]/95 shadow-[0_18px_42px_rgb(80_48_13_/_20%),inset_0_0_0_1px_rgb(255_244_231_/_55%)] transition-all"
-                style={{ backgroundImage: `linear-gradient(rgb(255 234 212 / 0.9), rgb(255 234 212 / 0.9)), url(${paperBackground})`, backgroundSize: "cover" }}
-            >
+            <div className="overflow-hidden rounded-[1.35rem] border border-[#8f5a20]/25 bg-[#f8f4ee] shadow-[0_18px_42px_rgb(80_48_13_/_13%)] transition-all">
                 <div
-                        className="atlas-header relative min-h-[11rem] bg-[#5a392b] px-6 py-7 text-[#ffead4] sm:px-9"
-                    style={{ backgroundImage: `linear-gradient(rgb(90 57 43 / 0.9), rgb(90 57 43 / 0.9)), url(${paperBackground})`, backgroundSize: "cover" }}
+                    className="atlas-header relative flex min-h-[19rem] items-end bg-[#5a392b] px-6 py-7 text-[#ffead4] sm:min-h-[24rem] sm:px-9"
+                    style={{ backgroundImage: `linear-gradient(90deg, rgb(30 24 21 / 78%), rgb(30 24 21 / 20%)), linear-gradient(0deg, rgb(30 24 21 / 40%), transparent 65%), url(https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=1800&q=85)`, backgroundSize: "cover", backgroundPosition: "center 55%" }}
                 >
-                    <div className="relative flex flex-wrap items-start justify-between gap-6">
+                    <div className="relative z-10 flex w-full flex-wrap items-end justify-between gap-6">
                         <div>
-                            <p className="m-0 font-[Adamina] text-[0.7rem] uppercase tracking-[0.24em] text-[#f6d7b5]">Travel profile</p>
-                            <h1 id="profile-title" className="mt-3 font-[Adamina] text-[clamp(1.8rem,4vw,2.8rem)] leading-none text-[#fff4e7]">
+                            <p className="m-0 font-[Adamina] text-[0.7rem] uppercase tracking-[0.24em] text-[#f6d7b5]">@{profile.name.toLowerCase().trim().replace(/\\s+/g, ".")}</p>
+                            <h1 id="profile-title" className="mt-3 font-[Cormorant_Garamond] text-[clamp(2.8rem,7vw,5.4rem)] leading-[0.9] text-[#fff4e7]">
                                 {profile.name}
                             </h1>
-                            <p className="mt-4 max-w-[42rem] font-[Cormorant_Garamond] text-[1.25rem] leading-[1.35] text-[#f7dfca]">
-                                A personal overview for the places you have visited, the routes you are planning, and the memories you keep coming back to.
+                            <p className="mt-3 max-w-[42rem] font-[Cormorant_Garamond] text-[1.15rem] leading-[1.35] text-[#f7dfca]">
+                                {profile.currentFocus} · {profile.travelStyle}
                             </p>
                         </div>
-                        <div className="flex h-40 w-40 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[#f6d7b5]/70 bg-[#cf8d45] font-[Adamina] text-[1.9rem] text-[#fff4e7]">
+                        <button type="button" onClick={openEditor} className="absolute right-0 top-0 rounded-full border border-white/60 bg-black/20 px-5 py-2.5 font-[Adamina] text-sm text-white backdrop-blur-sm transition hover:bg-black/40">Edit profile</button>
+                        <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[#f6d7b5]/70 bg-[#cf8d45] font-[Adamina] text-[1.5rem] text-[#fff4e7] sm:h-24 sm:w-24">
                             {profile.avatar ? <img src={profile.avatar} alt="" className="h-full w-full object-cover" /> : initials}
                         </div>
                     </div>
                 </div>
 
-                <div className="grid gap-7 px-6 py-7 sm:px-9 lg:grid-cols-[minmax(0,1fr)_20rem]">
+                <div className="grid gap-7 px-4 py-5 sm:px-7 sm:py-7 lg:grid-cols-[minmax(0,1fr)_20rem]">
                     <div>
                         <div className="rounded-[1rem] border border-[#cf8d45]/35 bg-[#fff4e7]/52 p-5 shadow-[inset_0_0_24px_rgb(143_90_32_/_8%)]">
                             <div className="grid gap-x-8 gap-y-5 sm:grid-cols-2">
@@ -330,7 +327,23 @@ export function Profile() {
                                             Log out
                                         </button>
                                         {/* Admin seeding moved to /admin-seed (protected) */}
-                                    </aside>
+                    </aside>
+                </div>
+                <div className="grid gap-6 px-4 pb-6 sm:px-7 lg:grid-cols-[minmax(0,1fr)_20rem]">
+                    <section className="rounded-[1rem] border border-[#50300d]/15 bg-white p-5 sm:p-7" aria-label="Recent journeys">
+                        <div className="mb-4 flex items-end justify-between gap-3">
+                            <div><p className="font-[Adamina] text-[0.68rem] uppercase tracking-[0.24em] text-[#936d58]">Recently remembered</p><h2 className="mt-1 font-[Cormorant_Garamond] text-3xl text-[#50300d]">Latest journeys</h2></div>
+                            <Link to="/gallery" className="font-[Cormorant_Garamond] text-base text-[#936d58] hover:text-[#50300d]">View gallery →</Link>
+                        </div>
+                        <div className="grid gap-3 sm:grid-cols-3">
+                            {[
+                                { city: "Florence", country: "Italy", date: "A city to wander", image: "photo-1543429257-37a54b3f4c4d" },
+                                { city: "Kyoto", country: "Japan", date: "Quiet mornings", image: "photo-1493976040374-85c8e12f0c0e" },
+                                { city: "Lisbon", country: "Portugal", date: "Down every lane", image: "photo-1555881400-74d7acaacd8b" }
+                            ].map((journey) => <Link key={journey.city} to="/gallery" className="group relative flex min-h-52 items-end overflow-hidden rounded-xl bg-cover bg-center p-4 text-white" style={{ backgroundImage: `linear-gradient(0deg, rgb(20 16 14 / 78%), transparent 72%), url(https://images.unsplash.com/${journey.image}?auto=format&fit=crop&w=700&q=80)` }}><div className="transition group-hover:translate-y-[-2px]"><p className="font-[Adamina] text-[0.6rem] uppercase tracking-[0.18em] text-[#f3d8bd]">{journey.date}</p><h3 className="font-[Cormorant_Garamond] text-3xl leading-tight">{journey.city}</h3><p className="font-[Cormorant_Garamond]">{journey.country}</p></div></Link>)}
+                        </div>
+                    </section>
+                    <blockquote className="relative flex flex-col justify-center rounded-[1rem] bg-[#5a392b] p-6 text-[#fff4e7] sm:p-7"><span aria-hidden="true" className="absolute right-4 top-0 font-[Cormorant_Garamond] text-8xl leading-none text-white/10">“</span><p className="relative font-[Cormorant_Garamond] text-2xl leading-tight">The real voyage of discovery consists not in seeking new landscapes, but in having new eyes.</p><cite className="mt-4 font-[Adamina] text-[0.62rem] not-italic uppercase tracking-[0.2em] text-[#e0c3aa]">Marcel Proust</cite></blockquote>
                 </div>
             </div>
 
