@@ -277,10 +277,10 @@ export function Profile() {
                         <blockquote className="relative flex mt-7 flex-col justify-center rounded-[1rem] bg-[#5a392b] p-6 text-[#fff4e7] sm:p-7"><span aria-hidden="true" className="absolute right-4 top-0 font-[Cormorant_Garamond] text-8xl leading-none text-white/10">“</span><p className="relative font-[Cormorant_Garamond] text-2xl leading-tight">The real voyage of discovery consists not in seeking new landscapes, but in having new eyes.</p><cite className="mt-4 font-[Adamina] text-[0.62rem] not-italic uppercase tracking-[0.2em] text-[#e0c3aa]">Marcel Proust</cite></blockquote>
                     </div>
 
-                    <aside className="flex flex-col gap-3 rounded-[1rem] p-4">
+                    <aside className="flex flex-col gap-2 rounded-[1rem] p-1">
                         {/* Subscription badge (reads from localStorage key `subscriptionStatus`) */}
                             <SubscriptionStatus />
-                        <div className="mt-7 grid gap-1 sm:grid-cols-3">
+                        <div className="grid gap-1 sm:grid-cols-3">
                             <Link
                                 to="/settings"
                                 className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#7a3f00] bg-[#5a392b] text-[#ffead4] transition hover:bg-[#7a3f00]"
