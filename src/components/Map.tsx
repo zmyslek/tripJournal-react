@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import { config, ErrorEvent, Map as MapLibreMap, Marker, type GeoJSONSource } from "maplibre-gl";
+import { config, ErrorEvent, Map as MapLibreMap, Marker, type GeoJSONSource, type StyleSpecification } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { type CountriesGeoJson } from "../types/countries";
 import type { CountryStatus } from "../pages/Home";
@@ -194,35 +194,57 @@ const Map: React.FC<MapProps> = ({
 
   useEffect(() => {
     if (!mapContainer.current) return;
-    const map = new MapLibreMap({
-      container: mapContainer.current,
-      style: MAPTILER_STYLE_URL,
-      center: [0, 20],
-      zoom: viewModeRef.current === "globe" ? initialGlobeZoomRef.current : 1.15,
-      minZoom: MIN_MAP_ZOOM,
-      renderWorldCopies: false
-    });
-    mapRef.current = map;
-    map.on("load", () => {
-      map.setProjection({ type: viewModeRef.current === "globe" ? "globe" : "mercator" });
-      configureGlobeStyle(map);
-      addCountryLayers(map);
-      if (userLocationRef.current) {
-        const markerElement = document.createElement("div");
-        markerElement.className = "user-location-marker";
-        markerElement.innerHTML = userLocationMarkup;
-        userMarkerRef.current = new Marker({ element: markerElement, anchor: "center" })
-          .setLngLat([userLocationRef.current.lng, userLocationRef.current.lat])
-          .addTo(map);
+    let map: MapLibreMap | null = null;
+    let disposed = false;
+
+    const initializeMap = async () => {
+      const response = await fetch(MAPTILER_STYLE_URL);
+      if (!response.ok) {
+        throw new Error(`Map style request failed with status ${response.status}`);
       }
-      if (focusCountryRef.current) focusMapOnCountry(focusCountryRef.current);
+
+      const style = await response.json() as StyleSpecification;
+      delete style.terrain;
+      delete (style as StyleSpecification & { fog?: unknown }).fog;
+
+      if (disposed || !mapContainer.current) return;
+
+      map = new MapLibreMap({
+        container: mapContainer.current,
+        style,
+        center: [0, 20],
+        zoom: viewModeRef.current === "globe" ? initialGlobeZoomRef.current : 1.15,
+        minZoom: MIN_MAP_ZOOM,
+        renderWorldCopies: false
+      });
+      mapRef.current = map;
+      map.on("load", () => {
+        if (!map) return;
+        map.setProjection({ type: viewModeRef.current === "globe" ? "globe" : "mercator" });
+        configureGlobeStyle(map);
+        addCountryLayers(map);
+        if (userLocationRef.current) {
+          const markerElement = document.createElement("div");
+          markerElement.className = "user-location-marker";
+          markerElement.innerHTML = userLocationMarkup;
+          userMarkerRef.current = new Marker({ element: markerElement, anchor: "center" })
+            .setLngLat([userLocationRef.current.lng, userLocationRef.current.lat])
+            .addTo(map);
+        }
+        if (focusCountryRef.current) focusMapOnCountry(focusCountryRef.current);
+      });
+      map.on("error", (event: ErrorEvent) => console.error("MapTiler map error", event.error));
+    };
+
+    initializeMap().catch((error: unknown) => {
+      if (!disposed) console.error("MapTiler map error", error);
     });
-    map.on("error", (event: ErrorEvent) => console.error("MapTiler map error", event.error));
 
     return () => {
+      disposed = true;
       userMarkerRef.current?.remove();
       userMarkerRef.current = null;
-      map.remove();
+      map?.remove();
       mapRef.current = null;
     };
   }, []);
