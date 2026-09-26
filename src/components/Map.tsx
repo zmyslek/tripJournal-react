@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { config, ErrorEvent, Map as MapLibreMap, Marker, type GeoJSONSource, type StyleSpecification } from "maplibre-gl";
+import maplibreWorkerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?url";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { type CountriesGeoJson } from "../types/countries";
 import type { CountryStatus } from "../pages/Home";
@@ -10,9 +11,7 @@ const MAPTILER_STYLE_URL = "https://api.maptiler.com/maps/0196a729-51f8-7a04-8b3
 const COUNTRIES_SOURCE_ID = "tripjournal-countries";
 const COUNTRIES_FILL_LAYER_ID = "tripjournal-countries-fill";
 const COUNTRIES_BORDER_LAYER_ID = "tripjournal-countries-border";
-const MAPLIBRE_WORKER_URL = new URL("maplibre-gl/dist/maplibre-gl-worker.mjs", import.meta.url).toString();
-
-config.WORKER_URL = MAPLIBRE_WORKER_URL;
+config.WORKER_URL = maplibreWorkerUrl;
 
 export type MapProps = {
   countriesData: CountriesGeoJson | null;
@@ -70,7 +69,7 @@ const Map: React.FC<MapProps> = ({
   const initialGlobeZoomRef = useRef(initialGlobeZoom);
   const lastFocusedCountryRef = useRef<string | null>(null);
 
-  const globeSize = sizeVariant === "compact" ? "60vw" : "min(82vw, 82vh)";
+  const globeSize = sizeVariant === "compact" ? "min(52vw, 52vh)" : "min(68vw, 68vh)";
   const flatMapWidth = "min(100%, 800px)";
   const flatMapHeight = "min(48vh, 560px)";
 
@@ -127,7 +126,7 @@ const Map: React.FC<MapProps> = ({
             "want-to-go", "#7A3F00",
             "#EAB681"
           ],
-          "fill-opacity": 0.72
+          "fill-opacity": 1
         }
       });
     }
