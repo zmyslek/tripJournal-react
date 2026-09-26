@@ -317,8 +317,8 @@ export function Profile() {
                             Log out
                         </button>
                         {/* Admin seeding moved to /admin-seed (protected) */}
-                        <div className="px-2 pb-2 sm:px-2">
-                            <section className="rounded-[1rem] border border-[#50300d]/15 bg-white p-1 sm:p-1" aria-label="Recent journeys">
+                        <div>
+                            <section className="rounded-[1rem] border border-[#50300d]/15 bg-white" aria-label="Recent journeys">
                                 <div className="mb-4 flex items-end justify-between gap-3">
                                     <div><p className="font-[Adamina] text-[0.68rem] uppercase tracking-[0.24em] text-[#936d58]">Recently remembered</p><h2 className="mt-1 font-[Cormorant_Garamond] text-3xl text-[#50300d]">Latest journeys</h2></div>
                                     <Link to="/gallery" className="font-[Cormorant_Garamond] text-base text-[#936d58] hover:text-[#50300d]">View gallery →</Link>
