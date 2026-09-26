@@ -43,11 +43,19 @@ function MainLayout() {
                     style={{ backgroundImage: `url(${leatherBackground})`, backgroundSize: "cover", backgroundPosition: "center" }}
                 >
                     <div className="min-w-0 flex-1 text-center">
-                        <NavLink to="/countries" className="text-center font-[Adamina] text-[clamp(1.5rem,5vw,1.875rem)] leading-none font-normal text-[#ffead4] no-underline" aria-label="Countries">
+                        <NavLink to="/home" className="text-center font-[Adamina] text-[clamp(1.5rem,5vw,1.875rem)] leading-none font-normal text-[#ffead4] no-underline" aria-label="Home">
                             TripJournal
                         </NavLink>
                     </div>
                     <div className="min-w-0 flex items-center justify-end gap-[max(0.75rem,3%)] max-sm:gap-1.5">
+                    <NavLink
+                        to="/home"
+                        className={({ isActive }) =>
+                            `font-[Adamina] text-[clamp(0.875rem,2.5vw,1.5rem)] leading-[1.2] font-normal text-[#ffead4] no-underline transition ${isActive ? "underline underline-offset-[0.18em]" : ""}`
+                        }
+                    >
+                        Home
+                    </NavLink>
                     <NavLink
                         to="/countries"
                         className={({ isActive }) =>

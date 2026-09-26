@@ -46,10 +46,25 @@ function App() {
             />
             <Route element={<MainLayout />}>
                 <Route
+                    path="/home"
+                    element={
+                        <Suspense fallback={<RouteFallback />}>
+                            <Home
+                                pageMode="home"
+                                visitedCountries={visitedCountries}
+                                countryStatuses={countryState.statuses}
+                                countryAddedDates={countryState.addedDates}
+                                setCountryStatus={setCountryStatus}
+                            />
+                        </Suspense>
+                    }
+                />
+                <Route
                     path="/countries"
                     element={
                         <Suspense fallback={<RouteFallback />}>
                             <Home
+                                pageMode="countries"
                                 visitedCountries={visitedCountries}
                                 countryStatuses={countryState.statuses}
                                 countryAddedDates={countryState.addedDates}
@@ -132,6 +147,7 @@ function App() {
                 element={
                     <Suspense fallback={<RouteFallback />}>
                         <Home
+                                pageMode="home"
                             visitedCountries={visitedCountries}
                             countryStatuses={countryState.statuses}
                             countryAddedDates={countryState.addedDates}

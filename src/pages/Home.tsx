@@ -17,7 +17,11 @@ export interface HomeProps {
     countryAddedDates: Record<string, string>;
     setCountryStatus: (countryName: string, status: CountryStatus | null) => void;
     visitedCountries: string[];
+    pageMode?: "home" | "countries";
 }
+
+const getCountryImageUrl = (countryName: string) =>
+    `https://source.unsplash.com/1200x900/?${encodeURIComponent(countryName)},travel,city`;
 
 const pointInRing = (lng: number, lat: number, ring: number[][]) => {
     let inside = false;
@@ -82,7 +86,7 @@ const findCountryAtCoordinates = (countriesData: CountriesGeoJson, lng: number, 
     return null;
 };
 
-function Home({ countryStatuses, countryAddedDates, setCountryStatus, visitedCountries }: HomeProps) {
+function Home({ countryStatuses, countryAddedDates, setCountryStatus, visitedCountries, pageMode = "home" }: HomeProps) {
     const [searchTerm, setSearchTerm] = useState("");
     const [mapViewMode, setMapViewMode] = useState<"globe" | "map">("globe");
     const [userLocation, setUserLocation] = useState<{ lng: number; lat: number } | null>(null);
@@ -241,13 +245,6 @@ function Home({ countryStatuses, countryAddedDates, setCountryStatus, visitedCou
         setMapStatusFilters(newFilters);
     };
 
-    const getStatusColor = (status: CountryStatus | "not-explored" | null): string => {
-        if (status === "visited") return "bg-[#CF8D45] text-[#ffead4] border-[#CF8D45]";
-        if (status === "want-to-visit-again") return "bg-[#FABE7D] text-[#50300d] border-[#FABE7D]";
-        if (status === "want-to-go") return "bg-[#7A3F00] text-[#ffead4] border-[#7A3F00]";
-        return "bg-[#7a3f00]/20 text-[#6a4630] border-[#7a3f00]/40";
-    };
-
     const formatAddedDate = (countryName: string) => {
         const dateValue = countryAddedDates[countryName];
         if (!dateValue) {
@@ -301,8 +298,8 @@ function Home({ countryStatuses, countryAddedDates, setCountryStatus, visitedCou
 
     return (
         <>
-            {/* Search Bar - rounded top corners only */}
-            <section className="mx-auto w-full max-w-[min(95vw,1380px)] px-[max(1.25rem,5%)] pt-[max(2rem,6vh)] text-[#50300d]">
+            {pageMode === "countries" && (
+                <section className="mx-auto w-full max-w-[min(95vw,1380px)] px-[max(1.25rem,5%)] pt-[max(2rem,6vh)] text-[#50300d]">
                 <div
                     className="overflow-hidden rounded-t-[1.35rem] border border-[#8f5a20]/35 bg-[#ffead4]/95 shadow-[0_18px_42px_rgb(80_48_13_/_20%),inset_0_0_0_1px_rgb(255_244_231_/_55%)]"
                     style={{ backgroundImage: `linear-gradient(rgb(255 234 212 / 0.9), rgb(255 234 212 / 0.9)), url(${paperBackground})`, backgroundSize: "cover" }}
@@ -373,7 +370,8 @@ function Home({ countryStatuses, countryAddedDates, setCountryStatus, visitedCou
                         </div>
                     </div>
                 </div>
-            </section>
+                </section>
+            )}
 
             <div className="mx-auto flex w-full max-w-[min(95vw,1380px)] flex-col gap-[max(2rem,8%)] px-[max(1rem,4%)] pb-[max(3.5rem,10vh)] pt-[max(1.5rem,4vh)]">
                 {error && (
@@ -383,6 +381,7 @@ function Home({ countryStatuses, countryAddedDates, setCountryStatus, visitedCou
                     </section>
                 )}
 
+                {pageMode === "home" && (
                 <section className="grid gap-6 xl:grid-cols-[minmax(0,1.25fr)_minmax(360px,1fr)]">
                     <div className="mt-6 flex min-h-[420px] flex-col items-center justify-center gap-4">
                         {isLoading || !countriesData ? (
@@ -521,8 +520,9 @@ function Home({ countryStatuses, countryAddedDates, setCountryStatus, visitedCou
                         </div>
                     </aside>
                 </section>
+                )}
 
-                {/* All Countries Section - Split into two parts */}
+                {pageMode === "countries" && (
                 <div className="overflow-hidden rounded-[1.35rem] border border-[#8f5a20]/35 shadow-[0_18px_42px_rgb(80_48_13_/_20%),inset_0_0_0_1px_rgb(255_244_231_/_55%)]">
                     {/* Top section - Darker brown (5A392B) */}
                     <div
@@ -614,19 +614,25 @@ function Home({ countryStatuses, countryAddedDates, setCountryStatus, visitedCou
                                     return (
                                         <div
                                             key={countryName}
-                                            className={`rounded-[1.2rem] border p-4 transition ${getStatusColor(status)}`}
+                                            className="relative min-h-[14rem] overflow-hidden rounded-[1.2rem] border border-[#ffead4]/35 p-4 text-[#fff4e7] shadow-[0_12px_25px_rgb(35_18_8_/_20%)] transition hover:-translate-y-1"
                                         >
-                                            <div className="flex flex-col gap-3">
+                                            <div
+                                                className="absolute inset-0 bg-cover bg-center transition duration-500 hover:scale-105"
+                                                style={{ backgroundImage: `url(${getCountryImageUrl(countryName)})` }}
+                                                aria-hidden="true"
+                                            />
+                                            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgb(25_16_11_/_18%),rgb(25_16_11_/_88%))]" aria-hidden="true" />
+                                            <div className="relative flex h-full min-h-[13rem] flex-col justify-end gap-3">
                                                 <div className="flex items-center justify-between gap-2">
                                                     {status !== null ? (
                                                         <Link
                                                             to={buildCountryTripsPath(countryName)}
-                                                            className="font-[Cormorant_Garamond] text-[1rem] text-[#fff4e7] no-underline underline-offset-2 hover:underline line-clamp-2"
+                                                            className="font-[Adamina] text-[1.45rem] text-[#fff4e7] no-underline underline-offset-2 hover:underline line-clamp-2"
                                                         >
                                                             {countryName}
                                                         </Link>
                                                     ) : (
-                                                        <span className="font-[Cormorant_Garamond] text-[1rem] text-[#fff4e7] line-clamp-2">
+                                                        <span className="font-[Adamina] text-[1.45rem] text-[#fff4e7] line-clamp-2">
                                                             {countryName}
                                                         </span>
                                                     )}
@@ -671,6 +677,7 @@ function Home({ countryStatuses, countryAddedDates, setCountryStatus, visitedCou
                         )}
                     </div>
                 </div>
+                )}
 
                 {/* Scroll to top button */}
                 {showScrollTop && (

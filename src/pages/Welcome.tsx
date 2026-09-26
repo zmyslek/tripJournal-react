@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import darkLeatherTexture from "../assets/dark-leather.jpg";
 import { getAuthRedirectUrl, supabase } from "../lib/supabase/client";
 import { createStoredUserProfileFromSession, saveStoredUserProfile, type AuthProvider } from "../types/user";
 
@@ -112,7 +111,7 @@ function Welcome() {
 
     const redirectIfOnWelcome = () => {
       if (location.pathname === "/welcome") {
-        navigate("/countries", { replace: true });
+        navigate("/home", { replace: true });
       }
     };
 
@@ -222,7 +221,7 @@ function Welcome() {
         if (sessionUser) {
           saveAuth(getAuthUserFromSession(sessionUser));
           setIsAuthReady(true);
-          navigate("/countries", { replace: true });
+          navigate("/home", { replace: true });
         } else {
           setFormState((prev) => ({
             ...prev,
@@ -242,7 +241,7 @@ function Welcome() {
         if (data.session?.user) {
           saveAuth(getAuthUserFromSession(data.session.user));
           setIsAuthReady(true);
-          navigate("/countries", { replace: true });
+          navigate("/home", { replace: true });
         }
       }
     } catch (error) {
@@ -274,28 +273,15 @@ function Welcome() {
   };
 
   const handleEnterTripJournal = () => {
-    navigate("/countries", { replace: true });
+    navigate("/home", { replace: true });
   };
 
   return (
     <div
-      className="relative min-h-screen overflow-hidden text-[#FFEAD4]"
-      style={{
-        backgroundImage: `linear-gradient(90deg, rgba(0,0,0,0.96) 0%, rgba(0,0,0,0.88) 34%, rgba(0,0,0,0.42) 58%, rgba(0,0,0,0.06) 78%, rgba(0,0,0,0) 100%), url(${darkLeatherTexture})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center right",
-      }}
+      className="relative min-h-screen overflow-hidden bg-[#1f1916] text-[#FFEAD4]"
     >
-      <div
-        className="pointer-events-none absolute inset-0 opacity-40"
-        style={{
-          backgroundImage:
-            "radial-gradient(circle at 20% 20%, rgba(234,182,129,0.18), transparent 24%), radial-gradient(circle at 70% 55%, rgba(122,63,0,0.24), transparent 28%), radial-gradient(circle at 85% 12%, rgba(255,234,212,0.1), transparent 20%)",
-        }}
-      />
-
-      <div className="relative mx-auto grid min-h-screen max-w-[1400px] items-center gap-10 px-6 py-8 lg:grid-cols-[1fr_0.9fr] lg:px-10 xl:px-14">
-        <div className="relative z-10 max-w-lg">
+      <div className="relative mx-auto grid min-h-screen max-w-none items-stretch gap-0 px-0 py-0 lg:grid-cols-[44%_56%]">
+        <div className="relative z-10 flex w-full max-w-lg flex-col justify-center px-6 py-10 sm:px-12 lg:mx-auto lg:max-w-[29rem] lg:px-0 lg:py-12">
           <div className="mb-8 flex items-center gap-4">
             <div className="h-px w-16 bg-[#EAB681]" />
             <span className="font-cormorant text-xs uppercase tracking-[0.4em] text-[#EAB681]/80">Welcome to</span>
@@ -405,15 +391,15 @@ function Welcome() {
           </div>
         </div>
 
-        <div className="relative z-10 mt-6 flex min-h-[420px] flex-col items-center justify-center lg:items-end">
-          <figure className="group relative w-full max-w-[820px] overflow-hidden rounded-[2rem] border border-[#EAB681]/55 bg-[#5A392B] shadow-[0_30px_90px_rgba(0,0,0,0.5)] aspect-[4/5] sm:aspect-[5/4] lg:aspect-[4/5]">
+        <div className="relative z-10 flex min-h-[34rem] flex-col items-center justify-center lg:min-h-screen lg:items-end">
+          <figure className="group relative h-full min-h-[34rem] w-full max-w-none overflow-hidden bg-[#5A392B] lg:min-h-screen">
             <img
               src={FLORENCE_IMAGE_URL}
               alt="Florence, Italy viewed from above"
               className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105"
             />
             <div className="absolute inset-0 bg-gradient-to-b from-[#1a1a1a]/65 via-transparent to-[#1a1a1a]/75" />
-            <figcaption className="absolute inset-x-0 top-0 p-6 sm:p-8 lg:p-10">
+            <figcaption className="absolute inset-x-0 bottom-0 p-6 sm:p-10 lg:p-14">
               <p className="font-cormorant text-sm uppercase tracking-[0.28em] text-[#FFEAD4] sm:text-base">
                 01 — Florence, Italy
               </p>
