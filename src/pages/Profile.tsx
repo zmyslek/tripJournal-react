@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect } from "react";
-import { Settings, HelpCircle, Edit } from "lucide-react";
+import { Settings, HelpCircle } from "lucide-react";
 import type { ChangeEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useScrollToTop } from "../hooks/useScrollToTop";
