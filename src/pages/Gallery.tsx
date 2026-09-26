@@ -7,13 +7,15 @@ import PhotoRandomizer from '../components/PhotoRandomizer';
 import VideoCard from '../components/VideoCard';
 import { useScrollToTop } from '../hooks/useScrollToTop';
 import { useGalleryStorage } from '../hooks/useGalleryStorage';
+import { useSupabaseGallery, type SupabaseGalleryPhoto } from '../hooks/useSupabaseGallery';
 import paperBackground from '../assets/wrinkled-paper.png';
-import { getExtensionFromPath, inferMediaKindFromName, type MediaKind } from '../utils/mediaFiles';
+import { inferMediaKindFromName, type MediaKind } from '../utils/mediaFiles';
 
 interface GalleryItem {
     kind: MediaKind;
     src: string;
     text: string;
+    location?: string;
 }
 
 export type { GalleryItem };
@@ -23,13 +25,8 @@ interface GallerySection {
     items: GalleryItem[];
 }
 
-const galleryManifestUrl = `${import.meta.env.BASE_URL}temporary-gallery/manifest.json`;
-const galleryPublicRoot = `${import.meta.env.BASE_URL}temporary-gallery/`;
-const imageExtensions = new Set(['jpeg', 'jpg', 'png', 'webp', 'gif', 'avif', 'tif', 'tiff', 'bmp', 'svg']);
-const videoExtensions = new Set(['mp4', 'mov', 'webm', 'm4v', 'avi', 'mkv', 'wmv', 'flv', '3gp', 'mpeg']);
 const videoPosterCache = new Map<string, string>();
 
-let cachedManifestPaths: string[] | null = null;
 const initialVisibleItemsPerSection = 15;
 const loadMoreStep = 15;
 
@@ -120,92 +117,24 @@ function spreadHighlightItems(sections: GallerySection[]): GalleryItem[] {
     return spreadItems;
 }
 
-function toGalleryPublicUrl(relativePath: string) {
-    return `${galleryPublicRoot}${relativePath}`;
-}
+function buildGalleryCollections(photos: SupabaseGalleryPhoto[]) {
+    const sectionMap = new Map<string, GalleryItem[]>();
 
-function buildGalleryCollections(relativePaths: string[]) {
-    const sectionMap = new Map<string, Map<string, Array<{ kind: MediaKind; src: string; text: string; ext: string }>>>();
-    const looseItemsMap = new Map<string, { kind: MediaKind; src: string; text: string; ext: string }>();
-
-    relativePaths
-        .sort((pathA, pathB) => pathA.localeCompare(pathB))
-        .forEach(relativePath => {
-            const segments = relativePath.split('/');
-            const filename = segments[segments.length - 1];
-            const ext = getExtensionFromPath(filename);
-            const inferredKind = inferMediaKindFromName(filename);
-            const kind: MediaKind | null = inferredKind ?? (videoExtensions.has(ext) ? 'video' : imageExtensions.has(ext) ? 'image' : null);
-
-            if (!kind) {
-                return;
-            }
-
-            const src = toGalleryPublicUrl(relativePath);
-            const base = filename.replace(/\.[^/.]+$/, '');
-
-            // Accept files at varying depths. Use the first two segments as country/city
-            // so nested folders (country/city/whatever/file.jpg) are included.
-            if (segments.length === 1) {
-                looseItemsMap.set(base, { kind, src, text: '', ext });
-                return;
-            }
-
-            if (segments.length >= 2) {
-                const countryName = segments[0];
-                const cityName = segments.length >= 3 ? segments[1] : 'Imported';
-                const sectionLabel = segments.length >= 3 ? `${countryName}/${cityName}` : countryName;
-                // Use the rest of the path (after country/city) as the base identifier.
-                // Two-segment paths are folder/file imports, so keep them together.
-                const remainder = segments.length >= 3 ? segments.slice(2).join('/') || base : filename;
-                const sectionBucket = sectionMap.get(sectionLabel) ?? new Map();
-                let items: Array<{ kind: MediaKind; src: string; text: string; ext: string }> = sectionBucket.get(remainder) ?? [];
-                
-                // For images, prefer higher-priority formats (jpg, png, etc.)
-                // For videos, keep all (mp4, webm, mov, etc.)
-                if (kind === 'image') {
-                    const preferredExts = ['jpg', 'jpeg', 'png', 'webp', 'avif', 'gif', 'bmp', 'svg'];
-                    const prefIndex = (extName: string) => {
-                        const index = preferredExts.indexOf(extName);
-                        return index === -1 ? preferredExts.length : index;
-                    };
-                    const existing = items.find(i => i.kind === 'image');
-                    if (!existing || prefIndex(ext) < prefIndex(existing.ext)) {
-                        items = items.filter(i => i.kind !== 'image');
-                        items.push({ kind, src, text: `${countryName}/${cityName}`, ext });
-                    }
-                } else if (kind === 'video') {
-                    // Always add videos; they will be rendered separately
-                    items.push({ kind, src, text: `${countryName}/${cityName}`, ext });
-                }
-
-                if (items.length > 0) {
-                    sectionBucket.set(remainder, items);
-                    sectionMap.set(sectionLabel, sectionBucket);
-                }
-                return;
-            }
-        });
-
-    function pickPreferred(itemsMap: Map<string, Array<{ kind: MediaKind; src: string; text: string; ext: string }>>) {
-        const out: GalleryItem[] = [];
-        for (const entries of itemsMap.values()) {
-            for (const entry of entries) {
-                out.push({ kind: entry.kind, src: entry.src, text: entry.text });
-            }
+    for (const photo of photos) {
+        const kind = inferMediaKindFromName(photo.name, photo.type);
+        if (!kind) {
+            continue;
         }
-        return out;
+
+        const items = sectionMap.get(photo.location) ?? [];
+        items.push({ kind, src: photo.url, text: photo.name || photo.dateAdded, location: photo.location });
+        sectionMap.set(photo.location, items);
     }
 
     const sections: GallerySection[] = Array.from(sectionMap.entries())
         .sort(([labelA], [labelB]) => labelA.localeCompare(labelB))
-        .map(([label, itemsMap]) => ({
-            label,
-            items: shuffle(pickPreferred(itemsMap))
-        }));
-
-    const looseItems = Array.from(looseItemsMap.values()).map(v => ({ kind: v.kind, src: v.src, text: v.text }));
-    const highlights = sections.length > 0 ? spreadHighlightItems(sections) : shuffle(looseItems.filter(item => item.kind === 'image'));
+        .map(([label, items]) => ({ label, items: shuffle(items) }));
+    const highlights = spreadHighlightItems(sections);
 
     return {
         highlights,
@@ -273,62 +202,12 @@ function GalleryStrip({ items, bend, onItemClick }: GalleryStripProps) {
     );
 }
 
-function useGalleryManifest(): { paths: string[]; loading: boolean; hasError: boolean } {
-    const [paths, setPaths] = useState<string[]>(cachedManifestPaths ?? []);
-    const [loading, setLoading] = useState(!cachedManifestPaths);
-    const [hasError, setHasError] = useState(false);
-
-    useEffect(() => {
-        if (cachedManifestPaths) {
-            return;
-        }
-
-        let cancelled = false;
-
-        const loadManifest = async () => {
-            try {
-                const response = await fetch(galleryManifestUrl);
-                if (!response.ok) {
-                    throw new Error(`Manifest error: ${response.status}`);
-                }
-
-                const data: unknown = await response.json();
-                const validPaths = Array.isArray(data) ? data.filter((entry): entry is string => typeof entry === 'string') : [];
-
-                if (!cancelled) {
-                    cachedManifestPaths = validPaths;
-                    setPaths(validPaths);
-                    setHasError(false);
-                }
-            } catch (err) {
-                if (!cancelled) {
-                    console.error('Gallery manifest load failed:', err);
-                    setPaths([]);
-                    setHasError(true);
-                }
-            } finally {
-                if (!cancelled) {
-                    setLoading(false);
-                }
-            }
-        };
-
-        void loadManifest();
-
-        return () => {
-            cancelled = true;
-        };
-    }, []);
-
-    return { paths, loading, hasError };
-}
-
 function Gallery() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedIndex, setSelectedIndex] = useState(0);
-    const { paths: manifestPaths, loading: manifestLoading, hasError: manifestError } = useGalleryManifest();
+    const { photos: supabasePhotos, isLoading: galleryLoading, error: galleryError } = useSupabaseGallery();
     const [isQuizOpen, setIsQuizOpen] = useState(false);
-    const galleryCollections = useMemo(() => buildGalleryCollections(manifestPaths), [manifestPaths]);
+    const galleryCollections = useMemo(() => buildGalleryCollections(supabasePhotos), [supabasePhotos]);
     const [selectedItems, setSelectedItems] = useState<GalleryItem[]>(() => getInitialSelectedItems(galleryCollections.highlights));
     const [visibleItemsBySection, setVisibleItemsBySection] = useState<Record<string, number>>({});
     const { showScrollTop, scrollToTop } = useScrollToTop();
@@ -526,20 +405,20 @@ function Gallery() {
             </section>
 
             {/* Show empty state if no photos at all */}
-            {galleryCollections.highlights.length === 0 && flatPhotos.length === 0 && !manifestLoading ? (
+            {galleryCollections.highlights.length === 0 && flatPhotos.length === 0 && !galleryLoading ? (
                 <section className="mx-auto w-full max-w-[min(100%,1380px)] px-[max(1.25rem,5%)] py-16">
                     <EmptyGalleryState onUploadClick={handleUploadClick} />
                 </section>
             ) : (
                 <>
                     <section className="mx-auto w-full max-w-[min(100%,1380px)] px-[max(1.25rem,5%)] pb-10 pt-10 text-[#50300d]">
-                        {manifestLoading ? (
+                        {galleryLoading ? (
                             <p className="mb-6 font-[Cormorant_Garamond] text-[1.2rem] text-[#5a392b]">Loading gallery media...</p>
                         ) : null}
 
-                        {manifestError ? (
+                        {galleryError ? (
                             <p className="mb-6 font-[Cormorant_Garamond] text-[1.2rem] text-[#7a3f00]">
-                                Gallery media could not be loaded. Check public/temporary-gallery/manifest.json.
+                                Gallery media could not be loaded: {galleryError}
                             </p>
                         ) : null}
 

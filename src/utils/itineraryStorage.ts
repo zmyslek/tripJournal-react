@@ -372,7 +372,7 @@ export const SEEDED_ITINERARIES: Record<string, ItineraryItem[]> = {
             mood: "islands, design shops, quiet water views",
             travelStyle: "public-transit city and archipelago week",
             budget: "Moderate with picnic lunches",
-            description: "A detailed Sweden sample page. No Sweden photos exist in the current temporary-gallery manifest yet, so the gallery block is ready and will populate automatically once Sweden media is added.",
+            description: "A detailed Sweden sample page. The gallery block is ready to populate from Supabase photo data as media is added.",
             summary: [
                 { label: "Base", value: "Södermalm for cafes, viewpoints, and transit" },
                 { label: "Anchor plan", value: "Gamla Stan, Djurgården museums, metro art, Vaxholm archipelago day" },
@@ -396,7 +396,7 @@ export const SEEDED_ITINERARIES: Record<string, ItineraryItem[]> = {
             checklist: [
                 { task: "Book refundable Stockholm hotel", done: false, due: "Jul 15" },
                 { task: "Pick archipelago boat route", done: false, due: "Aug 1" },
-                { task: "Add Sweden photos to temporary-gallery", done: false, due: "After trip" }
+                { task: "Add Sweden photos to Supabase", done: false, due: "After trip" }
             ],
             hotels: [{ name: "Södermalm design hotel", status: "Shortlist", checkIn: "Aug 18", checkOut: "Aug 24", location: "Stockholm", notes: "Prefer breakfast included because mornings start early." }],
             transport: [

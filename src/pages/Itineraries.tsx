@@ -3,9 +3,11 @@ import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode, SelectHTMLAt
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { useCountriesData } from "../hooks/useCountriesData";
 import { useScrollToTop } from "../hooks/useScrollToTop";
+import { useSupabaseGallery } from "../hooks/useSupabaseGallery";
 import paperBackground from "../assets/wrinkled-paper.png";
 import type { CountryStatus } from "./Home";
 import { decodeCountryParam } from "../utils/countryRouting";
+import { inferMediaKindFromName } from "../utils/mediaFiles";
 import {
     type ItineraryItem,
     type ItineraryLocationType,
@@ -44,48 +46,11 @@ type HotelEntry = NonNullable<ItineraryItem["hotels"]>[number];
 type TransportEntry = NonNullable<ItineraryItem["transport"]>[number];
 type NoteEntry = NonNullable<ItineraryItem["notes"]>[number];
 
-const galleryManifestUrl = `${import.meta.env.BASE_URL}temporary-gallery/manifest.json`;
-const galleryPublicRoot = `${import.meta.env.BASE_URL}temporary-gallery/`;
-const imageExtensions = new Set(["jpeg", "jpg", "png", "webp", "gif", "avif", "bmp", "svg"]);
-const videoExtensions = new Set(["mp4", "mov", "webm", "m4v", "avi", "mkv", "wmv", "flv", "3gp", "mpeg"]);
 const STATUS_LABELS: Record<ItineraryStatus, string> = {
     planned: "Planned",
     "in-progress": "In progress",
     done: "Done"
 };
-
-function extensionOf(path: string): string {
-    const match = path.match(/\.([a-z0-9]+)(?:$|[?#])/i);
-    return match ? match[1].toLowerCase() : "";
-}
-
-function normalize(value: string): string {
-    return value
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "");
-}
-
-function toPublicGalleryUrl(path: string): string {
-    return `${galleryPublicRoot}${path}`;
-}
-
-function matchesGalleryFilter(path: string, itinerary: ItineraryItem): boolean {
-    const normalizedPath = normalize(path);
-    const filters = itinerary.galleryFilters ?? [];
-
-    if (filters.length > 0) {
-        return filters.some((filter) => {
-            const countryMatches = normalizedPath.startsWith(`${normalize(filter.country)}/`);
-            const cityMatches = filter.city ? normalizedPath.includes(`/${normalize(filter.city)}/`) : true;
-            return countryMatches && cityMatches;
-        });
-    }
-
-    const city = itinerary.city ? normalize(itinerary.city) : "";
-    const destination = itinerary.destination ? normalize(itinerary.destination) : "";
-    return Boolean(city && normalizedPath.includes(`/${city}/`)) || Boolean(destination && normalizedPath.includes(destination));
-}
 
 function itineraryReducer(state: ItineraryItem[], action: ItineraryAction): ItineraryItem[] {
     if (action.type === "hydrate") return action.payload;
@@ -223,7 +188,7 @@ function Itineraries(props: ItinerariesProps) {
     const navigate = useNavigate();
 
     const [itineraries, dispatchItineraries] = useReducer(itineraryReducer, []);
-    const [manifestPaths, setManifestPaths] = useState<string[]>([]);
+    const { photos: supabasePhotos } = useSupabaseGallery();
     const [editingItineraryId, setEditingItineraryId] = useState<string | null>(null);
 
     const countryNames = useMemo(() => {
@@ -264,28 +229,6 @@ function Itineraries(props: ItinerariesProps) {
         }
     }, [itineraries, routeCountryName]);
 
-    useEffect(() => {
-        let cancelled = false;
-
-        const loadManifest = async () => {
-            try {
-                const response = await fetch(galleryManifestUrl);
-                if (!response.ok) throw new Error(`Manifest error: ${response.status}`);
-                const data: unknown = await response.json();
-                if (!cancelled) {
-                    setManifestPaths(Array.isArray(data) ? data.filter((entry): entry is string => typeof entry === "string") : []);
-                }
-            } catch {
-                if (!cancelled) setManifestPaths([]);
-            }
-        };
-
-        void loadManifest();
-        return () => {
-            cancelled = true;
-        };
-    }, []);
-
     const primaryItinerary = useMemo(() => {
         if (focusedItineraryId) {
             const found = itineraries.find((it) => it.id === focusedItineraryId);
@@ -300,15 +243,25 @@ function Itineraries(props: ItinerariesProps) {
     const tripGalleryItems = useMemo<TripGalleryItem[]>(() => {
         if (!primaryItinerary || !canShowGallery) return [];
 
-        return manifestPaths
-            .filter((path) => matchesGalleryFilter(path, primaryItinerary))
-            .map((path) => {
-                const ext = extensionOf(path);
-                const kind: GalleryMediaKind = videoExtensions.has(ext) ? "video" : "image";
-                return { id: path, src: toPublicGalleryUrl(path), path, kind };
+        const filters = primaryItinerary.galleryFilters ?? [];
+        return supabasePhotos
+            .filter((photo) => {
+                const location = photo.location.toLowerCase();
+                if (filters.length > 0) {
+                    return filters.some((filter) => location.includes(filter.country.toLowerCase()) && (!filter.city || location.includes(filter.city.toLowerCase())));
+                }
+
+                return Boolean(
+                    (primaryItinerary.city && location.includes(primaryItinerary.city.toLowerCase())) ||
+                    (primaryItinerary.destination && location.includes(primaryItinerary.destination.toLowerCase()))
+                );
             })
-            .filter((item) => imageExtensions.has(extensionOf(item.path)) || videoExtensions.has(extensionOf(item.path)));
-    }, [canShowGallery, manifestPaths, primaryItinerary]);
+            .map((photo) => {
+                const kind = inferMediaKindFromName(photo.name, photo.type);
+                return kind ? { id: photo.id, src: photo.url, path: photo.name, kind } : null;
+            })
+            .filter((item): item is TripGalleryItem => item !== null);
+    }, [canShowGallery, primaryItinerary, supabasePhotos]);
 
     const updateCurrent = (patch: Partial<ItineraryItem>) => {
         if (!primaryItinerary) return;
@@ -821,7 +774,7 @@ function Itineraries(props: ItinerariesProps) {
                             </div>
                         ) : (
                             <p className="rounded-[0.75rem] border border-dashed border-[#8f5a20]/25 bg-[#ffead4]/45 p-4 font-[Cormorant_Garamond] text-[1.05rem] text-[#6a4630]">
-                                This trip can show photos once matching media exists in temporary-gallery and the trip is linked to that folder.
+                                This trip can show photos once matching media exists in Supabase and is linked to the trip.
                             </p>
                         )}
                     </SectionShell>

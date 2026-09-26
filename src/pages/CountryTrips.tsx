@@ -4,10 +4,12 @@ import Map from "../components/Map";
 import { useCountriesData } from "../hooks/useCountriesData";
 import { useCountryDetails } from "../hooks/useCountryDetails";
 import { useScrollToTop } from "../hooks/useScrollToTop";
+import { useSupabaseGallery } from "../hooks/useSupabaseGallery";
 import paperBackground from "../assets/wrinkled-paper.png";
 import type { CountryStatus } from "./Home";
 import { decodeCountryParam } from "../utils/countryRouting";
 import { itineraryKey, readItineraries, seedItinerariesFromCatalog, type ItineraryItem } from "../utils/itineraryStorage";
+import { inferMediaKindFromName } from "../utils/mediaFiles";
 
 type CountryStatusMap = Record<string, CountryStatus>;
 type GalleryMediaKind = "image" | "video" | "unsupported";
@@ -31,20 +33,6 @@ interface HeicPreviewProps {
     src: string;
     alt?: string;
     eager?: boolean;
-}
-
-const galleryManifestUrl = `${import.meta.env.BASE_URL}temporary-gallery/manifest.json`;
-const galleryPublicRoot = `${import.meta.env.BASE_URL}temporary-gallery/`;
-const imageExtensions = new Set(["jpeg", "jpg", "png", "webp", "gif", "avif", "bmp", "svg"]);
-const videoExtensions = new Set(["mp4", "mov", "webm", "m4v", "avi", "mkv", "wmv", "flv", "3gp", "mpeg"]);
-
-function extensionOf(src: string): string {
-    try {
-        const match = src.match(/\.([a-z0-9]+)(?:$|[?#])/i);
-        return match ? match[1].toLowerCase() : "";
-    } catch {
-        return "";
-    }
 }
 
 function formatDate(dateValue: string | undefined): string {
@@ -83,63 +71,6 @@ function itineraryPreviewNote(item: ItineraryItem): string {
     }
 
     return item.description;
-}
-
-function loadCountryGallery(countryName: string): Promise<CountryGalleryItem[]> {
-    return fetch(galleryManifestUrl)
-        .then((response) => {
-            if (!response.ok) {
-                throw new Error(`Manifest fetch failed: ${response.status}`);
-            }
-
-            return response.json() as Promise<unknown>;
-        })
-        .then((manifest) => {
-            // Manifest can be either { country: [...] } or an array of paths
-            const entries: string[] = [];
-
-            if (Array.isArray(manifest)) {
-                // manifest is an array of paths like "Spain/Valencia/...")
-                for (const p of manifest) {
-                    if (typeof p === "string") entries.push(p);
-                }
-            } else if (manifest && typeof manifest === "object") {
-                // object keyed by country
-                for (const key of Object.keys(manifest as Record<string, unknown>)) {
-                    const val = (manifest as Record<string, unknown>)[key];
-                    if (Array.isArray(val)) {
-                        for (const p of val) if (typeof p === "string") entries.push(p);
-                    }
-                }
-            }
-
-            const countryLower = countryName.toLowerCase();
-
-            const paths = entries.filter((p) => {
-                const normalized = p.replaceAll('\\', '/');
-                const first = normalized.split('/')[0] ?? "";
-                return first.toLowerCase() === countryLower;
-            });
-
-            return paths
-                .map((path) => {
-                    const ext = extensionOf(path);
-                    const kind: GalleryMediaKind = videoExtensions.has(ext)
-                        ? "video"
-                        : imageExtensions.has(ext)
-                            ? "image"
-                            : "unsupported";
-
-                    return {
-                        id: path,
-                        src: `${galleryPublicRoot}${path}`,
-                        label: path,
-                        kind
-                    };
-                })
-                .filter((item) => item.kind !== "unsupported");
-        })
-        .catch(() => []);
 }
 
 function Rating({ value = 0 }: RatingProps) {
@@ -216,6 +147,7 @@ function CountryTrips({ countryStatuses }: CountryTripsProps) {
 
     const { countriesData } = useCountriesData();
     const { details: countryDetails, isLoading: detailsLoading } = useCountryDetails(routeCountryName);
+    const { photos: supabasePhotos } = useSupabaseGallery();
     const { showScrollTop, scrollToTop } = useScrollToTop();
 
     const [galleryItems, setGalleryItems] = useState<CountryGalleryItem[]>([]);
@@ -252,13 +184,21 @@ function CountryTrips({ countryStatuses }: CountryTripsProps) {
             return;
         }
 
-        void loadCountryGallery(routeCountryName).then((items) => {
+        const items: CountryGalleryItem[] = supabasePhotos
+            .filter((photo) => photo.location.toLowerCase().includes(routeCountryName.toLowerCase()))
+            .map((photo) => {
+                const kind: GalleryMediaKind = inferMediaKindFromName(photo.name, photo.type) ?? "unsupported";
+                return { id: photo.id, src: photo.url, label: photo.name, kind };
+            })
+            .filter((item) => item.kind !== "unsupported");
+
+        Promise.resolve(items).then((items) => {
             setGalleryItems(items.slice(0, INITIAL_GALLERY_LIMIT));
             setRemainingGallery(items.slice(INITIAL_GALLERY_LIMIT));
             setCurrentGalleryIndex(0);
             setGalleriesLoaded(true);
         });
-    }, [routeCountryName]);
+    }, [routeCountryName, supabasePhotos]);
 
     const itineraryPreviewItems = useMemo<ItineraryItem[]>(() => {
         if (!routeCountryName) {
@@ -692,7 +632,7 @@ function CountryTrips({ countryStatuses }: CountryTripsProps) {
                             <p className="font-[Adamina] text-[0.72rem] uppercase tracking-[0.24em] text-[#f6d7b5]">Itinerary</p>
                             <h2 className="mt-2 font-[Adamina] text-[1.8rem] text-[#fff4e7]">Plan your trip</h2>
                             <p className="mt-2 max-w-2xl font-[Cormorant_Garamond] text-[1.05rem] text-[#f7dfca]">
-                                Detailed boards for this country live here: route notes, daily plans, packing, bookings, and linked temporary-gallery photos.
+                                Detailed boards for this country live here: route notes, daily plans, packing, bookings, and linked trip photos.
                             </p>
                         </div>
 
