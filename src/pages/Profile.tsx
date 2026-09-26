@@ -231,7 +231,7 @@ export function Profile() {
                                     <p className="mt-1 font-[Cormorant_Garamond] text-[1.25rem] text-[#50300d]">{profile.email}</p>
                                 </div>
                             </div>
-                            <div className=" mt-4rounded-[0.8rem] border border-[#cf8d45]/25 bg-[#ffead4]/45 px-4 py-3">
+                            <div className=" mt-4 rounded-[0.8rem] border border-[#cf8d45]/25 bg-[#ffead4]/45 px-4 py-3">
                                 <p className="font-[Adamina] text-[0.78rem] uppercase tracking-[0.18em] text-[#7a3f00]">Favorite travel style</p>
                                 <p className="mt-1 font-[Cormorant_Garamond] text-[1.25rem] text-[#50300d]">{profile.travelStyle}</p>
                             </div>
@@ -280,44 +280,49 @@ export function Profile() {
                     <aside className="flex px-auto justify-center flex-col gap-2 rounded-[1rem] p-1">
                         {/* Subscription badge (reads from localStorage key `subscriptionStatus`) */}
                             <SubscriptionStatus />
-                        <div className="grid gap-1 sm:grid-cols-3">
-                            <Link
-                                to="/settings"
-                                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#7a3f00] bg-[#5a392b] text-[#ffead4] transition hover:bg-[#7a3f00]"
-                                aria-label="Settings"
-                                title="Settings"
-                            >
-                                <Settings size={20} />
-                            </Link>
+                        <div className="grid gap-1 sm:grid-cols-2">
+                            <div className="grid gap-1 sm:grid-cols-2">
+                                <Link
+                                    to="/settings"
+                                    className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#7a3f00] bg-[#5a392b] text-[#ffead4] transition hover:bg-[#7a3f00]"
+                                    aria-label="Settings"
+                                    title="Settings"
+                                >
+                                    <Settings size={20} />
+                                </Link>
 
-                            <Link
-                                to="/help-center"
-                                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#cf8d45] bg-[#fff7ee] text-[#50300d] transition hover:bg-[#f6dfc1]"
-                                aria-label="Help center"
-                                title="Help center"
-                            >
-                                <HelpCircle size={20} />
-                            </Link>
-                            <button
-                                type="button"
-                                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#7a3f00] bg-[#5a392b] text-[#ffead4] transition hover:bg-[#7a3f00]"
-                                onClick={openEditor}
-                                aria-label="Edit profile"
-                                title="Edit profile"
-                            >
-                                <Edit size={18} />
-                            </button>
+                                <Link
+                                    to="/help-center"
+                                    className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#cf8d45] bg-[#fff7ee] text-[#50300d] transition hover:bg-[#f6dfc1]"
+                                    aria-label="Help center"
+                                    title="Help center"
+                                >
+                                    <HelpCircle size={20} />
+                                </Link>
+                            </div>
+                            <div className="grid gap-1 sm:grid-cols-2">
+                                <button
+                                    type="button"
+                                    className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#7a3f00] bg-[#5a392b] text-[#ffead4] transition hover:bg-[#7a3f00]"
+                                    onClick={openEditor}
+                                    aria-label="Edit profile"
+                                    title="Edit profile"
+                                >
+                                    <Edit size={18} />
+                                </button>
+                                <button
+                                    type="button"
+                                    className="rounded-full border border-[#cf8d45] bg-[#cf8d45] px-4 py-2.5 font-[Adamina] text-[0.92rem] text-[#fff4e7] transition hover:-translate-y-px hover:bg-[#b97731]"
+                                    onClick={handleLogout}
+                                >
+                                    Log out
+                                </button>
+                            </div>
                         </div>
 
-                        <button
-                            type="button"
-                            className="rounded-full border border-[#cf8d45] bg-[#cf8d45] px-4 py-2.5 font-[Adamina] text-[0.92rem] text-[#fff4e7] transition hover:-translate-y-px hover:bg-[#b97731]"
-                            onClick={handleLogout}
-                        >
-                            Log out
-                        </button>
+                        
                         {/* Admin seeding moved to /admin-seed (protected) */}
-                        <div className="mt-4 text-center font-[Adamina] text-[0.7rem] text-[#50300d]/80">
+                        <div className="mt-4">
                             <section className=" p-3 rounded-[1rem] border border-[#50300d]/15 bg-white" aria-label="Recent journeys">
                                 <div className="mb-4 flex items-end justify-between gap-3">
                                     <div><p className="font-[Adamina] text-[0.68rem] uppercase tracking-[0.24em] text-[#936d58]">Recently remembered</p><h2 className="mt-1 font-[Cormorant_Garamond] text-3xl text-[#50300d]">Latest journeys</h2></div>
