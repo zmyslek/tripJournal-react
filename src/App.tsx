@@ -1,8 +1,7 @@
 import { lazy, Suspense, useEffect, useState } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import MainLayout from "./components/MainLayout.tsx";
-import { updateCountryStatus } from "./application/country/CountryStatusService.ts";
-import { loadCountryStatusState, saveCountryStatusState } from "./infrastructure/country/LocalCountryStatusRepository.ts";
+import { appDependencies } from "./app/composition.ts";
 import type { CountryStatus } from "./domain/country/Country.ts";
 
 const Home = lazy(() => import("./pages/Home.tsx"));
@@ -20,14 +19,14 @@ function RouteFallback() {
 }
 
 function App() {
-    const [countryState, setCountryState] = useState(() => loadCountryStatusState());
+    const [countryState, setCountryState] = useState(() => appDependencies.countryStatus.load());
 
     useEffect(() => {
-        saveCountryStatusState(countryState);
+        appDependencies.countryStatus.save(countryState);
     }, [countryState]);
 
     const setCountryStatus = (countryName: string, status: CountryStatus | null) => {
-        setCountryState((previousState) => updateCountryStatus(previousState, countryName, status));
+        setCountryState((previousState) => appDependencies.countryStatus.update(previousState, countryName, status));
     };
 
     // Temporary compatibility with Home-codex: this page expects `visitedCountries`.

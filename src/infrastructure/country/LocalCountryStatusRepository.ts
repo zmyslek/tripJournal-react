@@ -1,4 +1,5 @@
 import type { CountryAddedDateMap, CountryStatusMap, CountryStatusState } from "../../application/country/CountryStatusService.ts";
+import type { CountryStatusRepository } from "../../application/country/CountryStatusRepository.ts";
 
 const COUNTRY_STATUS_CACHE_KEY = "tripjournal:country-statuses:v1";
 const COUNTRY_ADDED_CACHE_KEY = "tripjournal:country-added-dates:v1";
@@ -43,15 +44,17 @@ function readAddedDates(): CountryAddedDateMap {
     return dates;
 }
 
-export function loadCountryStatusState(): CountryStatusState {
-    return { statuses: readStatuses(), addedDates: readAddedDates() };
-}
+export class LocalCountryStatusRepository implements CountryStatusRepository {
+    load(): CountryStatusState {
+        return { statuses: readStatuses(), addedDates: readAddedDates() };
+    }
 
-export function saveCountryStatusState(state: CountryStatusState): void {
-    try {
-        localStorage.setItem(COUNTRY_STATUS_CACHE_KEY, JSON.stringify(state.statuses));
-        localStorage.setItem(COUNTRY_ADDED_CACHE_KEY, JSON.stringify(state.addedDates));
-    } catch {
-        // Local storage is an optional cache; the in-memory state remains authoritative.
+    save(state: CountryStatusState): void {
+        try {
+            localStorage.setItem(COUNTRY_STATUS_CACHE_KEY, JSON.stringify(state.statuses));
+            localStorage.setItem(COUNTRY_ADDED_CACHE_KEY, JSON.stringify(state.addedDates));
+        } catch {
+            // Local storage is an optional cache; the in-memory state remains authoritative.
+        }
     }
 }

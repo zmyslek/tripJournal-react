@@ -1,4 +1,5 @@
 import { changeCountryStatus, type CountryStatus } from "../../domain/country/Country.ts";
+import type { CountryStatusRepository } from "./CountryStatusRepository.ts";
 
 export type CountryStatusMap = Record<string, CountryStatus>;
 export type CountryAddedDateMap = Record<string, string>;
@@ -6,6 +7,12 @@ export type CountryAddedDateMap = Record<string, string>;
 export interface CountryStatusState {
     statuses: CountryStatusMap;
     addedDates: CountryAddedDateMap;
+}
+
+export interface CountryStatusService {
+    load(): CountryStatusState;
+    save(state: CountryStatusState): void;
+    update(state: CountryStatusState, countryName: string, status: CountryStatus | null): CountryStatusState;
 }
 
 export function updateCountryStatus(
@@ -32,5 +39,13 @@ export function updateCountryStatus(
     return {
         statuses: { ...state.statuses, [countryName]: updatedCountry.status },
         addedDates: { ...state.addedDates, [countryName]: updatedCountry.addedAt }
+    };
+}
+
+export function createCountryStatusService(repository: CountryStatusRepository): CountryStatusService {
+    return {
+        load: () => repository.load(),
+        save: (state) => repository.save(state),
+        update: (state, countryName, status) => updateCountryStatus(state, countryName, status)
     };
 }
