@@ -33,6 +33,7 @@ const avatarOptions = [
 ];
 
 const profileStats = [
+    //replace with your own stats or fetch from an API
     { label: "Visited", value: "18" },
     { label: "Wishlist", value: "7" },
     { label: "Returns", value: "4" }
@@ -229,14 +230,10 @@ export function Profile() {
                                     <p className="font-[Adamina] text-[0.78rem] uppercase tracking-[0.18em] text-[#7a3f00]">Email address</p>
                                     <p className="mt-1 font-[Cormorant_Garamond] text-[1.25rem] text-[#50300d]">{profile.email}</p>
                                 </div>
-                                <div className="rounded-[0.8rem] border border-[#cf8d45]/25 bg-[#ffead4]/45 px-4 py-3">
-                                    <p className="font-[Adamina] text-[0.78rem] uppercase tracking-[0.18em] text-[#7a3f00]">Favorite travel style</p>
-                                    <p className="mt-1 font-[Cormorant_Garamond] text-[1.25rem] text-[#50300d]">{profile.travelStyle}</p>
-                                </div>
-                                <div className="rounded-[0.8rem] border border-[#cf8d45]/25 bg-[#ffead4]/45 px-4 py-3">
-                                    <p className="font-[Adamina] text-[0.78rem] uppercase tracking-[0.18em] text-[#7a3f00]">Current focus</p>
-                                    <p className="mt-1 font-[Cormorant_Garamond] text-[1.25rem] text-[#50300d]">{profile.currentFocus}</p>
-                                </div>
+                            </div>
+                            <div className="rounded-[0.8rem] border border-[#cf8d45]/25 bg-[#ffead4]/45 px-4 py-3">
+                                <p className="font-[Adamina] text-[0.78rem] uppercase tracking-[0.18em] text-[#7a3f00]">Favorite travel style</p>
+                                <p className="mt-1 font-[Cormorant_Garamond] text-[1.25rem] text-[#50300d]">{profile.travelStyle}</p>
                             </div>
                         </div>
 
@@ -244,9 +241,9 @@ export function Profile() {
                             <div className="flex flex-wrap items-center justify-between gap-3">
                                 <div>
                                     <p className="font-[Adamina] text-[0.72rem] uppercase tracking-[0.18em] text-[#7a3f00]">User record</p>
-                                    <h2 className="mt-2 font-[Adamina] text-[1.35rem] text-[#50300d]">ERD-backed account data</h2>
+                                    <h2 className="mt-2 font-[Adamina] text-[1.35rem] text-[#50300d]">Account details</h2>
                                 </div>
-                                <p className="font-[Cormorant_Garamond] text-[1rem] text-[#7a3f00]">Stored locally until Supabase sync is added</p>
+                                <p className="font-[Cormorant_Garamond] text-[1rem] text-[#7a3f00]">All information about subscriptions and account</p>
                             </div>
 
                             <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-2">
@@ -261,6 +258,10 @@ export function Profile() {
                                 <div className="rounded-[0.8rem] border border-[#cf8d45]/25 bg-[#ffead4]/45 px-4 py-3">
                                     <p className="font-[Adamina] text-[0.78rem] uppercase tracking-[0.18em] text-[#7a3f00]">Profile created</p>
                                     <p className="mt-1 font-[Cormorant_Garamond] text-[1.05rem] text-[#50300d]">{getStoredUserProfile()?.createdAt ? new Date(getStoredUserProfile()!.createdAt).toLocaleDateString() : "Not set yet"}</p>
+                                </div>
+                                <div className="rounded-[0.8rem] border border-[#cf8d45]/25 bg-[#ffead4]/45 px-4 py-3">
+                                    <p className="font-[Adamina] text-[0.78rem] uppercase tracking-[0.18em] text-[#7a3f00]">Login method</p>
+                                    <p className="mt-1 font-[Cormorant_Garamond] text-[1.05rem] text-[#50300d]">{getStoredUserProfile()?.authProvider || "email"}</p>
                                 </div>
                             </div>
                         </div>
@@ -278,25 +279,25 @@ export function Profile() {
                                     <aside className="flex flex-col gap-3 rounded-[1rem] p-4">
                                         {/* Subscription badge (reads from localStorage key `subscriptionStatus`) */}
                                             <SubscriptionStatus />
+                                        <div className="mt-7 grid gap-3 sm:grid-cols-3">
+                                            <Link
+                                                to="/settings"
+                                                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#7a3f00] bg-[#5a392b] text-[#ffead4] transition hover:bg-[#7a3f00]"
+                                                aria-label="Settings"
+                                                title="Settings"
+                                            >
+                                                <Settings size={20} />
+                                            </Link>
 
-                                        <Link
-                                            to="/settings"
-                                            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#7a3f00] bg-[#5a392b] text-[#ffead4] transition hover:bg-[#7a3f00]"
-                                            aria-label="Settings"
-                                            title="Settings"
-                                        >
-                                            <Settings size={20} />
-                                        </Link>
-
-                                        <Link
-                                            to="/help-center"
-                                            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#cf8d45] bg-[#fff7ee] text-[#50300d] transition hover:bg-[#f6dfc1]"
-                                            aria-label="Help center"
-                                            title="Help center"
-                                        >
-                                            <HelpCircle size={20} />
-                                        </Link>
-
+                                            <Link
+                                                to="/help-center"
+                                                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#cf8d45] bg-[#fff7ee] text-[#50300d] transition hover:bg-[#f6dfc1]"
+                                                aria-label="Help center"
+                                                title="Help center"
+                                            >
+                                                <HelpCircle size={20} />
+                                            </Link>
+                                        </div>
                                         <button
                                             type="button"
                                             className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#7a3f00] bg-[#5a392b] text-[#ffead4] transition hover:bg-[#7a3f00]"
@@ -323,17 +324,16 @@ export function Profile() {
                             <div><p className="font-[Adamina] text-[0.68rem] uppercase tracking-[0.24em] text-[#936d58]">Recently remembered</p><h2 className="mt-1 font-[Cormorant_Garamond] text-3xl text-[#50300d]">Latest journeys</h2></div>
                             <Link to="/gallery" className="font-[Cormorant_Garamond] text-base text-[#936d58] hover:text-[#50300d]">View gallery →</Link>
                         </div>
-                        <div className="grid gap-3 sm:grid-cols-3">
+                        <div>
                             {[
                                 //replace with your own journey data or fetch from an API
-                                { city: "Florence", country: "Italy", date: "A city to wander", image: "photo-1543429257-37a54b3f4c4d" },
-                                { city: "Kyoto", country: "Japan", date: "Quiet mornings", image: "photo-1493976040374-85c8e12f0c0e" },
-                                { city: "Lisbon", country: "Portugal", date: "Down every lane", image: "photo-1555881400-74d7acaacd8b" }
+                                { city: "Florence", country: "Italy", date: "A city to wander", image: "photo-1543429257-37a54b3f4c4d" }
                             ].map((journey) => <Link key={journey.city} to="/gallery" className="group relative flex min-h-52 items-end overflow-hidden rounded-xl bg-cover bg-center p-4 text-white" style={{ backgroundImage: `linear-gradient(0deg, rgb(20 16 14 / 78%), transparent 72%), url(https://images.unsplash.com/${journey.image}?auto=format&fit=crop&w=700&q=80)` }}><div className="transition group-hover:translate-y-[-2px]"><p className="font-[Adamina] text-[0.6rem] uppercase tracking-[0.18em] text-[#f3d8bd]">{journey.date}</p><h3 className="font-[Cormorant_Garamond] text-3xl leading-tight">{journey.city}</h3><p className="font-[Cormorant_Garamond]">{journey.country}</p></div></Link>)}
                         </div>
                     </section>
-                    <blockquote className="relative flex flex-col justify-center rounded-[1rem] bg-[#5a392b] p-6 text-[#fff4e7] sm:p-7"><span aria-hidden="true" className="absolute right-4 top-0 font-[Cormorant_Garamond] text-8xl leading-none text-white/10">“</span><p className="relative font-[Cormorant_Garamond] text-2xl leading-tight">The real voyage of discovery consists not in seeking new landscapes, but in having new eyes.</p><cite className="mt-4 font-[Adamina] text-[0.62rem] not-italic uppercase tracking-[0.2em] text-[#e0c3aa]">Marcel Proust</cite></blockquote>
                 </div>
+                <blockquote className="relative flex flex-col justify-center rounded-[1rem] bg-[#5a392b] p-6 text-[#fff4e7] sm:p-7"><span aria-hidden="true" className="absolute right-4 top-0 font-[Cormorant_Garamond] text-8xl leading-none text-white/10">“</span><p className="relative font-[Cormorant_Garamond] text-2xl leading-tight">The real voyage of discovery consists not in seeking new landscapes, but in having new eyes.</p><cite className="mt-4 font-[Adamina] text-[0.62rem] not-italic uppercase tracking-[0.2em] text-[#e0c3aa]">Marcel Proust</cite></blockquote>
+                
             </div>
 
             {isEditing && (
