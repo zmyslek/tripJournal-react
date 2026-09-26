@@ -317,7 +317,7 @@ export function Profile() {
                             Log out
                         </button>
                         {/* Admin seeding moved to /admin-seed (protected) */}
-                        <div className="p-[-3]">
+                        <div className="p-[-5rem]">
                             <section className=" p-1 rounded-[1rem] border border-[#50300d]/15 bg-white" aria-label="Recent journeys">
                                 <div className="mb-4 flex items-end justify-between gap-3">
                                     <div><p className="font-[Adamina] text-[0.68rem] uppercase tracking-[0.24em] text-[#936d58]">Recently remembered</p><h2 className="mt-1 font-[Cormorant_Garamond] text-3xl text-[#50300d]">Latest journeys</h2></div>
@@ -384,7 +384,7 @@ export function Profile() {
                                     <input type="email" value={draftProfile.email} onChange={(event) => updateDraft("email", event.target.value)} className="w-full rounded-[0.7rem] border border-[#cf8d45]/55 bg-[#fff7ee] px-3 py-2 font-[Cormorant_Garamond] text-[1.1rem] text-[#50300d] outline-none interactive-transition hover:border-[#cf8d45]/70 focus:border-[#7a3f00] focus:ring-2 focus:ring-[#cf8d45]/35 focus:shadow-[0_0_8px_rgb(199_141_69_/_20%)]" />
                                 </label>
                                 <label className="block">
-                                    <span className="mb-1.5 mt-4 block font-[Adamina] text-[0.72rem] uppercase tracking-[0.18em] text-[#7a3f00]">Favorite travel style</span>
+                                    <span className="mb-1.5 mt-4 block font-[Adamina] text-[0.72rem] uppercase tracking-[0.18em] text-[#7a3f00] px-4 py-3">Favorite travel style</span>
                                     <input value={draftProfile.travelStyle} onChange={(event) => updateDraft("travelStyle", event.target.value)} className="w-full rounded-[0.7rem] border border-[#cf8d45]/55 bg-[#fff7ee] px-3 py-2 font-[Cormorant_Garamond] text-[1.1rem] text-[#50300d] outline-none interactive-transition hover:border-[#cf8d45]/70 focus:border-[#7a3f00] focus:ring-2 focus:ring-[#cf8d45]/35 focus:shadow-[0_0_8px_rgb(199_141_69_/_20%)]" />
                                 </label>
                                 <label className="block">
