@@ -220,7 +220,7 @@ export function Profile() {
 
                 <div className="grid gap-7 px-4 py-5 sm:px-7 sm:py-7 lg:grid-cols-[minmax(0,1fr)_20rem]">
                     <div>
-                        <div className="rounded-[1rem] border border-[#cf8d45]/35 bg-[#fff4e7]/52 p-5 shadow-[inset_0_0_24px_rgb(143_90_32_/_8%)]">
+                        <div className="rounded-[1rem] border border-[#cf8d45]/35 bg-[#5a392b]/95 p-6 shadow-[inset_0_0_24px_rgb(143_90_32_/_8%)]">
                             <div className="grid gap-x-8 gap-y-5 sm:grid-cols-2">
                                 <div className="rounded-[0.8rem] border border-[#cf8d45]/25 bg-[#ffead4]/45 px-4 py-3">
                                     <p className="font-[Adamina] text-[0.78rem] uppercase tracking-[0.18em] text-[#7a3f00]">Traveler name</p>
@@ -280,7 +280,7 @@ export function Profile() {
                     <aside className="flex px-auto justify-center flex-col gap-2 rounded-[1rem] p-1">
                         {/* Subscription badge (reads from localStorage key `subscriptionStatus`) */}
                             <SubscriptionStatus />
-                        <div className="grid gap-1 sm:grid-cols-2">
+                        <div className="grid gap-1 sm:grid-cols-2 my-4">
                             <div className="grid gap-1 sm:grid-cols-2">
                                 <Link
                                     to="/settings"
