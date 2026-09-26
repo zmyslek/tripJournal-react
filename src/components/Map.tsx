@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { config, ErrorEvent, Map as MapLibreMap, Marker, type GeoJSONSource, type StyleSpecification } from "maplibre-gl";
-import mapLibreWorkerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?url";
+import mapLibreWorkerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { type CountriesGeoJson } from "../types/countries";
 import type { CountryStatus } from "../pages/Home";
