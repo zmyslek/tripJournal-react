@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { Settings, HelpCircle } from "lucide-react";
+import leatherBackground from "../assets/dark-leather.jpg";
 import paperBackground from "../assets/wrinkled-paper.png";
 
 const COOKIE_CONSENT_KEY = "tripjournal:cookie-consent:v1";
@@ -38,19 +39,24 @@ function MainLayout() {
     return (
         <div className="flex min-h-screen w-full flex-col overflow-x-hidden">
                 <nav
-                    className="w-full max-w-full overflow-x-hidden box-border flex items-center justify-between gap-[max(1rem,4%)] px-[max(1.25rem,5%)] py-[max(0.875rem,2%)] max-sm:flex-col max-sm:gap-3 max-sm:px-4"
-                    style={{ backgroundColor: "#211b18", backgroundImage: "none" }}
+                    className="w-full max-w-full overflow-x-hidden box-border flex items-center justify-between gap-[max(1rem,4%)] px-[max(1.25rem,5%)] py-[max(0.875rem,2%)] max-sm:flex-col max-sm:gap-3 max-sm:px-4 lg:flex-nowrap"
+                    style={{
+                        backgroundColor: "#211b18",
+                        backgroundImage: `linear-gradient(rgb(33 27 24 / 0.3), rgb(33 27 24 / 0.3)), url(${leatherBackground})`,
+                        backgroundSize: "cover",
+                        backgroundPosition: "center"
+                    }}
                 >
-                    <div className="min-w-0 flex-1 text-center max-sm:flex-none">
-                        <NavLink to="/home" className="text-center font-[Adamina] text-[clamp(1.5rem,5vw,1.875rem)] leading-none font-normal text-[#ffead4] no-underline" aria-label="Home">
+                    <div className="min-w-0 flex-1 text-center max-sm:flex-none lg:flex-none">
+                        <NavLink to="/home" className="whitespace-nowrap text-center font-[Adamina] text-[clamp(1.5rem,5vw,1.875rem)] leading-none font-normal text-[#ffead4] no-underline" aria-label="Home">
                             TripJournal
                         </NavLink>
                     </div>
-                    <div className="min-w-0 flex flex-wrap items-center justify-end gap-[max(0.75rem,3%)] max-sm:justify-center max-sm:gap-x-4 max-sm:gap-y-2">
+                    <div className="min-w-0 flex flex-wrap items-center justify-end gap-[max(0.75rem,3%)] max-sm:justify-center max-sm:gap-x-4 max-sm:gap-y-2 lg:flex-nowrap lg:gap-[max(0.6rem,2%)]">
                     <NavLink
                         to="/home"
                         className={({ isActive }) =>
-                            `font-[Adamina] text-[clamp(0.875rem,2.5vw,1.5rem)] leading-[1.2] font-normal text-[#ffead4] no-underline transition ${isActive ? "underline underline-offset-[0.18em]" : ""}`
+                            `whitespace-nowrap font-[Adamina] text-[clamp(0.875rem,2.5vw,1.5rem)] leading-[1.2] font-normal text-[#ffead4] no-underline transition ${isActive ? "underline underline-offset-[0.18em]" : ""}`
                         }
                     >
                         Home
@@ -58,7 +64,7 @@ function MainLayout() {
                     <NavLink
                         to="/countries"
                         className={({ isActive }) =>
-                            `font-[Adamina] text-[clamp(0.875rem,2.5vw,1.5rem)] leading-[1.2] font-normal text-[#ffead4] no-underline transition ${isActive ? "underline underline-offset-[0.18em]" : ""}`
+                            `whitespace-nowrap font-[Adamina] text-[clamp(0.875rem,2.5vw,1.5rem)] leading-[1.2] font-normal text-[#ffead4] no-underline transition ${isActive ? "underline underline-offset-[0.18em]" : ""}`
                         }
                     >
                         Countries
@@ -66,7 +72,7 @@ function MainLayout() {
                     <NavLink
                         to="/gallery"
                         className={({ isActive }) =>
-                            `font-[Adamina] text-[clamp(0.875rem,2.5vw,1.5rem)] leading-[1.2] font-normal text-[#ffead4] no-underline transition ${isActive ? "underline underline-offset-[0.18em]" : ""}`
+                            `whitespace-nowrap font-[Adamina] text-[clamp(0.875rem,2.5vw,1.5rem)] leading-[1.2] font-normal text-[#ffead4] no-underline transition ${isActive ? "underline underline-offset-[0.18em]" : ""}`
                         }
                     >
                         Gallery
