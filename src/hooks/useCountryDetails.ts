@@ -122,7 +122,7 @@ export function useCountryDetails(countryName: string) {
 
         const fetchDetails = async () => {
             try {
-                const response = await fetch(`https://restcountries.com/v3.1/name/${encodeURIComponent(countryName)}?fullText=true`);
+                const response = await fetch(`/api/country-details?name=${encodeURIComponent(countryName)}`);
 
                 if (!response.ok) {
                     throw new Error(`API responded with ${response.status}`);

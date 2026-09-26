@@ -37,15 +37,15 @@ function MainLayout() {
     return (
         <div className="flex min-h-screen w-full flex-col overflow-x-hidden">
                 <nav
-                    className="w-full max-w-full overflow-x-hidden box-border flex items-center justify-between gap-[max(1rem,4%)] px-[max(1.25rem,5%)] py-[max(0.875rem,2%)] max-sm:gap-2 max-sm:px-[max(0.875rem,3%)]"
+                    className="w-full max-w-full overflow-x-hidden box-border flex items-center justify-between gap-[max(1rem,4%)] px-[max(1.25rem,5%)] py-[max(0.875rem,2%)] max-sm:flex-col max-sm:gap-3 max-sm:px-4"
                     style={{ backgroundColor: "#211b18", backgroundImage: "none" }}
                 >
-                    <div className="min-w-0 flex-1 text-center">
+                    <div className="min-w-0 flex-1 text-center max-sm:flex-none">
                         <NavLink to="/home" className="text-center font-[Adamina] text-[clamp(1.5rem,5vw,1.875rem)] leading-none font-normal text-[#ffead4] no-underline" aria-label="Home">
                             TripJournal
                         </NavLink>
                     </div>
-                    <div className="min-w-0 flex items-center justify-end gap-[max(0.75rem,3%)] max-sm:gap-1.5">
+                    <div className="min-w-0 flex flex-wrap items-center justify-end gap-[max(0.75rem,3%)] max-sm:justify-center max-sm:gap-x-4 max-sm:gap-y-2">
                     <NavLink
                         to="/home"
                         className={({ isActive }) =>

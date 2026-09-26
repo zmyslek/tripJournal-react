@@ -347,7 +347,7 @@ function Home({ countryStatuses, countryAddedDates, setCountryStatus, visitedCou
                                             return (
                                                 <div
                                                     key={countryName}
-                                                    className="flex items-center gap-2"
+                                                    className="flex flex-wrap items-center gap-2"
                                                 >
                                                     {status !== null && (
                                                         <Link
@@ -358,7 +358,7 @@ function Home({ countryStatuses, countryAddedDates, setCountryStatus, visitedCou
                                                             Open
                                                         </Link>
                                                     )}
-                                                    <span className="flex-shrink-0 font-[Cormorant_Garamond] text-[0.95rem] text-[#f7dfca] min-w-max">
+                                                    <span className="min-w-0 flex-1 font-[Cormorant_Garamond] text-[0.95rem] text-[#f7dfca]">
                                                         {countryName}
                                                     </span>
                                                     <select
@@ -367,7 +367,7 @@ function Home({ countryStatuses, countryAddedDates, setCountryStatus, visitedCou
                                                             const newStatus = e.target.value === "null" ? null : (e.target.value as CountryStatus);
                                                             setCountryStatus(countryName, newStatus);
                                                         }}
-                                                        className="rounded-[0.6rem] border border-[#7a3f00]/40 bg-[#5a392b]/60 px-2 py-1 font-[Cormorant_Garamond] text-[0.85rem] text-[#fff4e7] outline-none transition hover:border-[#7a3f00]/60 focus:border-[#cf8d45] focus:ring-2 focus:ring-[#cf8d45]/40"
+                                                        className="max-w-full rounded-[0.6rem] border border-[#7a3f00]/40 bg-[#5a392b]/60 px-2 py-1 font-[Cormorant_Garamond] text-[0.85rem] text-[#fff4e7] outline-none transition hover:border-[#7a3f00]/60 focus:border-[#cf8d45] focus:ring-2 focus:ring-[#cf8d45]/40"
                                                         aria-label={`Status for ${countryName}`}
                                                     >
                                                         <option value="null">Not explored</option>

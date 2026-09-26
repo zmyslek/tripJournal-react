@@ -315,8 +315,10 @@ function Welcome() {
             <div className="rounded-[1.5rem] border border-[#FFEAD4]/10 bg-[#2b2623] p-4 lg:p-5">
               <form onSubmit={handleEmailSubmit} className="space-y-3">
                 <div>
-                  <label className="mb-2 block font-cormorant text-sm text-[#EAB681]">Email</label>
+                  <label htmlFor="welcome-email" className="mb-2 block font-cormorant text-sm text-[#EAB681]">Email</label>
                   <input
+                    id="welcome-email"
+                    name="email"
                     type="email"
                     value={formState.email}
                     onChange={handleEmailChange}
@@ -327,10 +329,12 @@ function Welcome() {
                 </div>
 
                 <div>
-                  <label className="mb-2 block font-cormorant text-sm text-[#EAB681]">
+                  <label htmlFor="welcome-password" className="mb-2 block font-cormorant text-sm text-[#EAB681]">
                     {showSignUp ? "Create password" : "Password"}
                   </label>
                   <input
+                    id="welcome-password"
+                    name="password"
                     type="password"
                     value={formState.password}
                     onChange={handlePasswordChange}
