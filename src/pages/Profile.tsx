@@ -300,16 +300,7 @@ export function Profile() {
                                     <HelpCircle size={20} />
                                 </Link>
                             </div>
-                            <div className="grid gap-1 sm:grid-cols-2">
-                                <button
-                                    type="button"
-                                    className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#7a3f00] bg-[#5a392b] text-[#ffead4] transition hover:bg-[#7a3f00]"
-                                    onClick={openEditor}
-                                    aria-label="Edit profile"
-                                    title="Edit profile"
-                                >
-                                    <Edit size={18} />
-                                </button>
+                            <div>
                                 <button
                                     type="button"
                                     className="rounded-full border border-[#cf8d45] bg-[#cf8d45] px-4 py-2.5 font-[Adamina] text-[0.92rem] text-[#fff4e7] transition hover:-translate-y-px hover:bg-[#b97731]"
