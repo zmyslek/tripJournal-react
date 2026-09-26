@@ -35,7 +35,7 @@ const getCountryFillColors = (mode: "globe" | "map"): ExpressionSpecification =>
     "visited", "#CF8D45",
     "want-to-visit-again", "#EAB681",
     "want-to-go", "#7A3F00",
-    "#A97A53"
+    "#8C735C"
   ]
   : [
     "match",
@@ -43,13 +43,13 @@ const getCountryFillColors = (mode: "globe" | "map"): ExpressionSpecification =>
     "visited", "#CF8D45",
     "want-to-visit-again", "#EAB681",
     "want-to-go", "#7A3F00",
-    "#A97A53"
+    "#8C735C"
   ] as ExpressionSpecification;
 
 const getFilteredCountryFillColors = (mode: "globe" | "map", visibleStatuses?: Set<CountryStatus | "not-explored">): ExpressionSpecification => {
   if (visibleStatuses?.size === 0) return ["literal", "#fffdf9"] as ExpressionSpecification;
   if (!visibleStatuses || visibleStatuses.size === 4) return getCountryFillColors(mode);
-  const base = { visited: "#CF8D45", "want-to-visit-again": "#EAB681", "want-to-go": "#7A3F00", "not-explored": "#A97A53" };
+  const base = { visited: "#CF8D45", "want-to-visit-again": "#EAB681", "want-to-go": "#7A3F00", "not-explored": "#8C735C" };
   const muted = "#f0eeeb";
   return ["match", ["get", "tripStatus"],
     "visited", visibleStatuses.has("visited") ? base.visited : muted,
@@ -173,9 +173,9 @@ const Map: React.FC<MapProps> = ({
   }, [refreshCountries]);
 
   const configureGlobeStyle = (map: MapLibreMap) => {
-    if (map.getLayer("Background")) {
-      map.setPaintProperty("Background", "background-color", "#D6D3CF");
-    }
+    // if (map.getLayer("Background")) {
+    //   map.setPaintProperty("Background", "background-color", "#D6D3CF");
+    // }
     map.setTerrain(null);
   };
 
