@@ -303,7 +303,7 @@ export function Profile() {
                             <div className="flex items-center justify-center">
                                 <button
                                     type="button"
-                                    className="rounded-full border border-[#cf8d45] bg-[#cf8d45] px-4 py-2.5 font-[Adamina] text-[0.92rem] text-[#fff4e7] transition hover:-translate-y-px hover:bg-[#b97731]"
+                                    className="rounded-full border border-[#cf8d45] bg-[#cf8d45] w-auto px-7 py-2.5 font-[Adamina] text-[0.92rem] text-[#fff4e7] transition hover:-translate-y-px hover:bg-[#b97731]"
                                     onClick={handleLogout}
                                 >
                                     Log out
