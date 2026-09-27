@@ -280,40 +280,39 @@ export function Profile() {
                                 </article>
                             ))}
                         </div>
-                        <div className="grid gap-6 px-4 pb-5 sm:px-7 sm:pb-7 lg:grid-cols-[minmax(0,1fr)_20rem] bg-[#5a392b]/95">
-                            <section className="rounded-[1rem] border border-[#cf8d45]/30 bg-white p-5 shadow-[0_14px_34px_rgb(0_0_0_/_30%)] sm:p-7" aria-label="Recent journeys">
-                                <div className="mb-4 flex items-end justify-between gap-3">
-                                    <div>
-                                        <p className="font-[Adamina] text-[0.68rem] uppercase tracking-[0.24em] text-[#936d58]">Recently remembered</p>
-                                        <h2 className="mt-1 font-[Cormorant_Garamond] text-3xl text-[#50300d]">Latest journeys</h2>
-                                    </div>
-                                    <Link to="/gallery" className="font-[Cormorant_Garamond] text-base text-[#936d58] hover:text-[#50300d]">View gallery →</Link>
+
+                        <section className="mt-7 rounded-[1rem] border border-[#cf8d45]/30 bg-white p-5 shadow-[0_14px_34px_rgb(0_0_0_/_30%)] sm:p-7" aria-label="Recent journeys">
+                            <div className="mb-4 flex items-end justify-between gap-3">
+                                <div>
+                                    <p className="font-[Adamina] text-[0.68rem] uppercase tracking-[0.24em] text-[#936d58]">Recently remembered</p>
+                                    <h2 className="mt-1 font-[Cormorant_Garamond] text-3xl text-[#50300d]">Latest journeys</h2>
                                 </div>
-                                <div className="grid gap-3 sm:grid-cols-3">
-                                    {[
-                                        //replace with your own journey data or fetch from an API
-                                        { city: "Florence", country: "Italy", date: "A city to wander", image: "photo-1529260830199-42c24126f198" },
-                                        { city: "Kyoto", country: "Japan", date: "Quiet mornings", image: "photo-1493976040374-85c8e12f0c0e" },
-                                        { city: "Lisbon", country: "Portugal", date: "Down every lane", image: "photo-1555881400-74d7acaacd8b" }
-                                    ].map((journey) => (
-                                        <Link
-                                            key={journey.city}
-                                            to="/gallery"
-                                            className="group relative flex min-h-52 items-end overflow-hidden rounded-xl bg-cover bg-center p-4 text-white"
-                                            style={{ backgroundImage: `linear-gradient(0deg, rgb(20 16 14 / 78%), transparent 72%), url(https://images.unsplash.com/${journey.image}?auto=format&fit=crop&w=700&q=80)` }}
-                                        >
-                                            <div className="transition group-hover:translate-y-[-2px]">
-                                                <p className="font-[Adamina] text-[0.6rem] uppercase tracking-[0.18em] text-[#f3d8bd]">{journey.date}</p>
-                                                <h3 className="font-[Cormorant_Garamond] text-3xl leading-tight">{journey.city}</h3>
-                                                <p className="font-[Cormorant_Garamond]">{journey.country}</p>
-                                            </div>
-                                        </Link>
-                                    ))}
-                                </div>
-                            </section>                    
-                        </div>
+                                <Link to="/gallery" className="font-[Cormorant_Garamond] text-base text-[#936d58] hover:text-[#50300d]">View gallery →</Link>
+                            </div>
+                            <div className="grid gap-3 sm:grid-cols-3">
+                                {[
+                                    //replace with your own journey data or fetch from an API
+                                    { city: "Florence", country: "Italy", date: "A city to wander", image: "photo-1529260830199-42c24126f198" },
+                                    { city: "Kyoto", country: "Japan", date: "Quiet mornings", image: "photo-1493976040374-85c8e12f0c0e" },
+                                    { city: "Lisbon", country: "Portugal", date: "Down every lane", image: "photo-1555881400-74d7acaacd8b" }
+                                ].map((journey) => (
+                                    <Link
+                                        key={journey.city}
+                                        to="/gallery"
+                                        className="group relative flex min-h-52 items-end overflow-hidden rounded-xl bg-cover bg-center p-4 text-white"
+                                        style={{ backgroundImage: `linear-gradient(0deg, rgb(20 16 14 / 78%), transparent 72%), url(https://images.unsplash.com/${journey.image}?auto=format&fit=crop&w=700&q=80)` }}
+                                    >
+                                        <div className="transition group-hover:translate-y-[-2px]">
+                                            <p className="font-[Adamina] text-[0.6rem] uppercase tracking-[0.18em] text-[#f3d8bd]">{journey.date}</p>
+                                            <h3 className="font-[Cormorant_Garamond] text-3xl leading-tight">{journey.city}</h3>
+                                            <p className="font-[Cormorant_Garamond]">{journey.country}</p>
+                                        </div>
+                                    </Link>
+                                ))}
+                            </div>
+                        </section>
                     </div>
-                    
+
 
                     <aside className="flex flex-col gap-3 rounded-[1rem]">
                         {/* Subscription badge (reads from localStorage key `subscriptionStatus`) */}
