@@ -217,7 +217,7 @@ export function Profile() {
 
                 <div className="grid gap-7 px-4 py-5 sm:px-7 sm:py-7 lg:grid-cols-[minmax(0,1fr)_20rem] bg-[#5a392b]/95">
                     <div>
-                        <div className="flex items-stretch rounded-[1rem] border border-[#eab681]/25 bg-[#ffead414] p-5 shadow-[inset_0_1px_0_#ffffff2b] interactive-transition hover:shadow-[inset_0_1px_0_#ffffff2b,0_8px_20px_rgb(122_63_0_/_15%)]">
+                        <div className="flex items-stretch rounded-[1rem] border border-[#eab681]/35 bg-[#ffead41f] p-5 shadow-[inset_0_1px_0_#ffffff2b,0_10px_28px_rgb(0_0_0_/_30%)] interactive-transition hover:shadow-[inset_0_1px_0_#ffffff2b,0_14px_34px_rgb(0_0_0_/_40%)]">
                             <div className="flex items-center justify-center mr-6">
                                 <div className="h-24 w-24 shrink-0 overflow-hidden rounded-full border border-[#f6d7b5]/70 bg-[#cf8d45] font-[Adamina] text-[1.5rem] text-[#fff4e7]"> {profile.avatar ? (
                                     <img src={profile.avatar} alt="" className="h-full w-full object-cover" />) : (initials)}
@@ -243,7 +243,7 @@ export function Profile() {
                         </div>
 
 
-                        <div className="mt-7 rounded-[1rem] border border-[#eab681]/25 bg-[#ffead414] p-5 shadow-[inset_0_1px_0_#ffffff2b] interactive-transition hover:shadow-[inset_0_1px_0_#ffffff2b,0_8px_20px_rgb(122_63_0_/_15%)]">
+                        <div className="mt-7 rounded-[1rem] border border-[#eab681]/35 bg-[#ffead41f] p-5 shadow-[inset_0_1px_0_#ffffff2b,0_10px_28px_rgb(0_0_0_/_30%)] interactive-transition hover:shadow-[inset_0_1px_0_#ffffff2b,0_14px_34px_rgb(0_0_0_/_40%)]">
                             <div className="flex flex-wrap items-center justify-between gap-3">
                                 <div>
                                     <p className="font-[Adamina] text-[0.72rem] uppercase tracking-[0.18em] text-[#f6d7b5]">User record</p>
@@ -274,7 +274,7 @@ export function Profile() {
 
                         <div className="mt-7 grid gap-3 sm:grid-cols-3">
                             {profileStats.map((stat) => (
-                                <article key={stat.label} className="rounded-[1.2rem] border border-[#eab681]/25 bg-[#ffead414] p-4 shadow-[inset_0_1px_0_#ffffff2b] interactive-transition hover:shadow-[inset_0_1px_0_#ffffff2b,0_8px_20px_rgb(122_63_0_/_15%)] hover:-translate-y-0.5">
+                                <article key={stat.label} className="rounded-[1.2rem] border border-[#eab681]/35 bg-[#ffead41f] p-4 shadow-[inset_0_1px_0_#ffffff2b,0_10px_28px_rgb(0_0_0_/_30%)] interactive-transition hover:shadow-[inset_0_1px_0_#ffffff2b,0_14px_34px_rgb(0_0_0_/_40%)] hover:-translate-y-0.5">
                                     <p className="font-[Adamina] text-[0.72rem] uppercase tracking-[0.18em] text-[#f6d7b5]">{stat.label}</p>
                                     <p className="mt-2 font-[Adamina] text-[2rem] leading-none text-[#fff4e7]">{stat.value}</p>
                                 </article>
@@ -282,50 +282,50 @@ export function Profile() {
                         </div>
                     </div>
 
-                    <aside className="flex px-auto justify-center flex-col gap-2 rounded-[1rem] p-1">
+                    <aside className="flex flex-col gap-3 rounded-[1rem]">
                         {/* Subscription badge (reads from localStorage key `subscriptionStatus`) */}
-                            <SubscriptionStatus />
-                        <div className="grid gap-1 sm:grid-cols-2 my-4">
-                            <div className="grid gap-1 sm:grid-cols-2">
-                                <Link
-                                    to="/settings"
-                                    className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#eab681]/40 bg-[#ffead414] text-[#fff4e7] interactive-transition hover:bg-[#ffead4]/25 hover:border-[#eab681]/60"
-                                    aria-label="Settings"
-                                    title="Settings"
-                                >
-                                    <Settings size={20} />
-                                </Link>
+                        <SubscriptionStatus />
 
-                                <Link
-                                    to="/help-center"
-                                    className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#eab681]/40 bg-[#ffead414] text-[#fff4e7] interactive-transition hover:bg-[#ffead4]/25 hover:border-[#eab681]/60"
-                                    aria-label="Help center"
-                                    title="Help center"
-                                >
-                                    <HelpCircle size={20} />
-                                </Link>
-                            </div>
-                            <div className="flex items-center justify-center">
-                                <button
-                                    type="button"
-                                    className="rounded-full border border-[#cf8d45] bg-[#cf8d45] w-auto px-7 py-2.5 font-[Adamina] text-[0.92rem] text-[#fff4e7] transition hover:-translate-y-px hover:bg-[#b97731]"
-                                    onClick={handleLogout}
-                                >
-                                    Log out
-                                </button>
-                            </div>
+                        <div className="mt-3 flex flex-col gap-2">
+                            <Link
+                                to="/settings"
+                                className="flex items-center gap-3 rounded-full border border-[#eab681]/35 bg-[#ffead41a] px-4 py-2.5 font-[Cormorant_Garamond] text-[1.05rem] text-[#fff4e7] shadow-[inset_0_1px_0_#ffffff2b] interactive-transition hover:-translate-y-px hover:border-[#eab681]/60 hover:bg-[#ffead426] hover:shadow-[inset_0_1px_0_#ffffff2b,0_10px_22px_rgb(0_0_0_/_30%)]"
+                            >
+                                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#cf8d45] text-[#fff4e7] shadow-[0_2px_8px_rgb(0_0_0_/_35%)]">
+                                    <Settings size={16} />
+                                </span>
+                                Settings
+                            </Link>
+
+                            <Link
+                                to="/help-center"
+                                className="flex items-center gap-3 rounded-full border border-[#eab681]/35 bg-[#ffead41a] px-4 py-2.5 font-[Cormorant_Garamond] text-[1.05rem] text-[#fff4e7] shadow-[inset_0_1px_0_#ffffff2b] interactive-transition hover:-translate-y-px hover:border-[#eab681]/60 hover:bg-[#ffead426] hover:shadow-[inset_0_1px_0_#ffffff2b,0_10px_22px_rgb(0_0_0_/_30%)]"
+                            >
+                                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#eab681] text-[#50300d] shadow-[0_2px_8px_rgb(0_0_0_/_35%)]">
+                                    <HelpCircle size={16} />
+                                </span>
+                                Help center
+                            </Link>
+
+                            <button
+                                type="button"
+                                className="mt-1 flex items-center justify-center rounded-full border border-[#cf8d45] bg-[#cf8d45] px-4 py-2.5 font-[Adamina] text-[0.92rem] text-[#fff4e7] shadow-[0_8px_20px_rgb(0_0_0_/_25%)] interactive-transition hover:-translate-y-px hover:bg-[#b97731] hover:shadow-[0_12px_26px_rgb(0_0_0_/_32%)]"
+                                onClick={handleLogout}
+                            >
+                                Log out
+                            </button>
                         </div>
                     </aside>
                 </div>
 
                 <div className="grid gap-6 px-4 pb-5 sm:px-7 sm:pb-7 lg:grid-cols-[minmax(0,1fr)_20rem] bg-[#5a392b]/95">
-                    <section className="rounded-[1rem] border border-[#eab681]/25 bg-[#ffead414] p-5 shadow-[inset_0_1px_0_#ffffff2b] sm:p-7" aria-label="Recent journeys">
+                    <section className="rounded-[1rem] border border-[#cf8d45]/30 bg-white p-5 shadow-[0_14px_34px_rgb(0_0_0_/_30%)] sm:p-7" aria-label="Recent journeys">
                         <div className="mb-4 flex items-end justify-between gap-3">
                             <div>
-                                <p className="font-[Adamina] text-[0.68rem] uppercase tracking-[0.24em] text-[#f6d7b5]">Recently remembered</p>
-                                <h2 className="mt-1 font-[Cormorant_Garamond] text-3xl text-[#fff4e7]">Latest journeys</h2>
+                                <p className="font-[Adamina] text-[0.68rem] uppercase tracking-[0.24em] text-[#936d58]">Recently remembered</p>
+                                <h2 className="mt-1 font-[Cormorant_Garamond] text-3xl text-[#50300d]">Latest journeys</h2>
                             </div>
-                            <Link to="/gallery" className="font-[Cormorant_Garamond] text-base text-[#f6d7b5] hover:text-[#fff4e7]">View gallery →</Link>
+                            <Link to="/gallery" className="font-[Cormorant_Garamond] text-base text-[#936d58] hover:text-[#50300d]">View gallery →</Link>
                         </div>
                         <div className="grid gap-3 sm:grid-cols-3">
                             {[
@@ -350,8 +350,8 @@ export function Profile() {
                         </div>
                     </section>
 
-                    <blockquote className="relative flex flex-col justify-center rounded-[1rem] border border-white/10 bg-[#5a392b] p-6 text-[#fff4e7] sm:p-7">
-                        <span aria-hidden="true" className="absolute right-4 top-0 font-[Cormorant_Garamond] text-8xl leading-none text-white/10">“</span>
+                    <blockquote className="relative flex flex-col justify-center rounded-[1rem] border border-[#eab681]/35 bg-[#5a392b] p-6 text-[#fff4e7] shadow-[0_18px_44px_rgb(0_0_0_/_45%)] sm:p-7">
+                        <span aria-hidden="true" className="absolute right-4 top-0 font-[Cormorant_Garamond] text-9xl leading-none text-[#eab681]/20">“</span>
                         <p className="relative font-[Cormorant_Garamond] text-2xl leading-tight">The real voyage of discovery consists not in seeking new landscapes, but in having new eyes.</p>
                         <cite className="mt-4 font-[Adamina] text-[0.62rem] not-italic uppercase tracking-[0.2em] text-[#e0c3aa]">Marcel Proust</cite>
                     </blockquote>
