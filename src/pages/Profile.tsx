@@ -290,7 +290,7 @@ export function Profile() {
                             <div className="grid gap-1 sm:grid-cols-2">
                                 <Link
                                     to="/settings"
-                                    className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#7a3f00] bg-[#5a392b] text-[#ffead4] transition hover:bg-[#7a3f00]"
+                                    className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#eab681]/40 bg-[#ffead414] text-[#fff4e7] interactive-transition hover:bg-[#ffead4]/25 hover:border-[#eab681]/60"
                                     aria-label="Settings"
                                     title="Settings"
                                 >
@@ -299,7 +299,7 @@ export function Profile() {
 
                                 <Link
                                     to="/help-center"
-                                    className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#cf8d45] bg-[#fff7ee] text-[#50300d] transition hover:bg-[#f6dfc1]"
+                                    className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#eab681]/40 bg-[#ffead414] text-[#fff4e7] interactive-transition hover:bg-[#ffead4]/25 hover:border-[#eab681]/60"
                                     aria-label="Help center"
                                     title="Help center"
                                 >

@@ -16,17 +16,17 @@ export function SubscriptionStatus() {
     return (
         <div className="mt-8 space-y-4">
             {/* Subscription Banner */}
-            <div className={`rounded-lg border-2 p-6 transition ${
+            <div className={`rounded-[1rem] border p-6 shadow-[inset_0_1px_0_#ffffff2b] interactive-transition hover:shadow-[inset_0_1px_0_#ffffff2b,0_8px_20px_rgb(122_63_0_/_15%)] ${
                 isBeta 
-                    ? 'border-[#7A3F00] bg-gradient-to-r from-[#EAB681]/40 to-[#CF8D45]/40'
+                    ? 'border-[#eab681]/40 bg-gradient-to-r from-[#eab681]/25 to-[#cf8d45]/25'
                     : isPremium
-                    ? 'border-[#CF8D45] bg-[#EAB681]/10'
-                    : 'border-[#8f5a20]/35 bg-[#fff4e7]/70'
+                    ? 'border-[#eab681]/25 bg-[#ffead414]'
+                    : 'border-[#eab681]/20 bg-[#ffead40d]'
             }`}>
                 <div className="flex items-start justify-between">
                     <div className="flex-1">
                         <div className="flex items-center gap-3">
-                            <h3 className="font-adamina text-xl font-bold text-[#7A3F00]">
+                            <h3 className="font-adamina text-xl font-bold text-[#fff4e7]">
                                 {tier.name}
                             </h3>
                             {isBeta && (
@@ -35,16 +35,16 @@ export function SubscriptionStatus() {
                                 </span>
                             )}
                             {isPremium && !isBeta && (
-                                <span className="rounded-full border border-[#CF8D45] px-3 py-1 text-xs font-semibold text-[#7A3F00]">
+                                <span className="rounded-full border border-[#cf8d45] bg-[#cf8d45]/15 px-3 py-1 text-xs font-semibold text-[#fff4e7]">
                                     Premium
                                 </span>
                             )}
                         </div>
                         
-                        <p className="mt-2 font-cormorant text-[#7A3F00]/70">
+                        <p className="mt-2 font-cormorant text-[#f7dfca]/80">
                             {isPremium && renewalDate && subscription.plan !== 'lifetime' && !isBeta ? (
                                 <>
-                                    Renews on <span className="font-semibold">{renewalDate}</span>
+                                    Renews on <span className="font-semibold text-[#fff4e7]">{renewalDate}</span>
                                 </>
                             ) : isPremium && subscription.plan === 'lifetime' ? (
                                 'Lifetime access'
@@ -58,7 +58,7 @@ export function SubscriptionStatus() {
 
                     <Link
                         to="/settings"
-                        className="flex items-center gap-2 rounded-lg border border-[#7A3F00] px-4 py-2 font-cormorant text-sm font-semibold text-[#7A3F00] transition hover:bg-[#7A3F00]/10"
+                        className="flex items-center gap-2 rounded-full border border-[#cf8d45] bg-[#cf8d45] px-4 py-2 font-cormorant text-sm font-semibold text-[#fff4e7] interactive-transition hover:-translate-y-px hover:bg-[#b97731]"
                     >
                         {isPremium ? 'Manage' : 'Upgrade'} <ArrowRight size={16} />
                     </Link>
@@ -67,15 +67,15 @@ export function SubscriptionStatus() {
 
             {/* Feature Highlights for Free Users */}
             {plan === 'free' && !isBeta && (
-                <div className="rounded-lg bg-[#fff4e7]/70 p-4 border border-[#8f5a20]/35">
-                    <p className="font-cormorant text-sm font-semibold text-[#7A3F00] mb-2">
+                <div className="rounded-[1rem] border border-[#eab681]/20 bg-[#ffead40d] p-4 shadow-[inset_0_1px_0_#ffffff2b]">
+                    <p className="font-cormorant text-sm font-semibold text-[#f6d7b5] mb-2">
                         Premium unlocks:
                     </p>
-                    <ul className="space-y-1 text-sm text-[#7A3F00]/80 font-cormorant">
+                    <ul className="space-y-1 text-sm text-[#f7dfca] font-cormorant">
                         <li>✨ Photo quiz game</li>
                         <li>🎵 Spotify playlists per location</li>
                         <li>📺 TikTok videos for destinations</li>
-                        <li>👟 Step tracking & travel stats</li>
+                        <li>👟 Step tracking &amp; travel stats</li>
                     </ul>
                 </div>
             )}
