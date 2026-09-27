@@ -212,15 +212,15 @@ export function Profile() {
                             </p>
                         </div>
                         <button type="button" onClick={openEditor} className="absolute right-0 top-0 rounded-full border border-white/60 bg-black/20 px-5 py-2.5 font-[Adamina] text-sm text-white backdrop-blur-sm transition hover:bg-black/40">Edit profile</button>
-                        <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[#f6d7b5]/70 bg-[#cf8d45] font-[Adamina] text-[1.5rem] text-[#fff4e7] sm:h-24 sm:w-24">
-                            {profile.avatar ? <img src={profile.avatar} alt="" className="h-full w-full object-cover" /> : initials}
-                        </div>
                     </div>
                 </div>
 
                 <div className="grid gap-7 px-4 py-5 sm:px-7 sm:py-7 lg:grid-cols-[minmax(0,1fr)_20rem] bg-[#5a392b]/95">
-                    <div>
+                    <div className="bg-[#fff4e7]/50">
                         <div className="rounded-[1rem] border border-[#cf8d45]/35 bg-[#fff4e7]/52 p-5 shadow-[inset_0_0_24px_rgb(143_90_32_/_8%)]">
+                            <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[#f6d7b5]/70 bg-[#cf8d45] font-[Adamina] text-[1.5rem] text-[#fff4e7] sm:h-24 sm:w-24">
+                                {profile.avatar ? <img src={profile.avatar} alt="" className="h-full w-full object-cover" /> : initials}
+                            </div>
                             <div className="grid gap-x-8 gap-y-5 sm:grid-cols-2">
                                 <div className="rounded-[0.8rem] border border-[#cf8d45]/25 bg-[#ffead4]/45 px-4 py-3">
                                     <p className="font-[Adamina] text-[0.78rem] uppercase tracking-[0.18em] text-[#7a3f00]">Traveler name</p>
@@ -314,7 +314,7 @@ export function Profile() {
                         
                         {/* Admin seeding moved to /admin-seed (protected) */}
                         <div className="mt-4">
-                            <section className=" p-3 rounded-[1rem] border border-[#50300d]/15 bg-white" aria-label="Recent journeys">
+                            <section className=" p-3 rounded-[1rem] border border-[#50300d]/15 bg-white/80" aria-label="Recent journeys">
                                 <div className="mb-4 flex items-end justify-between gap-3">
                                     <div><p className="font-[Adamina] text-[0.68rem] uppercase tracking-[0.24em] text-[#936d58]">Recently remembered</p><h2 className="mt-1 font-[Cormorant_Garamond] text-3xl text-[#50300d]">Latest journeys</h2></div>
                                     <Link to="/gallery" className="font-[Cormorant_Garamond] text-base text-[#936d58] hover:text-[#50300d]">View gallery →</Link>

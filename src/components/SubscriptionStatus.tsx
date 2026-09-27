@@ -18,10 +18,10 @@ export function SubscriptionStatus() {
             {/* Subscription Banner */}
             <div className={`rounded-lg border-2 p-6 transition ${
                 isBeta 
-                    ? 'border-[#7A3F00] bg-gradient-to-r from-[#EAB681]/10 to-[#CF8D45]/10'
+                    ? 'border-[#7A3F00] bg-gradient-to-r from-[#EAB681]/40 to-[#CF8D45]/40'
                     : isPremium
                     ? 'border-[#CF8D45] bg-[#EAB681]/10'
-                    : 'border-[#8f5a20]/35 bg-[#FFEAD4]/50'
+                    : 'border-[#8f5a20]/35 bg-[#fff4e7]/70'
             }`}>
                 <div className="flex items-start justify-between">
                     <div className="flex-1">
@@ -67,7 +67,7 @@ export function SubscriptionStatus() {
 
             {/* Feature Highlights for Free Users */}
             {plan === 'free' && !isBeta && (
-                <div className="rounded-lg bg-[#FFEAD4]/50 p-4 border border-[#8f5a20]/35">
+                <div className="rounded-lg bg-[#fff4e7]/70 p-4 border border-[#8f5a20]/35">
                     <p className="font-cormorant text-sm font-semibold text-[#7A3F00] mb-2">
                         Premium unlocks:
                     </p>
