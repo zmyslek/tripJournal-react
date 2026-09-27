@@ -330,7 +330,7 @@ export function Profile() {
                         <div className="grid gap-3 sm:grid-cols-3">
                             {[
                                 //replace with your own journey data or fetch from an API
-                                { city: "Florence", country: "Italy", date: "A city to wander", image: "photo-1543429257-37a54b3f4c4d" },
+                                { city: "Florence", country: "Italy", date: "A city to wander", image: "photo-1529260830199-42c24126f198" },
                                 { city: "Kyoto", country: "Japan", date: "Quiet mornings", image: "photo-1493976040374-85c8e12f0c0e" },
                                 { city: "Lisbon", country: "Portugal", date: "Down every lane", image: "photo-1555881400-74d7acaacd8b" }
                             ].map((journey) => (
