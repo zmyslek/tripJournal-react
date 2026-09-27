@@ -217,24 +217,24 @@ export function Profile() {
 
                 <div className="grid gap-7 px-4 py-5 sm:px-7 sm:py-7 lg:grid-cols-[minmax(0,1fr)_20rem] bg-[#5a392b]/95">
                     <div>
-                        <div className="flex items-stretch rounded-[1rem] border border-[#cf8d45]/35 bg-[#fff7ee]/95 p-5 shadow-[inset_0_0_24px_rgb(143_90_32_/_8%)]">
+                        <div className="flex items-stretch rounded-[1rem] border border-[#cf8d45]/35 bg-gradient-to-b from-white/95 to-[#fff7ee]/90 p-5 shadow-[inset_0_0_24px_rgb(143_90_32_/_8%),0_4px_16px_rgb(0_0_0_/_20%)]">
                             <div className="flex items-center justify-center mr-6">
                                 <div className="h-24 w-24 shrink-0 overflow-hidden rounded-full border border-[#f6d7b5]/70 bg-[#cf8d45] font-[Adamina] text-[1.5rem] text-[#fff4e7]"> {profile.avatar ? (
                                     <img src={profile.avatar} alt="" className="h-full w-full object-cover" />) : (initials)}
                                 </div>
                             </div>
                             <div className="grid flex-1 gap-x-8 gap-y-5 sm:grid-cols-2">
-                                <div className="rounded-[0.8rem] border border-[#cf8d45]/25 bg-[#ffead4]/45 px-4 py-3">
+                                <div className="rounded-[0.8rem] border border-[#cf8d45]/40 bg-[#fff4e7]/70 px-4 py-3">
                                 <p className="font-[Adamina] text-[0.78rem] uppercase tracking-[0.18em] text-[#7a3f00]">Traveler name</p>
                                 <p className="mt-1 font-[Cormorant_Garamond] text-[1.25rem] text-[#50300d]">{profile.name}</p>
                                 </div>
 
-                                <div className="rounded-[0.8rem] border border-[#cf8d45]/25 bg-[#ffead4]/45 px-4 py-3">
+                                <div className="rounded-[0.8rem] border border-[#cf8d45]/40 bg-[#fff4e7]/70 px-4 py-3">
                                 <p className="font-[Adamina] text-[0.78rem] uppercase tracking-[0.18em] text-[#7a3f00]">Email address</p>
                                 <p className="mt-1 font-[Cormorant_Garamond] text-[1.25rem] text-[#50300d]">{profile.email}</p>
                                 </div>
 
-                                <div className="sm:col-span-2 rounded-[0.8rem] border border-[#cf8d45]/25 bg-[#ffead4]/45 px-4 py-3">
+                                <div className="sm:col-span-2 rounded-[0.8rem] border border-[#cf8d45]/40 bg-[#fff4e7]/70 px-4 py-3">
                                 <p className="font-[Adamina] text-[0.78rem] uppercase tracking-[0.18em] text-[#7a3f00]">Favorite travel style</p>
                                 <p className="mt-1 font-[Cormorant_Garamond] text-[1.25rem] text-[#50300d]">{profile.travelStyle}</p>
                                 </div>
@@ -243,7 +243,7 @@ export function Profile() {
                         </div>
 
 
-                        <div className="mt-7 rounded-[1rem] border border-[#cf8d45]/35 bg-[#fff7ee]/95 p-5 shadow-[inset_0_0_16px_rgb(143_90_32_/_7%)]">
+                        <div className="mt-7 rounded-[1rem] border border-[#cf8d45]/35 bg-gradient-to-b from-white/95 to-[#fff7ee]/90 p-5 shadow-[inset_0_0_16px_rgb(143_90_32_/_7%),0_4px_16px_rgb(0_0_0_/_20%)]">
                             <div className="flex flex-wrap items-center justify-between gap-3">
                                 <div>
                                     <p className="font-[Adamina] text-[0.72rem] uppercase tracking-[0.18em] text-[#7a3f00]">User record</p>
@@ -253,19 +253,19 @@ export function Profile() {
                             </div>
 
                             <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-2">
-                                <div className="rounded-[0.8rem] border border-[#cf8d45]/25 bg-[#ffead4]/45 px-4 py-3">
+                                <div className="rounded-[0.8rem] border border-[#cf8d45]/40 bg-[#fff4e7]/70 px-4 py-3">
                                     <p className="font-[Adamina] text-[0.78rem] uppercase tracking-[0.18em] text-[#7a3f00]">Subscription tier</p>
                                     <p className="mt-1 font-[Cormorant_Garamond] text-[1.05rem] text-[#50300d]">{getStoredUserProfile()?.subscriptionTier || "free"}</p>
                                 </div>
-                                <div className="rounded-[0.8rem] border border-[#cf8d45]/25 bg-[#ffead4]/45 px-4 py-3">
+                                <div className="rounded-[0.8rem] border border-[#cf8d45]/40 bg-[#fff4e7]/70 px-4 py-3">
                                     <p className="font-[Adamina] text-[0.78rem] uppercase tracking-[0.18em] text-[#7a3f00]">Subscription status</p>
                                     <p className="mt-1 font-[Cormorant_Garamond] text-[1.05rem] text-[#50300d]">{getStoredUserProfile()?.subscriptionStatus || "inactive"}</p>
                                 </div>
-                                <div className="rounded-[0.8rem] border border-[#cf8d45]/25 bg-[#ffead4]/45 px-4 py-3">
+                                <div className="rounded-[0.8rem] border border-[#cf8d45]/40 bg-[#fff4e7]/70 px-4 py-3">
                                     <p className="font-[Adamina] text-[0.78rem] uppercase tracking-[0.18em] text-[#7a3f00]">Profile created</p>
                                     <p className="mt-1 font-[Cormorant_Garamond] text-[1.05rem] text-[#50300d]">{getStoredUserProfile()?.createdAt ? new Date(getStoredUserProfile()!.createdAt).toLocaleDateString() : "Not set yet"}</p>
                                 </div>
-                                <div className="rounded-[0.8rem] border border-[#cf8d45]/25 bg-[#ffead4]/45 px-4 py-3">
+                                <div className="rounded-[0.8rem] border border-[#cf8d45]/40 bg-[#fff4e7]/70 px-4 py-3">
                                     <p className="font-[Adamina] text-[0.78rem] uppercase tracking-[0.18em] text-[#7a3f00]">Login method</p>
                                     <p className="mt-1 font-[Cormorant_Garamond] text-[1.05rem] text-[#50300d]">{getStoredUserProfile()?.authProvider || "email"}</p>
                                 </div>
@@ -274,7 +274,7 @@ export function Profile() {
 
                         <div className="mt-7 grid gap-3 sm:grid-cols-3">
                             {profileStats.map((stat) => (
-                                <article key={stat.label} className="rounded-[0.9rem] border border-[#cf8d45]/35 bg-[#fff7ee]/95 p-4 shadow-[inset_0_0_16px_rgb(143_90_32_/_7%)] interactive-transition hover:shadow-[inset_0_0_16px_rgb(143_90_32_/_12%),0_4px_12px_rgb(122_63_0_/_15%)] hover:-translate-y-0.5">
+                                <article key={stat.label} className="rounded-[0.9rem] border border-[#cf8d45]/35 bg-[#fff9f2]/90 p-4 shadow-[inset_0_0_16px_rgb(143_90_32_/_7%),0_4px_16px_rgb(0_0_0_/_20%)] interactive-transition hover:shadow-[inset_0_0_16px_rgb(143_90_32_/_12%),0_4px_12px_rgb(122_63_0_/_15%)] hover:-translate-y-0.5">
                                     <p className="font-[Adamina] text-[0.72rem] uppercase tracking-[0.18em] text-[#7a3f00]">{stat.label}</p>
                                     <p className="mt-2 font-[Adamina] text-[2rem] leading-none text-[#50300d]">{stat.value}</p>
                                 </article>
@@ -320,7 +320,7 @@ export function Profile() {
                         
                         {/* Admin seeding moved to /admin-seed (protected) */}
                         <div className="mt-4">
-                            <section className=" p-3 rounded-[1rem] border border-[#50300d]/15 bg-[#fff7ee]/95" aria-label="Recent journeys">
+                            <section className=" p-3 rounded-[1rem] border border-[#50300d]/15 bg-white/90" aria-label="Recent journeys">
                                 <div className="mb-4 flex items-end justify-between gap-3">
                                     <div><p className="font-[Adamina] text-[0.68rem] uppercase tracking-[0.24em] text-[#936d58]">Recently remembered</p><h2 className="mt-1 font-[Cormorant_Garamond] text-3xl text-[#50300d]">Latest journeys</h2></div>
                                     <Link to="/gallery" className="font-[Cormorant_Garamond] text-base text-[#936d58] hover:text-[#50300d]">View gallery →</Link>
