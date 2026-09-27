@@ -216,29 +216,35 @@ export function Profile() {
                 </div>
 
                 <div className="grid gap-7 px-4 py-5 sm:px-7 sm:py-7 lg:grid-cols-[minmax(0,1fr)_20rem] bg-[#5a392b]/95">
-                    <div className="bg-[#fff4e7]/50">
-                        <div className="rounded-[1rem] border border-[#cf8d45]/35 bg-[#fff4e7]/52 p-5 shadow-[inset_0_0_24px_rgb(143_90_32_/_8%)]">
-                            <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[#f6d7b5]/70 bg-[#cf8d45] font-[Adamina] text-[1.5rem] text-[#fff4e7] sm:h-24 sm:w-24">
-                                {profile.avatar ? <img src={profile.avatar} alt="" className="h-full w-full object-cover" /> : initials}
-                            </div>
-                            <div className="grid gap-x-8 gap-y-5 sm:grid-cols-2">
-                                <div className="rounded-[0.8rem] border border-[#cf8d45]/25 bg-[#ffead4]/45 px-4 py-3">
+                    <div>
+                        <div className="flex items-stretch rounded-[1rem] border border-[#cf8d45]/35 bg-[#fff4e7]/52 p-5 shadow-[inset_0_0_24px_rgb(143_90_32_/_8%)]">
+                            <div className="flex items-center justify-center mr-6 bg-[#fff4e7]/50">
+                                <div className="h-24 w-24 shrink-0 overflow-hidden rounded-full border border-[#f6d7b5]/70 bg-[#cf8d45] font-[Adamina] text-[1.5rem] text-[#fff4e7]"> {profile.avatar ? (
+                                    <img src={profile.avatar} alt="" className="h-full w-full object-cover" />) : (initials)}
+                                </div>
+                                </div>
+                                <div className="grid flex-1 gap-x-8 gap-y-5 sm:grid-cols-2">
+                                    <div className="rounded-[0.8rem] border border-[#cf8d45]/25 bg-[#ffead4]/45 px-4 py-3">
                                     <p className="font-[Adamina] text-[0.78rem] uppercase tracking-[0.18em] text-[#7a3f00]">Traveler name</p>
                                     <p className="mt-1 font-[Cormorant_Garamond] text-[1.25rem] text-[#50300d]">{profile.name}</p>
-                                </div>
-                                <div className="rounded-[0.8rem] border border-[#cf8d45]/25 bg-[#ffead4]/45 px-4 py-3">
+                                    </div>
+
+                                    <div className="rounded-[0.8rem] border border-[#cf8d45]/25 bg-[#ffead4]/45 px-4 py-3">
                                     <p className="font-[Adamina] text-[0.78rem] uppercase tracking-[0.18em] text-[#7a3f00]">Email address</p>
                                     <p className="mt-1 font-[Cormorant_Garamond] text-[1.25rem] text-[#50300d]">{profile.email}</p>
+                                    </div>
+
+                                    <div className="sm:col-span-2 rounded-[0.8rem] border border-[#cf8d45]/25 bg-[#ffead4]/45 px-4 py-3">
+                                    <p className="font-[Adamina] text-[0.78rem] uppercase tracking-[0.18em] text-[#7a3f00]">Favorite travel style</p>
+                                    <p className="mt-1 font-[Cormorant_Garamond] text-[1.25rem] text-[#50300d]">{profile.travelStyle}</p>
+                                    </div>
                                 </div>
+
                             </div>
-                            <div className=" mt-4 rounded-[0.8rem] border border-[#cf8d45]/25 bg-[#ffead4]/45 px-4 py-3">
-                                <p className="font-[Adamina] text-[0.78rem] uppercase tracking-[0.18em] text-[#7a3f00]">Favorite travel style</p>
-                                <p className="mt-1 font-[Cormorant_Garamond] text-[1.25rem] text-[#50300d]">{profile.travelStyle}</p>
-                            </div>
-                        </div>
+
 
                         <div className="mt-7 rounded-[1rem] border border-[#cf8d45]/35 bg-[#fff4e7]/72 p-5 shadow-[inset_0_0_16px_rgb(143_90_32_/_7%)]">
-                            <div className="flex flex-wrap items-center justify-between gap-3">
+                            <div className="flex flex-wrap items-center justify-between gap-3 bg-[#fff4e7]/50">
                                 <div>
                                     <p className="font-[Adamina] text-[0.72rem] uppercase tracking-[0.18em] text-[#7a3f00]">User record</p>
                                     <h2 className="mt-2 font-[Adamina] text-[1.35rem] text-[#50300d]">Account details</h2>
@@ -246,7 +252,7 @@ export function Profile() {
                                 <p className="font-[Cormorant_Garamond] text-[1rem] text-[#7a3f00]">All information about subscriptions and account</p>
                             </div>
 
-                            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-2">
+                            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-2 bg-[#fff4e7]/50">
                                 <div className="rounded-[0.8rem] border border-[#cf8d45]/25 bg-[#ffead4]/45 px-4 py-3">
                                     <p className="font-[Adamina] text-[0.78rem] uppercase tracking-[0.18em] text-[#7a3f00]">Subscription tier</p>
                                     <p className="mt-1 font-[Cormorant_Garamond] text-[1.05rem] text-[#50300d]">{getStoredUserProfile()?.subscriptionTier || "free"}</p>
@@ -266,7 +272,7 @@ export function Profile() {
                             </div>
                         </div>
 
-                        <div className="mt-7 grid gap-3 sm:grid-cols-3">
+                        <div className="mt-7 grid gap-3 sm:grid-cols-3 bg-[#fff4e7]/50">
                             {profileStats.map((stat) => (
                                 <article key={stat.label} className="rounded-[0.9rem] border border-[#cf8d45]/35 bg-[#fff4e7]/72 p-4 shadow-[inset_0_0_16px_rgb(143_90_32_/_7%)] interactive-transition hover:shadow-[inset_0_0_16px_rgb(143_90_32_/_12%),0_4px_12px_rgb(122_63_0_/_15%)] hover:-translate-y-0.5">
                                     <p className="font-[Adamina] text-[0.72rem] uppercase tracking-[0.18em] text-[#7a3f00]">{stat.label}</p>
