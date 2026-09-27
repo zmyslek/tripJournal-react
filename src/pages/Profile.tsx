@@ -279,8 +279,7 @@ export function Profile() {
                                     <p className="mt-2 font-[Adamina] text-[2rem] leading-none text-[#fff4e7]">{stat.value}</p>
                                 </article>
                             ))}
-                        </div> 
-                        <blockquote className="relative flex mt-7 flex-col justify-center rounded-[1rem] border-white/95 bg-[#5a392b] p-6 text-[#fff4e7] sm:p-7"><span aria-hidden="true" className="absolute right-4 top-0 font-[Cormorant_Garamond] text-8xl leading-none text-white/10">“</span><p className="relative font-[Cormorant_Garamond] text-2xl leading-tight">The real voyage of discovery consists not in seeking new landscapes, but in having new eyes.</p><cite className="mt-4 font-[Adamina] text-[0.62rem] not-italic uppercase tracking-[0.2em] text-[#e0c3aa]">Marcel Proust</cite></blockquote>
+                        </div>
                     </div>
 
                     <aside className="flex px-auto justify-center flex-col gap-2 rounded-[1rem] p-1">
@@ -316,26 +315,47 @@ export function Profile() {
                                 </button>
                             </div>
                         </div>
-
-                        
-                        {/* Admin seeding moved to /admin-seed (protected) */}
-                        <div className="mt-4">
-                            <section className=" p-3 rounded-[1rem] border border-[#50300d]/15 bg-white/90" aria-label="Recent journeys">
-                                <div className="mb-4 flex items-end justify-between gap-3">
-                                    <div><p className="font-[Adamina] text-[0.68rem] uppercase tracking-[0.24em] text-[#936d58]">Recently remembered</p><h2 className="mt-1 font-[Cormorant_Garamond] text-3xl text-[#50300d]">Latest journeys</h2></div>
-                                    <Link to="/gallery" className="font-[Cormorant_Garamond] text-base text-[#936d58] hover:text-[#50300d]">View gallery →</Link>
-                                </div>
-                                <div>
-                                    {[
-                                        //replace with your own journey data or fetch from an API
-                                        { city: "Kyoto", country: "Japan", date: "Quiet mornings", image: "photo-1493976040374-85c8e12f0c0e" },
-                                    ].map((journey) => <Link key={journey.city} to="/gallery" className="group relative flex min-h-52 items-end overflow-hidden rounded-xl bg-cover bg-center p-1 text-white" style={{ backgroundImage: `linear-gradient(0deg, rgb(20 16 14 / 78%), transparent 72%), url(https://images.unsplash.com/${journey.image}?auto=format&fit=crop&w=700&q=80)` }}><div className="transition group-hover:translate-y-[-2px]"><p className="font-[Adamina] text-[0.6rem] uppercase tracking-[0.18em] text-[#f3d8bd]">{journey.date}</p><h3 className="font-[Cormorant_Garamond] text-3xl leading-tight">{journey.city}</h3><p className="font-[Cormorant_Garamond]">{journey.country}</p></div></Link>)}
-                                </div>
-                            </section>
-                        </div>
                     </aside>
                 </div>
-                
+
+                <div className="grid gap-6 px-4 pb-5 sm:px-7 sm:pb-7 lg:grid-cols-[minmax(0,1fr)_20rem] bg-[#5a392b]/95">
+                    <section className="rounded-[1rem] border border-[#eab681]/25 bg-[#ffead414] p-5 shadow-[inset_0_1px_0_#ffffff2b] sm:p-7" aria-label="Recent journeys">
+                        <div className="mb-4 flex items-end justify-between gap-3">
+                            <div>
+                                <p className="font-[Adamina] text-[0.68rem] uppercase tracking-[0.24em] text-[#f6d7b5]">Recently remembered</p>
+                                <h2 className="mt-1 font-[Cormorant_Garamond] text-3xl text-[#fff4e7]">Latest journeys</h2>
+                            </div>
+                            <Link to="/gallery" className="font-[Cormorant_Garamond] text-base text-[#f6d7b5] hover:text-[#fff4e7]">View gallery →</Link>
+                        </div>
+                        <div className="grid gap-3 sm:grid-cols-3">
+                            {[
+                                //replace with your own journey data or fetch from an API
+                                { city: "Florence", country: "Italy", date: "A city to wander", image: "photo-1543429257-37a54b3f4c4d" },
+                                { city: "Kyoto", country: "Japan", date: "Quiet mornings", image: "photo-1493976040374-85c8e12f0c0e" },
+                                { city: "Lisbon", country: "Portugal", date: "Down every lane", image: "photo-1555881400-74d7acaacd8b" }
+                            ].map((journey) => (
+                                <Link
+                                    key={journey.city}
+                                    to="/gallery"
+                                    className="group relative flex min-h-52 items-end overflow-hidden rounded-xl bg-cover bg-center p-4 text-white"
+                                    style={{ backgroundImage: `linear-gradient(0deg, rgb(20 16 14 / 78%), transparent 72%), url(https://images.unsplash.com/${journey.image}?auto=format&fit=crop&w=700&q=80)` }}
+                                >
+                                    <div className="transition group-hover:translate-y-[-2px]">
+                                        <p className="font-[Adamina] text-[0.6rem] uppercase tracking-[0.18em] text-[#f3d8bd]">{journey.date}</p>
+                                        <h3 className="font-[Cormorant_Garamond] text-3xl leading-tight">{journey.city}</h3>
+                                        <p className="font-[Cormorant_Garamond]">{journey.country}</p>
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
+                    </section>
+
+                    <blockquote className="relative flex flex-col justify-center rounded-[1rem] border border-white/10 bg-[#5a392b] p-6 text-[#fff4e7] sm:p-7">
+                        <span aria-hidden="true" className="absolute right-4 top-0 font-[Cormorant_Garamond] text-8xl leading-none text-white/10">“</span>
+                        <p className="relative font-[Cormorant_Garamond] text-2xl leading-tight">The real voyage of discovery consists not in seeking new landscapes, but in having new eyes.</p>
+                        <cite className="mt-4 font-[Adamina] text-[0.62rem] not-italic uppercase tracking-[0.2em] text-[#e0c3aa]">Marcel Proust</cite>
+                    </blockquote>
+                </div>
             </div>
 
             {isEditing && (
