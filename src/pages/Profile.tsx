@@ -196,7 +196,7 @@ export function Profile() {
 
     return (
         <section className="mx-auto w-full max-w-[min(95vw,1380px)] px-[max(1.25rem,5%)] py-[max(2rem,6vh)] text-[#50300d]" aria-labelledby="profile-title">
-            <div className="overflow-hidden rounded-[1.35rem] border border-[#8f5a20]/25 bg-[#f8f4ee] shadow-[0_18px_42px_rgb(80_48_13_/_13%)] transition-all">
+            <div className="overflow-hidden rounded-[1.35rem] border border-[#8f5a20]/25 bg-[#f8f4ee]/85 shadow-[0_18px_42px_rgb(80_48_13_/_13%)] transition-all">
                 <div
                     className="atlas-header relative flex min-h-[19rem] items-end bg-[#5a392b] px-6 py-7 text-[#ffead4] sm:min-h-[24rem] sm:px-9"
                     style={{ backgroundImage: `linear-gradient(90deg, rgb(30 24 21 / 78%), rgb(30 24 21 / 20%)), linear-gradient(0deg, rgb(30 24 21 / 40%), transparent 65%), url(https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=1800&q=85)`, backgroundSize: "cover", backgroundPosition: "center 55%" }}
@@ -217,7 +217,7 @@ export function Profile() {
 
                 <div className="grid gap-7 px-4 py-5 sm:px-7 sm:py-7 lg:grid-cols-[minmax(0,1fr)_20rem] bg-[#5a392b]/95">
                     <div>
-                        <div className="flex items-stretch rounded-[1rem] border border-[#cf8d45]/35 bg-[#fff4e7]/52 p-5 shadow-[inset_0_0_24px_rgb(143_90_32_/_8%)]">
+                        <div className="flex items-stretch rounded-[1rem] border border-[#cf8d45]/35 bg-white/90 p-5 shadow-[inset_0_0_24px_rgb(143_90_32_/_8%)]">
                             <div className="flex items-center justify-center mr-6">
                                 <div className="h-24 w-24 shrink-0 overflow-hidden rounded-full border border-[#f6d7b5]/70 bg-[#cf8d45] font-[Adamina] text-[1.5rem] text-[#fff4e7]"> {profile.avatar ? (
                                     <img src={profile.avatar} alt="" className="h-full w-full object-cover" />) : (initials)}
@@ -243,7 +243,7 @@ export function Profile() {
                         </div>
 
 
-                        <div className="mt-7 rounded-[1rem] border border-[#cf8d45]/35 bg-[#fff4e7]/72 p-5 shadow-[inset_0_0_16px_rgb(143_90_32_/_7%)]">
+                        <div className="mt-7 rounded-[1rem] border border-[#cf8d45]/35 bg-white/90 p-5 shadow-[inset_0_0_16px_rgb(143_90_32_/_7%)]">
                             <div className="flex flex-wrap items-center justify-between gap-3">
                                 <div>
                                     <p className="font-[Adamina] text-[0.72rem] uppercase tracking-[0.18em] text-[#7a3f00]">User record</p>
@@ -274,13 +274,13 @@ export function Profile() {
 
                         <div className="mt-7 grid gap-3 sm:grid-cols-3">
                             {profileStats.map((stat) => (
-                                <article key={stat.label} className="rounded-[0.9rem] border border-[#cf8d45]/35 bg-[#fff4e7]/72 p-4 shadow-[inset_0_0_16px_rgb(143_90_32_/_7%)] interactive-transition hover:shadow-[inset_0_0_16px_rgb(143_90_32_/_12%),0_4px_12px_rgb(122_63_0_/_15%)] hover:-translate-y-0.5">
+                                <article key={stat.label} className="rounded-[0.9rem] border border-[#cf8d45]/35 bg-white/90 p-4 shadow-[inset_0_0_16px_rgb(143_90_32_/_7%)] interactive-transition hover:shadow-[inset_0_0_16px_rgb(143_90_32_/_12%),0_4px_12px_rgb(122_63_0_/_15%)] hover:-translate-y-0.5">
                                     <p className="font-[Adamina] text-[0.72rem] uppercase tracking-[0.18em] text-[#7a3f00]">{stat.label}</p>
                                     <p className="mt-2 font-[Adamina] text-[2rem] leading-none text-[#50300d]">{stat.value}</p>
                                 </article>
                             ))}
                         </div> 
-                        <blockquote className="relative flex mt-7 flex-col justify-center rounded-[1rem] bg-[#5a392b] p-6 text-[#fff4e7] sm:p-7"><span aria-hidden="true" className="absolute right-4 top-0 font-[Cormorant_Garamond] text-8xl leading-none text-white/10">“</span><p className="relative font-[Cormorant_Garamond] text-2xl leading-tight">The real voyage of discovery consists not in seeking new landscapes, but in having new eyes.</p><cite className="mt-4 font-[Adamina] text-[0.62rem] not-italic uppercase tracking-[0.2em] text-[#e0c3aa]">Marcel Proust</cite></blockquote>
+                        <blockquote className="relative flex mt-7 flex-col justify-center rounded-[1rem] border-white/95 bg-[#5a392b] p-6 text-[#fff4e7] sm:p-7"><span aria-hidden="true" className="absolute right-4 top-0 font-[Cormorant_Garamond] text-8xl leading-none text-white/10">“</span><p className="relative font-[Cormorant_Garamond] text-2xl leading-tight">The real voyage of discovery consists not in seeking new landscapes, but in having new eyes.</p><cite className="mt-4 font-[Adamina] text-[0.62rem] not-italic uppercase tracking-[0.2em] text-[#e0c3aa]">Marcel Proust</cite></blockquote>
                     </div>
 
                     <aside className="flex px-auto justify-center flex-col gap-2 rounded-[1rem] p-1">
@@ -320,7 +320,7 @@ export function Profile() {
                         
                         {/* Admin seeding moved to /admin-seed (protected) */}
                         <div className="mt-4">
-                            <section className=" p-3 rounded-[1rem] border border-[#50300d]/15 bg-white/80" aria-label="Recent journeys">
+                            <section className=" p-3 rounded-[1rem] border border-[#50300d]/15 bg-white/90" aria-label="Recent journeys">
                                 <div className="mb-4 flex items-end justify-between gap-3">
                                     <div><p className="font-[Adamina] text-[0.68rem] uppercase tracking-[0.24em] text-[#936d58]">Recently remembered</p><h2 className="mt-1 font-[Cormorant_Garamond] text-3xl text-[#50300d]">Latest journeys</h2></div>
                                     <Link to="/gallery" className="font-[Cormorant_Garamond] text-base text-[#936d58] hover:text-[#50300d]">View gallery →</Link>
