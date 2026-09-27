@@ -348,13 +348,12 @@ export function Profile() {
                                 </Link>
                             ))}
                         </div>
-                    </section>
-
-                    <blockquote className="relative flex flex-col justify-center rounded-[1rem] border border-[#eab681]/35 bg-[#5a392b] p-6 text-[#fff4e7] shadow-[0_18px_44px_rgb(0_0_0_/_45%)] sm:p-7">
-                        <span aria-hidden="true" className="absolute right-4 top-0 font-[Cormorant_Garamond] text-9xl leading-none text-[#eab681]/20">“</span>
-                        <p className="relative font-[Cormorant_Garamond] text-2xl leading-tight">The real voyage of discovery consists not in seeking new landscapes, but in having new eyes.</p>
-                        <cite className="mt-4 font-[Adamina] text-[0.62rem] not-italic uppercase tracking-[0.2em] text-[#e0c3aa]">Marcel Proust</cite>
-                    </blockquote>
+                        <blockquote className="relative flex flex-col justify-center rounded-[1rem] border border-[#eab681]/35 bg-[#5a392b] p-6 text-[#fff4e7] shadow-[0_18px_44px_rgb(0_0_0_/_45%)] sm:p-7">
+                            <span aria-hidden="true" className="absolute right-4 top-0 font-[Cormorant_Garamond] text-9xl leading-none text-[#eab681]/20">“</span>
+                            <p className="relative font-[Cormorant_Garamond] text-2xl leading-tight">The real voyage of discovery consists not in seeking new landscapes, but in having new eyes.</p>
+                            <cite className="mt-4 font-[Adamina] text-[0.62rem] not-italic uppercase tracking-[0.2em] text-[#e0c3aa]">Marcel Proust</cite>
+                        </blockquote>
+                    </section>                    
                 </div>
             </div>
 
