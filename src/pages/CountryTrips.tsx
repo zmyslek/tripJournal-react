@@ -489,10 +489,10 @@ function CountryTrips({ countryStatuses }: CountryTripsProps) {
                     }}
                 >
                     <h2 className="font-[Adamina] text-[1.8rem] text-[#fff4e7]">Travel integrations</h2>
-                    <p className="mt-2 font-[Cormorant_Garamond] text-[1.05rem] text-[#f7dfca] max-w-xl">Connect your travel experiences with music, fitness, and video data.</p>
+                    {/* <p className="mt-2 font-[Cormorant_Garamond] text-[1.05rem] text-[#f7dfca] max-w-xl">Connect your travel experiences with music, fitness, and video data.</p> */}
                 </div>
 
-                <div className="bg-[#ffead4]/85 p-6 sm:p-8">
+                {/* <div className="bg-[#ffead4]/85 p-6 sm:p-8">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div className="rounded-[1rem] border-2 border-[#cf8d45]/60 bg-[#fff4e7] p-6">
                             <p className="font-[Adamina] text-[0.85rem] uppercase tracking-[0.08em] text-[#7a3f00]">🎵 Spotify</p>
@@ -515,10 +515,10 @@ function CountryTrips({ countryStatuses }: CountryTripsProps) {
                         <p className="mt-3 font-[Cormorant_Garamond] text-[1.1rem] text-[#6a4630] max-w-2xl">Discover travel videos from {resolvedCountryName}. Explore trending content, travel vlogs, and local culture videos from TikTok creators.</p>
                         <button type="button" className="mt-4 rounded-full border border-[#fabe7d] bg-[#fabe7d] px-5 py-2.5 font-[Adamina] text-[0.85rem] uppercase tracking-[0.08em] text-[#5a392b] transition hover:bg-[#cf8d45]">Explore Videos</button>
                     </div>
-                </div>
+                </div> */}
 
                 <div className="mt-6 grid gap-6 p-6">
-                    <div className="overflow-hidden rounded-[1.25rem] border border-[#8f5a20]/25 bg-[#fff4e7] shadow-[0_10px_24px_rgb(80_48_13_/_10%)]">
+                    {/* <div className="overflow-hidden rounded-[1.25rem] border border-[#8f5a20]/25 bg-[#fff4e7] shadow-[0_10px_24px_rgb(80_48_13_/_10%)]">
                         <div className="border-b border-[#8f5a20]/15 bg-[#ffead4]/75 px-5 py-4">
                             <p className="font-[Adamina] text-[0.7rem] uppercase tracking-[0.24em] text-[#8f5a20]">Itineraries</p>
                             <h3 className="mt-2 font-[Adamina] text-[1.2rem] text-[#50300d]">{resolvedCountryName} trip boards</h3>
@@ -569,7 +569,7 @@ function CountryTrips({ countryStatuses }: CountryTripsProps) {
                                 ))}
                             </div>
                         </div>
-                    </div>
+                    </div> */}
 
                     <div className="overflow-hidden rounded-[1.25rem] border border-[#8f5a20]/25 bg-[#fff4e7] shadow-[0_10px_24px_rgb(80_48_13_/_10%)]">
                         <div className="border-b border-[#8f5a20]/15 bg-[#ffead4]/75 px-5 py-4">

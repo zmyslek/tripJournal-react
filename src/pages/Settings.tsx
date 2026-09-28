@@ -40,11 +40,11 @@ interface AppSettings {
 interface UserSettings {
     account: AccountSettings;
     notifications: NotificationSettings;
-    premium: PremiumSettings;
+    // premium: PremiumSettings;
     app: AppSettings;
 }
 
-type SettingsSectionId = "account" | "notifications" | "premium" | "about";
+type SettingsSectionId = "account" | "notifications" | "about"; //| "premium" add before about
 
 interface SettingsSection {
     id: SettingsSectionId;
@@ -57,7 +57,7 @@ const SETTINGS_CACHE_KEY = "tripjournal:settings:v1";
 const sections: SettingsSection[] = [
     { id: "account", label: "Account", description: "Profile details and contact info" },
     { id: "notifications", label: "Notifications", description: "Email and billing alerts" },
-    { id: "premium", label: "Premium", description: "Plan, billing, and renewals" },
+    // { id: "premium", label: "Premium", description: "Plan, billing, and renewals" },
     { id: "about", label: "About & policies", description: "Help and legal pages" }
 ];
 
@@ -75,13 +75,13 @@ const defaultSettings: UserSettings = {
         featureAnnouncements: false,
         paymentAlerts: true
     },
-    premium: {
-        plan: "free",
-        autoRenew: false,
-        billingEmail: "john.doe@example.com",
-        paymentMethod: "Visa ending in 4242",
-        renewalDate: "No active renewal"
-    },
+    // premium: {
+    //     plan: "free",
+    //     autoRenew: false,
+    //     billingEmail: "john.doe@example.com",
+    //     paymentMethod: "Visa ending in 4242",
+    //     renewalDate: "No active renewal"
+    // },
     app: {
         theme: "heritage",
         language: "english",
@@ -116,13 +116,13 @@ function getCachedSettings(): UserSettings {
                 featureAnnouncements: Boolean(parsedSettings.notifications?.featureAnnouncements),
                 paymentAlerts: Boolean(parsedSettings.notifications?.paymentAlerts)
             },
-            premium: {
-                plan: parsedSettings.premium?.plan === "monthly" || parsedSettings.premium?.plan === "yearly" ? parsedSettings.premium.plan : "free",
-                autoRenew: Boolean(parsedSettings.premium?.autoRenew),
-                billingEmail: typeof parsedSettings.premium?.billingEmail === "string" ? parsedSettings.premium.billingEmail : defaultSettings.premium.billingEmail,
-                paymentMethod: typeof parsedSettings.premium?.paymentMethod === "string" ? parsedSettings.premium.paymentMethod : defaultSettings.premium.paymentMethod,
-                renewalDate: typeof parsedSettings.premium?.renewalDate === "string" ? parsedSettings.premium.renewalDate : defaultSettings.premium.renewalDate
-            },
+            // premium: {
+            //     plan: parsedSettings.premium?.plan === "monthly" || parsedSettings.premium?.plan === "yearly" ? parsedSettings.premium.plan : "free",
+            //     autoRenew: Boolean(parsedSettings.premium?.autoRenew),
+            //     billingEmail: typeof parsedSettings.premium?.billingEmail === "string" ? parsedSettings.premium.billingEmail : defaultSettings.premium.billingEmail,
+            //     paymentMethod: typeof parsedSettings.premium?.paymentMethod === "string" ? parsedSettings.premium.paymentMethod : defaultSettings.premium.paymentMethod,
+            //     renewalDate: typeof parsedSettings.premium?.renewalDate === "string" ? parsedSettings.premium.renewalDate : defaultSettings.premium.renewalDate
+            // },
             app: {
                 theme: parsedSettings.app?.theme === "modern-preview" ? "modern-preview" : "heritage",
                 language: parsedSettings.app?.language === "polish" ? "polish" : "english",
@@ -282,11 +282,11 @@ export function Settings() {
                             </article>
                         )}
 
-                        {activeSection === "premium" && (
+                        {/* {activeSection === "premium" && (
                             <article className="rounded-[1rem] border border-[#cf8d45]/35 bg-[#fff4e7]/72 p-5 shadow-[inset_0_0_18px_rgb(143_90_32_/_8%)]">
                                     <PremiumPlans />
                             </article>
-                        )}
+                        )} */}
 
                         {activeSection === "about" && (
                             <article className="rounded-[1rem] border border-[#cf8d45]/35 bg-[#fff4e7]/72 p-5 shadow-[inset_0_0_18px_rgb(143_90_32_/_8%)]">

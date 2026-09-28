@@ -316,7 +316,7 @@ export function Profile() {
 
                     <aside className="flex flex-col gap-3 rounded-[1rem]">
                         {/* Subscription badge (reads from localStorage key `subscriptionStatus`) */}
-                        <SubscriptionStatus />
+                        {/* <SubscriptionStatus /> */}
 
                         <div className="mt-3 flex flex-col gap-2">
                             <Link
