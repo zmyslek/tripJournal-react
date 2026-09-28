@@ -6,9 +6,11 @@ import { SpeedInsights } from '@vercel/speed-insights/react'
 import './css/index.css'
 import App from './App.tsx'
 import { initializePostHog } from './utils/posthog'
+import { registerStaleChunkReload } from './utils/staleChunkReload'
 import { PostHogPageView } from './components/PostHogPageView'
 
 initializePostHog()
+registerStaleChunkReload()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
