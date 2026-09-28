@@ -15,7 +15,6 @@ config.WORKER_URL = mapLibreWorkerUrl;
 
 export type MapProps = {
   countriesData: CountriesGeoJson | null;
-  selectedCountries: string[];
   viewMode: "globe" | "map";
   userLocation?: { lng: number; lat: number } | null;
   countryStatuses?: Record<string, CountryStatus>;
@@ -81,7 +80,6 @@ const calculateCountryCenter = (countriesData: CountriesGeoJson | null, countryN
 
 const Map: React.FC<MapProps> = ({
   countriesData,
-  selectedCountries,
   viewMode,
   userLocation,
   countryStatuses = {},
@@ -94,7 +92,6 @@ const Map: React.FC<MapProps> = ({
   const mapRef = useRef<MapLibreMap | null>(null);
   const userMarkerRef = useRef<Marker | null>(null);
   const countriesDataRef = useRef(countriesData);
-  const selectedCountriesRef = useRef(selectedCountries);
   const countryStatusesRef = useRef(countryStatuses);
   const visibleStatusesRef = useRef(visibleStatuses);
   const userLocationRef = useRef(userLocation ?? null);
@@ -121,11 +118,9 @@ const Map: React.FC<MapProps> = ({
       ...data,
       features: data.features.map((feature) => {
         const countryName = feature.properties?.name?.trim() ?? "";
-        const status = countryStatusesRef.current[countryName] ??
-          (selectedCountriesRef.current.includes(countryName) ? "visited" : undefined);
         return {
           ...feature,
-          properties: { ...feature.properties, tripStatus: status ?? "not-explored" }
+          properties: { ...feature.properties, tripStatus: countryStatusesRef.current[countryName] ?? "not-explored" }
         };
       })
     });
@@ -191,7 +186,6 @@ const Map: React.FC<MapProps> = ({
 
   useEffect(() => {
     countriesDataRef.current = countriesData;
-    selectedCountriesRef.current = selectedCountries;
     countryStatusesRef.current = countryStatuses;
     visibleStatusesRef.current = visibleStatuses;
     focusCountryRef.current = focusCountry?.trim() || null;
@@ -199,7 +193,7 @@ const Map: React.FC<MapProps> = ({
     if (focusCountryRef.current && focusCountryRef.current !== lastFocusedCountryRef.current) {
       focusMapOnCountry(focusCountryRef.current);
     }
-  }, [countriesData, selectedCountries, countryStatuses, visibleStatuses, focusCountry, refreshCountries]);
+  }, [countriesData, countryStatuses, visibleStatuses, focusCountry, refreshCountries]);
 
   useEffect(() => {
     userLocationRef.current = userLocation ?? null;
@@ -222,12 +216,15 @@ const Map: React.FC<MapProps> = ({
   }, [userLocation]);
 
   useEffect(() => {
+    const map = mapRef.current;
+    if (!map?.getLayer(COUNTRIES_FILL_LAYER_ID)) return;
+    map.setPaintProperty(COUNTRIES_FILL_LAYER_ID, "fill-color", getFilteredCountryFillColors(viewMode, visibleStatuses));
+  }, [visibleStatuses, viewMode]);
+
+  useEffect(() => {
     viewModeRef.current = viewMode;
     const map = mapRef.current;
     if (!map) return;
-    if (map.getLayer(COUNTRIES_FILL_LAYER_ID)) {
-      map.setPaintProperty(COUNTRIES_FILL_LAYER_ID, "fill-color", getFilteredCountryFillColors(viewMode, visibleStatusesRef.current));
-    }
     if (map.getLayer(COUNTRIES_BORDER_LAYER_ID)) {
       map.setPaintProperty(COUNTRIES_BORDER_LAYER_ID, "line-color", viewMode === "globe" ? "#5A392B" : "#234A4D");
     }

@@ -415,7 +415,6 @@ function CountryTrips({ countryStatuses }: CountryTripsProps) {
                     <div className="w-full max-w-[820px]">
                         <Map
                             countriesData={countriesData}
-                            selectedCountries={countryStatus ? [resolvedCountryName] : []}
                             viewMode="globe"
                             countryStatuses={countryStatuses}
                             focusCountry={resolvedCountryName}
