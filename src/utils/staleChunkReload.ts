@@ -3,18 +3,13 @@ import { capturePostHogEventBeforeReload } from './posthog'
 const LAST_RELOAD_AT_KEY = 'tripjournal:stale-chunk-reload-at'
 const MIN_MS_BETWEEN_RELOADS = 10_000
 
-function readLastReloadAt(): number | null {
-  const storedValue = sessionStorage.getItem(LAST_RELOAD_AT_KEY)
-  return storedValue ? Number(storedValue) : null
-}
-
 // After a redeploy, an open tab can request a lazy route chunk that the new build no longer serves.
 // Reload once to pick up the new build. The time guard stops a reload loop when a chunk is truly missing.
 export function registerStaleChunkReload(): void {
   window.addEventListener('vite:preloadError', (event) => {
     try {
-      const lastReloadAt = readLastReloadAt()
-      if (lastReloadAt !== null && Date.now() - lastReloadAt < MIN_MS_BETWEEN_RELOADS) {
+      const lastReloadAt = Number(sessionStorage.getItem(LAST_RELOAD_AT_KEY))
+      if (Date.now() - lastReloadAt < MIN_MS_BETWEEN_RELOADS) {
         return
       }
 
