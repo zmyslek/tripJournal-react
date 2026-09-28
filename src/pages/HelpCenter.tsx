@@ -1,7 +1,6 @@
 import { useMemo, useState, useRef, useEffect } from "react";
 import { helpFaqSections } from "../data/helpFaq";
 import { useScrollToTop } from "../hooks/useScrollToTop";
-import paperBackground from "../assets/wrinkled-paper.png";
 
 function HelpCenter() {
     const [activeSectionId, setActiveSectionId] = useState("all");
@@ -153,16 +152,16 @@ function HelpCenter() {
             aria-labelledby="help-title"
         >
             <div
-                className="overflow-hidden rounded-[1.35rem] border border-[#8f5a20]/20 bg-[#fffdf9] shadow-[0_18px_42px_rgb(80_48_13_/_12%)]"
+                className="overflow-hidden rounded-[1.35rem] border border-[#8f5a20]/25 bg-[#f8f4ee]/85 shadow-[0_18px_42px_rgb(80_48_13_/_13%)] transition-all"
             >
                 <div
-                        className="atlas-header relative min-h-[11rem] bg-[#5a392b] px-6 py-7 text-[#ffead4] sm:px-9"
-                    style={{ backgroundImage: `linear-gradient(rgb(90 57 43 / 0.9), rgb(90 57 43 / 0.9)), url(${paperBackground})`, backgroundSize: "cover" }}
+                    className="atlas-header relative flex min-h-[19rem] items-end bg-[#5a392b] px-6 py-7 text-[#ffead4] sm:min-h-[24rem] sm:px-9"
+                    style={{ backgroundImage: "linear-gradient(90deg, rgb(30 24 21 / 78%), rgb(30 24 21 / 20%)), linear-gradient(0deg, rgb(30 24 21 / 40%), transparent 65%), url(https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=1800&q=85)", backgroundSize: "cover", backgroundPosition: "center 55%" }}
                 >
                     <div className="relative flex flex-wrap items-start justify-between gap-6">
                         <div>
                             <p className="m-0 font-[Adamina] text-[0.7rem] uppercase tracking-[0.24em] text-[#f6d7b5]">TripJournal support</p>
-                            <h1 id="help-title" className="mt-3 font-[Adamina] text-[clamp(1.8rem,4vw,2.8rem)] leading-none text-[#fff4e7]">
+                            <h1 id="help-title" className="mt-3 font-[Cormorant_Garamond] text-[clamp(2.8rem,7vw,5.4rem)] leading-[0.9] text-[#fff4e7]">
                                 Help Center
                             </h1>
                             <p className="mt-4 max-w-[42rem] font-[Cormorant_Garamond] text-[1.25rem] leading-[1.35] text-[#f7dfca]">
@@ -172,7 +171,7 @@ function HelpCenter() {
                     </div>
                 </div>
 
-                <div className="grid gap-[max(1.75rem,2%)] px-[max(1rem,2%)] py-[max(1.75rem,5%)] lg:grid-cols-[1fr_auto]">
+                <div className="grid gap-[max(1.75rem,2%)] bg-[#5a392b]/95 px-[max(1rem,2%)] py-[max(1.75rem,5%)] text-[#fff4e7] lg:grid-cols-[1fr_auto]">
                     <div>
                         {/* Full-width search bar */}
                         <div className="mb-[max(1.5rem,4%)]">

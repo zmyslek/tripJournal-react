@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import type { ChangeEvent } from "react";
 import { Link } from "react-router-dom";
 import { useScrollToTop } from "../hooks/useScrollToTop";
-import paperBackground from "../assets/wrinkled-paper.png";
 // import PremiumPlans from "../components/PremiumPlans";
 
 export type SettingsProps = Record<string, never>;
@@ -188,24 +187,26 @@ export function Settings() {
     );
 
     return (
-        <section className="mx-auto w-full max-w-[min(96vw,1320px)] px-[max(1.25rem,5%)] py-[max(2rem,6vh)] text-[#50300d]" aria-labelledby="settings-title">
-            <div className="overflow-hidden rounded-[1.35rem] border border-[#8f5a20]/35 bg-[#ffead4]/95 shadow-[0_18px_42px_rgb(80_48_13_/_20%),inset_0_0_0_1px_rgb(255_244_231_/_55%)]">
+        <section className="mx-auto w-full max-w-[min(95vw,1380px)] px-[max(1.25rem,5%)] py-[max(2rem,6vh)] text-[#50300d]" aria-labelledby="settings-title">
+            <div className="overflow-hidden rounded-[1.35rem] border border-[#8f5a20]/25 bg-[#f8f4ee]/85 shadow-[0_18px_42px_rgb(80_48_13_/_13%)] transition-all">
                 <div
-                        className="atlas-header relative min-h-[11rem] bg-[#5a392b] px-6 py-7 text-[#ffead4] sm:px-9"
-                    style={{ backgroundImage: `linear-gradient(rgb(90 57 43 / 0.9), rgb(90 57 43 / 0.9)), url(${paperBackground})`, backgroundSize: "cover" }}
+                    className="atlas-header relative flex min-h-[19rem] items-end bg-[#5a392b] px-6 py-7 text-[#ffead4] sm:min-h-[24rem] sm:px-9"
+                    style={{ backgroundImage: "linear-gradient(90deg, rgb(30 24 21 / 78%), rgb(30 24 21 / 20%)), linear-gradient(0deg, rgb(30 24 21 / 40%), transparent 65%), url(https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=1800&q=85)", backgroundSize: "cover", backgroundPosition: "center 55%" }}
                 >
-                    <p className="m-0 font-[Adamina] text-[0.7rem] uppercase tracking-[0.24em] text-[#f6d7b5]">Settings</p>
-                        <h1 id="settings-title" className="mt-3 font-[Adamina] text-[clamp(1.8rem,4vw,2.8rem)] leading-none text-[#fff4e7]">
-                        Account center
+                    <div className="relative z-10">
+                    <p className="m-0 font-[Adamina] text-[0.7rem] uppercase tracking-[0.24em] text-[#f6d7b5]">Your travel journal</p>
+                        <h1 id="settings-title" className="mt-3 font-[Cormorant_Garamond] text-[clamp(2.8rem,7vw,5.4rem)] leading-[0.9] text-[#fff4e7]">
+                        Settings
                     </h1>
-                    <p className="mt-4 max-w-[46rem] font-[Cormorant_Garamond] text-[1.25rem] leading-[1.35] text-[#f7dfca]">
-                        Manage your traveler identity, notification preferences, and premium details in one place.
+                    <p className="mt-3 max-w-[42rem] font-[Cormorant_Garamond] text-[1.15rem] leading-[1.35] text-[#f7dfca]">
+                        Shape your account, notifications, and journal preferences.
                     </p>
+                    </div>
                 </div>
 
-                <div className="grid gap-7 px-6 py-7 sm:px-9 lg:grid-cols-[18rem_minmax(0,1fr)]">
-                    <aside className="rounded-[1rem] border border-[#cf8d45]/35 bg-[#fff4e7]/72 p-4 shadow-[inset_0_0_16px_rgb(143_90_32_/_8%)]">
-                        <p className="font-[Adamina] text-[0.7rem] uppercase tracking-[0.2em] text-[#7a3f00]">General</p>
+                <div className="grid gap-7 bg-[#5a392b]/95 px-4 py-5 sm:px-7 sm:py-7 lg:grid-cols-[minmax(0,1fr)_20rem]">
+                    <aside className="order-2 rounded-[1rem] border border-[#eab681]/35 bg-[#ffead41f] p-4 shadow-[inset_0_1px_0_#ffffff2b,0_10px_28px_rgb(0_0_0_/_30%)] lg:order-1">
+                        <p className="font-[Adamina] text-[0.7rem] uppercase tracking-[0.2em] text-[#f6d7b5]">Settings menu</p>
                         <nav className="mt-3 flex flex-col gap-1.5" aria-label="Settings categories">
                             {sections.map((section) => (
                                 <button
@@ -214,43 +215,43 @@ export function Settings() {
                                     onClick={() => setActiveSection(section.id)}
                                     className={`w-full rounded-[0.9rem] px-3 py-2.5 text-left transition ${
                                         activeSection === section.id
-                                            ? "border border-[#cf8d45]/70 bg-[#f4ddbf] shadow-[0_4px_12px_rgb(122_63_0_/_10%)]"
-                                            : "border border-transparent hover:border-[#cf8d45]/40 hover:bg-[#ffead4]/80"
+                                            ? "border border-[#eab681]/60 bg-[#cf8d45]/30 shadow-[0_4px_12px_rgb(0_0_0_/_15%)]"
+                                            : "border border-transparent hover:border-[#eab681]/40 hover:bg-[#ffead40d]"
                                     }`}
                                 >
-                                    <p className="m-0 font-[Adamina] text-[0.92rem] text-[#50300d]">{section.label}</p>
-                                    <p className="mt-1 m-0 font-[Cormorant_Garamond] text-[1rem] leading-[1.25] text-[#7a3f00]">{section.description}</p>
+                                    <p className="m-0 font-[Adamina] text-[0.92rem] text-[#fff4e7]">{section.label}</p>
+                                    <p className="mt-1 m-0 font-[Cormorant_Garamond] text-[1rem] leading-[1.25] text-[#f7dfca]">{section.description}</p>
                                 </button>
                             ))}
                         </nav>
                     </aside>
 
-                    <div className="space-y-5">
+                    <div className="order-1 space-y-5 lg:order-2">
                         {activeSection === "account" && (
-                            <article className="rounded-[1rem] border border-[#cf8d45]/35 bg-[#fff4e7]/72 p-5 shadow-[inset_0_0_18px_rgb(143_90_32_/_8%)]">
+                            <article className="rounded-[1rem] border border-[#eab681]/35 bg-[#ffead41f] p-5 shadow-[inset_0_1px_0_#ffffff2b,0_10px_28px_rgb(0_0_0_/_30%)]">
                                 <div className="flex flex-wrap items-center justify-between gap-3">
-                                    <h2 className="font-[Adamina] text-[1.4rem] text-[#50300d]">User account settings</h2>
-                                    <p className="font-[Cormorant_Garamond] text-[1.05rem] text-[#7a3f00]">Signed in as {accountName}</p>
+                                    <h2 className="font-[Adamina] text-[1.4rem] text-[#fff4e7]">User account settings</h2>
+                                    <p className="font-[Cormorant_Garamond] text-[1.05rem] text-[#f7dfca]">Signed in as {accountName}</p>
                                 </div>
                                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
                                     <label className="block">
-                                        <span className="mb-1.5 block font-[Adamina] text-[0.72rem] uppercase tracking-[0.18em] text-[#7a3f00]">First name</span>
+                                        <span className="mb-1.5 block font-[Adamina] text-[0.72rem] uppercase tracking-[0.18em] text-[#f6d7b5]">First name</span>
                                         <input value={settings.account.firstName} onChange={(event) => setSettings((prev) => ({ ...prev, account: { ...prev.account, firstName: fieldValue(event) } }))} className="w-full rounded-[0.7rem] border border-[#cf8d45]/55 bg-[#fff7ee] px-3 py-2 font-[Cormorant_Garamond] text-[1.08rem] text-[#50300d] outline-none focus:border-[#7a3f00] focus:ring-2 focus:ring-[#cf8d45]/35" />
                                     </label>
                                     <label className="block">
-                                        <span className="mb-1.5 block font-[Adamina] text-[0.72rem] uppercase tracking-[0.18em] text-[#7a3f00]">Last name</span>
+                                        <span className="mb-1.5 block font-[Adamina] text-[0.72rem] uppercase tracking-[0.18em] text-[#f6d7b5]">Last name</span>
                                         <input value={settings.account.lastName} onChange={(event) => setSettings((prev) => ({ ...prev, account: { ...prev.account, lastName: fieldValue(event) } }))} className="w-full rounded-[0.7rem] border border-[#cf8d45]/55 bg-[#fff7ee] px-3 py-2 font-[Cormorant_Garamond] text-[1.08rem] text-[#50300d] outline-none focus:border-[#7a3f00] focus:ring-2 focus:ring-[#cf8d45]/35" />
                                     </label>
                                     <label className="block">
-                                        <span className="mb-1.5 block font-[Adamina] text-[0.72rem] uppercase tracking-[0.18em] text-[#7a3f00]">Username</span>
+                                        <span className="mb-1.5 block font-[Adamina] text-[0.72rem] uppercase tracking-[0.18em] text-[#f6d7b5]">Username</span>
                                         <input value={settings.account.username} onChange={(event) => setSettings((prev) => ({ ...prev, account: { ...prev.account, username: fieldValue(event) } }))} className="w-full rounded-[0.7rem] border border-[#cf8d45]/55 bg-[#fff7ee] px-3 py-2 font-[Cormorant_Garamond] text-[1.08rem] text-[#50300d] outline-none focus:border-[#7a3f00] focus:ring-2 focus:ring-[#cf8d45]/35" />
                                     </label>
                                     <label className="block">
-                                        <span className="mb-1.5 block font-[Adamina] text-[0.72rem] uppercase tracking-[0.18em] text-[#7a3f00]">Primary email</span>
+                                        <span className="mb-1.5 block font-[Adamina] text-[0.72rem] uppercase tracking-[0.18em] text-[#f6d7b5]">Primary email</span>
                                         <input type="email" value={settings.account.email} onChange={(event) => setSettings((prev) => ({ ...prev, account: { ...prev.account, email: fieldValue(event) } }))} className="w-full rounded-[0.7rem] border border-[#cf8d45]/55 bg-[#fff7ee] px-3 py-2 font-[Cormorant_Garamond] text-[1.08rem] text-[#50300d] outline-none focus:border-[#7a3f00] focus:ring-2 focus:ring-[#cf8d45]/35" />
                                     </label>
                                     <label className="block sm:col-span-2">
-                                        <span className="mb-1.5 block font-[Adamina] text-[0.72rem] uppercase tracking-[0.18em] text-[#7a3f00]">Secondary email</span>
+                                        <span className="mb-1.5 block font-[Adamina] text-[0.72rem] uppercase tracking-[0.18em] text-[#f6d7b5]">Secondary email</span>
                                         <input type="email" value={settings.account.secondaryEmail} onChange={(event) => setSettings((prev) => ({ ...prev, account: { ...prev.account, secondaryEmail: fieldValue(event) } }))} placeholder="Optional backup email" className="w-full rounded-[0.7rem] border border-[#cf8d45]/55 bg-[#fff7ee] px-3 py-2 font-[Cormorant_Garamond] text-[1.08rem] text-[#50300d] outline-none focus:border-[#7a3f00] focus:ring-2 focus:ring-[#cf8d45]/35" />
                                     </label>
                                 </div>
@@ -258,9 +259,9 @@ export function Settings() {
                         )}
 
                         {activeSection === "notifications" && (
-                            <article className="rounded-[1rem] border border-[#cf8d45]/35 bg-[#fff4e7]/72 p-5 shadow-[inset_0_0_18px_rgb(143_90_32_/_8%)]">
-                                <h2 className="font-[Adamina] text-[1.4rem] text-[#50300d]">Notifications</h2>
-                                <p className="mt-2 font-[Cormorant_Garamond] text-[1.1rem] text-[#7a3f00]">Choose what reaches your inbox.</p>
+                            <article className="rounded-[1rem] border border-[#eab681]/35 bg-[#ffead41f] p-5 shadow-[inset_0_1px_0_#ffffff2b,0_10px_28px_rgb(0_0_0_/_30%)]">
+                                <h2 className="font-[Adamina] text-[1.4rem] text-[#fff4e7]">Notifications</h2>
+                                <p className="mt-2 font-[Cormorant_Garamond] text-[1.1rem] text-[#f7dfca]">Choose what reaches your inbox.</p>
                                 <div className="mt-5 space-y-3">
                                     <label className="flex items-center justify-between gap-3 rounded-[0.8rem] border border-[#cf8d45]/30 bg-[#ffead4]/60 px-4 py-3">
                                         <span className="font-[Cormorant_Garamond] text-[1.15rem] text-[#50300d]">Weekly travel digest</span>
@@ -283,15 +284,15 @@ export function Settings() {
                         )}
 
                         {/* {activeSection === "premium" && (
-                            <article className="rounded-[1rem] border border-[#cf8d45]/35 bg-[#fff4e7]/72 p-5 shadow-[inset_0_0_18px_rgb(143_90_32_/_8%)]">
+                            <article className="rounded-[1rem] border border-[#eab681]/35 bg-[#ffead41f] p-5 shadow-[inset_0_1px_0_#ffffff2b,0_10px_28px_rgb(0_0_0_/_30%)]">
                                     <PremiumPlans />
                             </article>
                         )} */}
 
                         {activeSection === "about" && (
-                            <article className="rounded-[1rem] border border-[#cf8d45]/35 bg-[#fff4e7]/72 p-5 shadow-[inset_0_0_18px_rgb(143_90_32_/_8%)]">
-                                <h2 className="font-[Adamina] text-[1.4rem] text-[#50300d]">About app and policies</h2>
-                                <p className="mt-2 font-[Cormorant_Garamond] text-[1.1rem] text-[#7a3f00]">
+                            <article className="rounded-[1rem] border border-[#eab681]/35 bg-[#ffead41f] p-5 shadow-[inset_0_1px_0_#ffffff2b,0_10px_28px_rgb(0_0_0_/_30%)]">
+                                <h2 className="font-[Adamina] text-[1.4rem] text-[#fff4e7]">About app and policies</h2>
+                                <p className="mt-2 font-[Cormorant_Garamond] text-[1.1rem] text-[#f7dfca]">
                                     Legal pages remain available in the footer as well. This section gives you a quick account-level shortcut.
                                 </p>
 
@@ -315,14 +316,14 @@ export function Settings() {
 
                                 <div className="mt-6 grid gap-4 rounded-[0.9rem] border border-[#cf8d45]/30 bg-[#ffead4]/60 p-4 sm:grid-cols-2">
                                     <label className="block">
-                                        <span className="mb-1.5 block font-[Adamina] text-[0.72rem] uppercase tracking-[0.18em] text-[#7a3f00]">Theme</span>
+                                        <span className="mb-1.5 block font-[Adamina] text-[0.72rem] uppercase tracking-[0.18em] text-[#f6d7b5]">Theme</span>
                                         <select value={settings.app.theme} onChange={(event) => setSettings((prev) => ({ ...prev, app: { ...prev.app, theme: event.target.value as AppSettings["theme"] } }))} className="w-full rounded-[0.7rem] border border-[#cf8d45]/55 bg-[#fff7ee] px-3 py-2 font-[Cormorant_Garamond] text-[1.08rem] text-[#50300d] outline-none focus:border-[#7a3f00] focus:ring-2 focus:ring-[#cf8d45]/35">
                                             <option value="heritage">Heritage brown</option>
                                             <option value="modern-preview">Modern grey preview</option>
                                         </select>
                                     </label>
                                     <label className="block">
-                                        <span className="mb-1.5 block font-[Adamina] text-[0.72rem] uppercase tracking-[0.18em] text-[#7a3f00]">Language</span>
+                                        <span className="mb-1.5 block font-[Adamina] text-[0.72rem] uppercase tracking-[0.18em] text-[#f6d7b5]">Language</span>
                                         <select value={settings.app.language} onChange={(event) => setSettings((prev) => ({ ...prev, app: { ...prev.app, language: event.target.value as AppSettings["language"] } }))} className="w-full rounded-[0.7rem] border border-[#cf8d45]/55 bg-[#fff7ee] px-3 py-2 font-[Cormorant_Garamond] text-[1.08rem] text-[#50300d] outline-none focus:border-[#7a3f00] focus:ring-2 focus:ring-[#cf8d45]/35">
                                             <option value="english">English</option>
                                             <option value="polish">Polski</option>

@@ -349,20 +349,19 @@ function Gallery() {
 
     return (
         <>
-            <section className="mx-auto w-full max-w-[min(100%,1380px)] px-[max(1.25rem,5%)] pt-[max(2rem,6vh)] text-[#50300d]" aria-labelledby="gallery-title">
+            <section className="mx-auto w-full max-w-[min(95vw,1380px)] px-[max(1.25rem,5%)] pt-[max(2rem,6vh)] text-[#50300d]" aria-labelledby="gallery-title">
                 <div
-                    className="overflow-hidden rounded-t-[1.35rem] border border-[#8f5a20]/35 bg-[#ffead4]/95 shadow-[0_18px_42px_rgb(80_48_13_/_20%),inset_0_0_0_1px_rgb(255_244_231_/_55%)]"
-                    style={{ backgroundImage: `linear-gradient(rgb(255 234 212 / 0.9), rgb(255 234 212 / 0.9)), url(${paperBackground})`, backgroundSize: "cover" }}
+                    className="overflow-hidden rounded-t-[1.35rem] border border-[#8f5a20]/25 bg-[#f8f4ee]/85 shadow-[0_18px_42px_rgb(80_48_13_/_13%)]"
                 >
                     <div
-                        className="atlas-header relative min-h-[11rem] bg-[#5a392b] px-6 py-7 text-[#ffead4] sm:px-9"
-                        style={{ backgroundImage: `linear-gradient(rgb(90 57 43 / 0.9), rgb(90 57 43 / 0.9)), url(${paperBackground})`, backgroundSize: "cover" }}
+                        className="atlas-header relative flex min-h-[19rem] items-end bg-[#5a392b] px-6 py-7 text-[#ffead4] sm:min-h-[24rem] sm:px-9"
+                        style={{ backgroundImage: "linear-gradient(90deg, rgb(30 24 21 / 78%), rgb(30 24 21 / 20%)), linear-gradient(0deg, rgb(30 24 21 / 40%), transparent 65%), url(https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=1800&q=85)", backgroundSize: "cover", backgroundPosition: "center 55%" }}
                     >
                         <div className="relative flex flex-wrap items-start justify-between gap-6">
                             <div className="max-w-[46rem]">
                                 <p className="m-0 font-[Adamina] text-[0.7rem] uppercase tracking-[0.24em] text-[#f6d7b5]">Travel moments</p>
                                 <div className="mt-3 flex flex-wrap items-center gap-3 sm:gap-4">
-                                    <h1 id="gallery-title" className="font-[Adamina] text-[clamp(1.8rem,4vw,2.8rem)] leading-none text-[#fff4e7]">
+                                    <h1 id="gallery-title" className="font-[Cormorant_Garamond] text-[clamp(2.8rem,7vw,5.4rem)] leading-[0.9] text-[#fff4e7]">
                                         Gallery
                                     </h1>
                                     <div className="inline-flex items-center gap-2 rounded-full border border-[#ffead4]/70 bg-[#fff4e7]/10 px-2 py-1 shadow-[0_0_0_1px_rgb(255_234_212_/_14%)]">
@@ -411,7 +410,7 @@ function Gallery() {
                 </section>
             ) : (
                 <>
-                    <section className="mx-auto w-full max-w-[min(100%,1380px)] px-[max(1.25rem,5%)] pb-10 pt-10 text-[#50300d]">
+                    <section className="mx-auto w-full max-w-[min(95vw,1380px)] rounded-b-[1.35rem] border-x border-b border-[#8f5a20]/25 bg-[#5a392b]/95 px-[max(1.25rem,5%)] pb-10 pt-10 text-[#fff4e7]">
                         {galleryLoading ? (
                             <p className="mb-6 font-[Cormorant_Garamond] text-[1.2rem] text-[#5a392b]">Loading gallery media...</p>
                         ) : null}
@@ -600,7 +599,7 @@ function Gallery() {
 
                     <div className="flex flex-1 flex-col gap-10 pb-16">
                         {galleryCollections.sections.map(section => (
-                            <section key={section.label} className="mx-auto w-full max-w-[min(100%,1380px)] px-[max(1.25rem,5%)] text-[#50300d]">
+                            <section key={section.label} className="mx-auto w-full max-w-[min(95vw,1380px)] rounded-[1.35rem] border border-[#8f5a20]/25 bg-[#5a392b]/95 px-[max(1.25rem,5%)] py-7 text-[#fff4e7]">
                                 {(() => {
                                     const visibleCount = visibleItemsBySection[section.label] ?? initialVisibleItemsPerSection;
                                     const visibleItems = section.items.slice(0, visibleCount);
@@ -612,8 +611,8 @@ function Gallery() {
                                         <>
                                     <div className="mb-4 flex items-end justify-between gap-4">
                                         <div>
-                                            <p className="m-0 font-[Adamina] text-[0.7rem] uppercase tracking-[0.24em] text-[#8f5a20]">Destination</p>
-                                            <h2 className="mt-2 font-[Adamina] text-[clamp(1.75rem,2.8vw,2.35rem)] leading-none text-[#5a392b]">
+                                            <p className="m-0 font-[Adamina] text-[0.7rem] uppercase tracking-[0.24em] text-[#f6d7b5]">Destination</p>
+                                            <h2 className="mt-2 font-[Adamina] text-[clamp(1.75rem,2.8vw,2.35rem)] leading-none text-[#fff4e7]">
                                                 {section.label}
                                             </h2>
                                         </div>
