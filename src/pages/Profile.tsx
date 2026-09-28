@@ -253,14 +253,14 @@ export function Profile() {
                             </div>
 
                             <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-2">
-                                <div className="rounded-[0.8rem] border border-[#eab681]/20 bg-[#ffead40d] px-4 py-3">
+                                {/* <div className="rounded-[0.8rem] border border-[#eab681]/20 bg-[#ffead40d] px-4 py-3">
                                     <p className="font-[Adamina] text-[0.78rem] uppercase tracking-[0.18em] text-[#f6d7b5]">Subscription tier</p>
                                     <p className="mt-1 font-[Cormorant_Garamond] text-[1.05rem] text-[#fff4e7]">{getStoredUserProfile()?.subscriptionTier || "free"}</p>
                                 </div>
                                 <div className="rounded-[0.8rem] border border-[#eab681]/20 bg-[#ffead40d] px-4 py-3">
                                     <p className="font-[Adamina] text-[0.78rem] uppercase tracking-[0.18em] text-[#f6d7b5]">Subscription status</p>
                                     <p className="mt-1 font-[Cormorant_Garamond] text-[1.05rem] text-[#fff4e7]">{getStoredUserProfile()?.subscriptionStatus || "inactive"}</p>
-                                </div>
+                                </div> */}
                                 <div className="rounded-[0.8rem] border border-[#eab681]/20 bg-[#ffead40d] px-4 py-3">
                                     <p className="font-[Adamina] text-[0.78rem] uppercase tracking-[0.18em] text-[#f6d7b5]">Profile created</p>
                                     <p className="mt-1 font-[Cormorant_Garamond] text-[1.05rem] text-[#fff4e7]">{getStoredUserProfile()?.createdAt ? new Date(getStoredUserProfile()!.createdAt).toLocaleDateString() : "Not set yet"}</p>
