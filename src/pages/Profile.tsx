@@ -4,7 +4,7 @@ import type { ChangeEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useScrollToTop } from "../hooks/useScrollToTop";
 import compassAvatar from "../assets/avatars/compass.png";
-import SubscriptionStatus from "../components/SubscriptionStatus";
+// import SubscriptionStatus from "../components/SubscriptionStatus";
 import globeAvatar from "../assets/avatars/globe.png";
 import mountainsAvatar from "../assets/avatars/mountains.png";
 import passportAvatar from "../assets/avatars/passport.png";

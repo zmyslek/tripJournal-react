@@ -3,7 +3,7 @@ import type { ChangeEvent } from "react";
 import { Link } from "react-router-dom";
 import { useScrollToTop } from "../hooks/useScrollToTop";
 import paperBackground from "../assets/wrinkled-paper.png";
-import PremiumPlans from "../components/PremiumPlans";
+// import PremiumPlans from "../components/PremiumPlans";
 
 export type SettingsProps = Record<string, never>;
 
@@ -22,13 +22,13 @@ interface NotificationSettings {
     paymentAlerts: boolean;
 }
 
-interface PremiumSettings {
-    plan: "free" | "monthly" | "yearly";
-    autoRenew: boolean;
-    billingEmail: string;
-    paymentMethod: string;
-    renewalDate: string;
-}
+// interface PremiumSettings {
+//     plan: "free" | "monthly" | "yearly";
+//     autoRenew: boolean;
+//     billingEmail: string;
+//     paymentMethod: string;
+//     renewalDate: string;
+// }
 
 interface AppSettings {
     theme: "heritage" | "modern-preview";
