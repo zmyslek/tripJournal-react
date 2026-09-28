@@ -35,7 +35,6 @@ const getCountryFillColors = (mode: "globe" | "map"): ExpressionSpecification =>
     "visited", "#CF8D45",
     "want-to-visit-again", "#EAB681",
     "want-to-go", "#7A3F00",
-    "#8C735C"
   ]
   : [
     "match",
@@ -43,7 +42,6 @@ const getCountryFillColors = (mode: "globe" | "map"): ExpressionSpecification =>
     "visited", "#CF8D45",
     "want-to-visit-again", "#EAB681",
     "want-to-go", "#7A3F00",
-    "#8C735C"
   ] as ExpressionSpecification;
 
 const getFilteredCountryFillColors = (mode: "globe" | "map", visibleStatuses?: Set<CountryStatus | "not-explored">): ExpressionSpecification => {
@@ -173,15 +171,15 @@ const Map: React.FC<MapProps> = ({
   }, [refreshCountries]);
 
   const configureGlobeStyle = (map: MapLibreMap) => {
-    // if (map.getLayer("Background")) {
-    //   map.setPaintProperty("Background", "background-color", "#D6D3CF");
-    // }
+    if (map.getLayer("Background")) {
+      map.setPaintProperty("Background", "background-color", "#D6D3CF");
+    }
     if (map.getLayer("Water")) {
       map.setPaintProperty("Water", "fill-color", "#D6D3CF");
     }
-    // if (map.getLayer("Land")) {
-    //   map.setPaintProperty("Land", "fill-color", "#A97A53");
-    // }
+    if (map.getLayer("Land")) {
+      map.setPaintProperty("Land", "fill-color", "#8C735C");
+    }
     map.setTerrain(null);
   };
 
