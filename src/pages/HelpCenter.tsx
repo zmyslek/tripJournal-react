@@ -294,16 +294,16 @@ function HelpCenter() {
 
                                             <div className="mt-3 grid gap-3">
                                                 {sectionFaqs.map((faq) => (
-                                                    <details key={faq.id} className="group rounded-[0.9rem] border border-[#cf8d45]/70 bg-[#fff4e7] px-5 py-4 shadow-[0_4px_14px_rgb(30_24_21_/_12%)] transition-all hover:border-[#cf8d45] hover:shadow-[0_6px_16px_rgb(30_24_21_/_18%)]">
-                                                        <summary className="cursor-pointer list-none font-[Adamina] text-[1rem] text-[#3f2817] marker:hidden">
+                                                    <details key={faq.id} className="group rounded-[0.9rem] border border-[#cf8d45]/45 bg-[#fff4e7]/72 px-5 py-4 shadow-[inset_0_0_16px_rgb(143_90_32_/_7%)] transition-all hover:shadow-[inset_0_0_16px_rgb(143_90_32_/_12%),0_4px_12px_rgb(122_63_0_/_20%)]">
+                                                        <summary className="cursor-pointer list-none font-[Adamina] text-[1rem] text-[#f7dfca] marker:hidden">
                                                             <span className="flex items-center justify-between gap-4">
                                                                 {faq.question}
-                                                                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[#a96524] bg-[#f6dfc1] text-[#6b3508] transition-transform group-open:rotate-45">
+                                                                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[#cf8d45]/70 text-[#f6d7b5] transition-transform group-open:rotate-45">
                                                                     +
                                                                 </span>
                                                             </span>
                                                         </summary>
-                                                        <p className="mt-3 max-w-[68ch] font-[Cormorant_Garamond] text-[1.13rem] leading-[1.42] text-[#50300d]">
+                                                        <p className="mt-3 max-w-[68ch] font-[Cormorant_Garamond] text-[1.13rem] leading-[1.42] text-[#f7dfca]">
                                                             {faq.answer}
                                                         </p>
                                                     </details>
@@ -334,16 +334,16 @@ function HelpCenter() {
                                 ) : (
                                     <div className="mt-3 grid gap-3">
                                         {filteredFaqs.map((faq) => (
-                                            <details key={faq.id} className="group rounded-[0.9rem] border border-[#cf8d45]/70 bg-[#fff4e7] px-5 py-4 shadow-[0_4px_14px_rgb(30_24_21_/_12%)]">
-                                                <summary className="cursor-pointer list-none font-[Adamina] text-[1rem] text-[#3f2817] marker:hidden">
+                                            <details key={faq.id} className="group rounded-[0.9rem] border border-[#cf8d45]/45 bg-[#fff4e7]/72 px-5 py-4 shadow-[inset_0_0_16px_rgb(143_90_32_/_7%)]">
+                                                <summary className="cursor-pointer list-none font-[Adamina] text-[1rem] text-[#f7dfca] marker:hidden">
                                                     <span className="flex items-center justify-between gap-4">
                                                         {faq.question}
-                                                        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[#a96524] bg-[#f6dfc1] text-[#6b3508] transition group-open:rotate-45">
+                                                        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[#cf8d45]/70 text-[#f6d7b5] transition group-open:rotate-45">
                                                             +
                                                         </span>
                                                     </span>
                                                 </summary>
-                                                <p className="mt-3 max-w-[68ch] font-[Cormorant_Garamond] text-[1.13rem] leading-[1.42] text-[#50300d]">
+                                                <p className="mt-3 max-w-[68ch] font-[Cormorant_Garamond] text-[1.13rem] leading-[1.42] text-[#f7dfca]">
                                                     {faq.answer}
                                                 </p>
                                             </details>
