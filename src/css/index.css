@@ -66,6 +66,43 @@ body,
   color: #FFEAD4;
 }
 
+.atlas-header-action {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 1px solid rgb(255 234 212 / 70%);
+  border-radius: 999px;
+  background: rgb(45 27 18 / 72%);
+  padding: 0.7rem 1.1rem;
+  color: #fff4e7;
+  font-family: Adamina, serif;
+  font-size: 0.76rem;
+  letter-spacing: 0.06em;
+  line-height: 1.1;
+  text-transform: uppercase;
+  box-shadow: 0 0.35rem 1rem rgb(20 12 8 / 22%);
+  backdrop-filter: blur(0.35rem);
+  transition: background-color 160ms ease, border-color 160ms ease, transform 160ms ease;
+}
+
+.atlas-header-action:hover {
+  border-color: #fff4e7;
+  background: rgb(122 63 0 / 88%);
+  transform: translateY(-1px);
+}
+
+.atlas-header-action:focus-visible {
+  outline: 2px solid #fff4e7;
+  outline-offset: 3px;
+}
+
+.atlas-header-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
 @media (max-width: 760px) {
   .atlas-header::after {
     display: none;

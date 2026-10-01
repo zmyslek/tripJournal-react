@@ -48,7 +48,7 @@ export function PhotoUploadButton({
       <button
         onClick={() => finalRef.current?.click()}
         disabled={disabled || isLoading}
-        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#7A3F00] text-[#FFEAD4] font-[Cormorant_Garamond] font-semibold hover:bg-[#5A392B] transition disabled:opacity-50 disabled:cursor-not-allowed"
+        className="atlas-header-action w-full justify-center sm:w-auto"
         aria-label="Upload photos"
       >
         <Upload size={20} />

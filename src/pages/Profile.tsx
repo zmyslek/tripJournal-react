@@ -219,7 +219,16 @@ export function Profile() {
                             </p>
                             <UnsplashAttribution photo={heroPhoto} />
                         </div>
-                        <button type="button" onClick={openEditor} className="absolute right-0 top-0 rounded-full border border-white/60 bg-black/20 px-5 py-2.5 font-[Adamina] text-sm text-white backdrop-blur-sm transition hover:bg-black/40">Edit profile</button>
+                        <button
+                            type="button"
+                            onClick={(event) => {
+                                event.stopPropagation();
+                                openEditor();
+                            }}
+                            className="atlas-header-action mt-1 w-full shrink-0 sm:w-auto"
+                        >
+                            Edit profile
+                        </button>
                     </div>
                 </div>
 

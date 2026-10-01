@@ -205,7 +205,7 @@ function GalleryStrip({ items, bend, onItemClick }: GalleryStripProps) {
 }
 
 function Gallery() {
-    const heroPhoto = useUnsplashPhoto("photo-1493976040374-85c8e12f0c0e");
+    const heroPhoto = useUnsplashPhoto("6fA05-jKA1M");
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedIndex, setSelectedIndex] = useState(0);
     const { photos: supabasePhotos, isLoading: galleryLoading, error: galleryError } = useSupabaseGallery();
@@ -359,7 +359,7 @@ function Gallery() {
                     <div
                         className="atlas-header relative flex min-h-[19rem] items-end bg-[#5a392b] px-6 py-7 text-[#ffead4] sm:min-h-[24rem] sm:px-9"
                         onClick={() => heroPhoto && requestUnsplashDownload(heroPhoto)}
-                        style={{ backgroundImage: `linear-gradient(90deg, rgb(71 43 31 / 88%), rgb(71 43 31 / 28%)), linear-gradient(0deg, rgb(71 43 31 / 48%), transparent 65%), url(${heroPhoto?.urls.regular ?? "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=1800&q=85"})`, backgroundSize: "cover", backgroundPosition: "center 55%" }}
+                        style={{ backgroundImage: `linear-gradient(90deg, rgb(71 43 31 / 88%), rgb(71 43 31 / 28%)), linear-gradient(0deg, rgb(71 43 31 / 48%), transparent 65%), url(${heroPhoto?.urls.regular ?? "https://images.unsplash.com/photo-6fA05-jKA1M?auto=format&fit=crop&w=1800&q=85"})`, backgroundSize: "cover", backgroundPosition: "center 55%" }}
                     >
                         <div className="relative flex flex-wrap items-start justify-between gap-6">
                             <div className="max-w-[46rem]">
@@ -368,7 +368,7 @@ function Gallery() {
                                     <h1 id="gallery-title" className="font-[Cormorant_Garamond] text-[clamp(2.8rem,7vw,5.4rem)] leading-[0.9] text-[#fff4e7]">
                                         Gallery
                                     </h1>
-                                    <div className="inline-flex items-center gap-2 rounded-full border border-[#ffead4]/70 bg-[#fff4e7]/10 px-2 py-1 shadow-[0_0_0_1px_rgb(255_234_212_/_14%)]">
+                                    <div className="inline-flex max-w-full flex-wrap items-center gap-2 rounded-full border border-[#ffead4]/70 bg-[#fff4e7]/10 px-2 py-1 shadow-[0_0_0_1px_rgb(255_234_212_/_14%)]" onClick={(event) => event.stopPropagation()}>
                                         <span className="pl-2 font-[Adamina] text-[0.66rem] uppercase tracking-[0.18em] text-[#f6d7b5]">Mode</span>
                                         <button
                                             type="button"
@@ -394,11 +394,13 @@ function Gallery() {
                                 </p>
                             </div>
                             <div className="flex flex-col gap-3">
-                                <PhotoUploadButton
-                                    onUpload={handleFileUpload}
-                                    isLoading={isUploading}
-                                    inputRef={fileInputRef}
-                                />
+                                <div className="w-full sm:w-auto" onClick={(event) => event.stopPropagation()}>
+                                    <PhotoUploadButton
+                                        onUpload={handleFileUpload}
+                                        isLoading={isUploading}
+                                        inputRef={fileInputRef}
+                                    />
+                                </div>
                                 {uploadError && (
                                     <p className="text-sm text-red-600">{uploadError}</p>
                                 )}
