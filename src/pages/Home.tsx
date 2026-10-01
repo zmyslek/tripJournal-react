@@ -5,6 +5,7 @@ import { useScrollToTop } from "../hooks/useScrollToTop.ts";
 import { getCountryName, type CountriesGeoJson, type CountryFeature } from "../types/countries.ts";
 import { buildCountryTripsPath } from "../utils/countryRouting.ts";
 import paperBackground from "../assets/wrinkled-paper.png";
+import { fetchUnsplashPhoto, getUnsplashProfileUrl, requestUnsplashDownload, unsplashHomepageUrl, type UnsplashPhoto } from "../lib/unsplash";
 
 const Map = lazy(() => import("../components/Map.tsx"));
 
@@ -28,45 +29,6 @@ const countryImageUrls: Record<string, string> = {
     France: "photo-1502602898657-3e91760cbb34",
     Italy: "photo-1529260830199-42c24126f198",
     Japan: "photo-1493976040374-85c8e12f0c0e"
-};
-
-interface UnsplashPhoto {
-    urls: {
-        small: string;
-    };
-    links: {
-        download_location: string;
-    };
-    user: {
-        name: string;
-        links: {
-            html: string;
-        };
-    };
-}
-
-const UNSPLASH_APP_NAME = "tripjournal";
-const UNSPLASH_ACCESS_KEY = import.meta.env.VITE_UNSPLASH_ACCESS_KEY?.trim();
-
-const getUnsplashProfileUrl = (photo: UnsplashPhoto) => {
-    const profileUrl = new URL(photo.user.links.html);
-    profileUrl.searchParams.set("utm_source", UNSPLASH_APP_NAME);
-    profileUrl.searchParams.set("utm_medium", "referral");
-    return profileUrl.toString();
-};
-
-const unsplashHomepageUrl = `https://unsplash.com/?utm_source=${UNSPLASH_APP_NAME}&utm_medium=referral`;
-
-const requestPhotoDownload = (photo: UnsplashPhoto) => {
-    if (!UNSPLASH_ACCESS_KEY) {
-        return;
-    }
-
-    void fetch(photo.links.download_location, {
-        headers: { Authorization: `Client-ID ${UNSPLASH_ACCESS_KEY}` }
-    }).catch((error: unknown) => {
-        console.error("Failed to register Unsplash photo download.", error);
-    });
 };
 
 const pointInRing = (lng: number, lat: number, ring: number[][]) => {
@@ -153,26 +115,13 @@ function Home({ countryStatuses, countryAddedDates, setCountryStatus, visitedCou
     const [countryPhotos, setCountryPhotos] = useState<Record<string, UnsplashPhoto>>({});
 
     useEffect(() => {
-        if (!UNSPLASH_ACCESS_KEY) {
-            console.error("Missing VITE_UNSPLASH_ACCESS_KEY. Country images require an Unsplash API access key.");
-            return;
-        }
-
         let isCurrent = true;
 
         const loadCountryPhotos = async () => {
             const photoEntries = await Promise.all(
                 Object.entries(countryImageUrls).map(async ([countryName, photoId]) => {
                     try {
-                        const response = await fetch(`https://api.unsplash.com/photos/${photoId}`, {
-                            headers: { Authorization: `Client-ID ${UNSPLASH_ACCESS_KEY}` }
-                        });
-
-                        if (!response.ok) {
-                            throw new Error(`Unsplash returned ${response.status} for ${countryName}.`);
-                        }
-
-                        return [countryName, await response.json() as UnsplashPhoto] as const;
+                        return [countryName, await fetchUnsplashPhoto(photoId)] as const;
                     } catch (error: unknown) {
                         console.error(`Failed to load the ${countryName} image from Unsplash.`, error);
                         return null;
@@ -736,7 +685,7 @@ function Home({ countryStatuses, countryAddedDates, setCountryStatus, visitedCou
                                             onClick={() => {
                                                 const photo = countryPhotos[countryName];
                                                 if (photo) {
-                                                    requestPhotoDownload(photo);
+                                                    requestUnsplashDownload(photo);
                                                 }
                                             }}
                                             className="group relative min-h-[14rem] overflow-hidden rounded-[1.2rem] border border-[#ffead4]/35 p-4 text-[#fff4e7] shadow-[0_12px_25px_rgb(35_18_8_/_20%)] transition hover:-translate-y-1"

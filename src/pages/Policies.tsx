@@ -18,7 +18,7 @@ type Policy = {
 const policies: Record<string, Policy> = {
     privacy: {
         title: "Privacy Policy",
-        updated: "May 1, 2026",
+        updated: "October 1, 2026",
         intro: "TripJournal is a personal travel journal experience. This policy explains what the app stores, what stays on your device, and which browser or third-party services may be involved.",
         sections: [
             {
@@ -39,13 +39,14 @@ const policies: Record<string, Policy> = {
                 heading: "Maps and external services",
                 body: [
                     "TripJournal uses OpenStreetMap tiles. When the map loads, your browser may send standard technical information, including your IP address and map request details, to the tile provider.",
-                    "The app also loads fonts from Google Fonts, which may involve requests from your browser to Google's font servers."
+                    "The app also loads fonts from Google Fonts, which may involve requests from your browser to Google's font servers.",
+                    "TripJournal requests photo metadata and hotlinked image URLs from the Unsplash API. Photos remain hosted by Unsplash; TripJournal does not rehost or locally download them. When you interact with an Unsplash photo, TripJournal sends the API's download_location request with the app's public API key so Unsplash can record the interaction."
                 ]
             },
             {
                 heading: "Photos and account data",
                 body: [
-                    "The current gallery uses image files bundled with the app. TripJournal does not currently provide uploads, accounts, comments, or public profile publishing.",
+                    "The gallery and travel pages may display photos served directly from Unsplash. Each displayed photo includes attribution linking to the photographer's profile and to Unsplash. TripJournal does not currently provide photo uploads, comments, or public profile publishing.",
                     "Because there are no accounts, TripJournal does not ask you for a name, email address, password, or payment details."
                 ]
             },
@@ -60,7 +61,7 @@ const policies: Record<string, Policy> = {
     },
     cookies: {
         title: "Cookie Policy",
-        updated: "May 1, 2026",
+        updated: "October 1, 2026",
         intro: "TripJournal does not currently set tracking cookies. It uses browser local storage for small pieces of app state.",
         sections: [
             {
@@ -80,7 +81,7 @@ const policies: Record<string, Policy> = {
             {
                 heading: "Analytics and advertising",
                 body: [
-                    "TripJournal does not currently use analytics cookies, advertising cookies, or cross-site tracking pixels.",
+                    "TripJournal does not currently use analytics cookies, advertising cookies, or cross-site tracking pixels. Unsplash image requests and download-location requests are network requests made by the browser and are governed by Unsplash's own policies.",
                     "If those features are added later, this policy should be updated before they are enabled."
                 ]
             },
@@ -95,7 +96,7 @@ const policies: Record<string, Policy> = {
     },
     terms: {
         title: "Terms of Use",
-        updated: "May 1, 2026",
+        updated: "October 1, 2026",
         intro: "These terms describe the basic rules for using TripJournal.",
         sections: [
             {
@@ -116,7 +117,7 @@ const policies: Record<string, Policy> = {
                 heading: "Content and ownership",
                 body: [
                     "TripJournal, its interface, branding, and bundled assets remain owned by their respective owners.",
-                    "Map data, fonts, and other third-party materials are subject to the terms of their providers."
+                    "Map data, fonts, Unsplash photos, and other third-party materials are subject to the terms and licenses of their providers. Unsplash photos remain hotlinked from Unsplash, and required photographer attribution must remain visible."
                 ]
             },
             {
@@ -130,7 +131,7 @@ const policies: Record<string, Policy> = {
     },
     accessibility: {
         title: "Accessibility Statement",
-        updated: "May 1, 2026",
+        updated: "October 1, 2026",
         intro: "TripJournal aims to be usable with clear navigation, semantic page structure, keyboard-friendly controls, and readable contrast.",
         sections: [
             {
@@ -144,7 +145,7 @@ const policies: Record<string, Policy> = {
                 heading: "Known limitations",
                 body: [
                     "The interactive map and circular gallery include visual, pointer-driven experiences that may not provide equivalent detail for every assistive technology workflow yet.",
-                    "Some bundled gallery images may have generic alternative text until final captions are written."
+                    "Some gallery and background photos may have generic alternative text because the visual treatment is decorative. Photographer attribution remains available as text links wherever Unsplash metadata has loaded."
                 ]
             },
             {

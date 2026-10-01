@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { getAuthRedirectUrl, supabase } from "../lib/supabase/client";
 import { createStoredUserProfileFromSession, saveStoredUserProfile, type AuthProvider } from "../types/user";
+import { UnsplashAttribution } from "../components/UnsplashAttribution";
+import { requestUnsplashDownload, useUnsplashPhoto } from "../lib/unsplash";
 
 interface WelcomeFormState {
   email: string;
@@ -13,6 +15,7 @@ interface WelcomeFormState {
 const AUTH_CACHE_KEY = "tripjournal:auth:v1";
 const FLORENCE_IMAGE_URL =
   "https://images.unsplash.com/photo-1529260830199-42c24126f198?auto=format&fit=crop&w=1400&q=85";
+const FLORENCE_PHOTO_ID = "photo-1529260830199-42c24126f198";
 
 export interface AuthUser {
   id: string;
@@ -98,6 +101,7 @@ function IconButton({
 }
 
 function Welcome() {
+    const florencePhoto = useUnsplashPhoto(FLORENCE_PHOTO_ID);
   const navigate = useNavigate();
   const location = useLocation();
   const [isAuthReady, setIsAuthReady] = useState(() => Boolean(getStoredAuth()));
@@ -401,12 +405,14 @@ function Welcome() {
         <div className="relative z-10 hidden h-full min-h-0 flex-col items-center justify-center lg:flex lg:items-end">
           <figure className="group relative h-full min-h-0 w-full max-w-none overflow-hidden bg-[#5A392B]">
             <img
-              src={FLORENCE_IMAGE_URL}
+              src={florencePhoto?.urls.regular ?? FLORENCE_IMAGE_URL}
               alt="Florence, Italy viewed from above"
+              onClick={() => florencePhoto && requestUnsplashDownload(florencePhoto)}
               className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105"
             />
             <div className="absolute inset-0 bg-gradient-to-b from-[#1a1a1a]/65 via-transparent to-[#1a1a1a]/75" />
             <figcaption className="absolute inset-x-0 bottom-0 p-6 sm:p-10 lg:p-14">
+                            <UnsplashAttribution photo={florencePhoto} />
               <p className="font-cormorant text-sm uppercase tracking-[0.28em] text-[#FFEAD4] sm:text-base">
                 01 — Florence, Italy
               </p>
