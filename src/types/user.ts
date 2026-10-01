@@ -3,10 +3,8 @@ import { getStoredUserProfile, saveStoredUserProfile } from "../infrastructure/u
 
 export type {
     AuthProvider,
-    SubscriptionStatus,
     StoredUserProfile,
-    UserRecord,
-    UserSubscriptionPlan
+    UserRecord
 } from "../domain/user/User.ts";
 
 export { USER_PROFILE_CACHE_KEY, clearStoredUserProfile, getStoredUserProfile, saveStoredUserProfile } from "../infrastructure/user/LocalUserProfileRepository.ts";

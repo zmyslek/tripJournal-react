@@ -1,17 +1,17 @@
 export type AuthProvider = "email" | "google" | "facebook";
-export type UserSubscriptionPlan = "free" | "monthly" | "yearly" | "lifetime" | "beta-lifetime";
-export type SubscriptionStatus = "inactive" | "trialing" | "active" | "canceled" | "expired" | "past_due";
+// export type UserSubscriptionPlan = "free" | "monthly" | "yearly" | "lifetime" | "beta-lifetime";
+// export type SubscriptionStatus = "inactive" | "trialing" | "active" | "canceled" | "expired" | "past_due";
 
 export interface StoredUserProfile {
     id: string;
     email: string;
     username: string | null;
     avatarUrl: string | null;
-    isLifetimeFree: boolean;
-    subscriptionStatus: SubscriptionStatus;
-    subscriptionTier: UserSubscriptionPlan;
-    trialEndsAt: string | null;
-    subscriptionEndsAt: string | null;
+    // isLifetimeFree: boolean;
+    // subscriptionStatus: SubscriptionStatus;
+    // subscriptionTier: UserSubscriptionPlan;
+    // trialEndsAt: string | null;
+    // subscriptionEndsAt: string | null;
     createdAt: string;
     authProvider: AuthProvider;
     loginTime: string;
@@ -26,11 +26,11 @@ export const DEFAULT_USER_PROFILE: StoredUserProfile = {
     email: "",
     username: null,
     avatarUrl: null,
-    isLifetimeFree: false,
-    subscriptionStatus: "inactive",
-    subscriptionTier: "free",
-    trialEndsAt: null,
-    subscriptionEndsAt: null,
+    // isLifetimeFree: false,
+    // subscriptionStatus: "inactive",
+    // subscriptionTier: "free",
+    // trialEndsAt: null,
+    // subscriptionEndsAt: null,
     createdAt: new Date().toISOString(),
     authProvider: "email",
     loginTime: new Date().toISOString(),

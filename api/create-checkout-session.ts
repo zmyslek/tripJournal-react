@@ -1,3 +1,4 @@
+/*
 import Stripe from 'stripe';
 
 const jsonHeaders = {
@@ -64,3 +65,4 @@ export default async function handler(request: Request): Promise<Response> {
         return jsonResponse({ error: "Unable to start Stripe checkout" }, 502);
     }
 }
+*/

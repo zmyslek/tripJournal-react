@@ -157,7 +157,8 @@ export const helpFaqSections: HelpFaqSection[] = [
             {
                 id: "photo-storage-limit",
                 question: "How many photos can I store?",
-                answer: "Premium accounts can store up to 1,000 photos. Free accounts can store up to 100 photos. Contact support if you need a higher limit."
+                // answer: "Premium accounts can store up to 1,000 photos. Free accounts can store up to 100 photos. Contact support if you need a higher limit."
+                answer: "Photo storage limits are currently determined by the available local storage on your device."
             },
             {
                 id: "download-photos",
@@ -169,7 +170,7 @@ export const helpFaqSections: HelpFaqSection[] = [
     {
         id: "settings",
         title: "Settings",
-        description: "Account preferences, notification controls, and premium management saved on this device.",
+        description: "Account preferences and notification controls saved on this device.",
         faqs: [
             {
                 id: "create-account",

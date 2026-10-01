@@ -1,3 +1,4 @@
+/*
 import { useMemo, useState } from 'react';
 import { Check, Lock, X } from 'lucide-react';
 import { SUBSCRIPTION_TIERS, getUserSubscription, type SubscriptionPlan } from '../types/subscription';
@@ -108,7 +109,7 @@ export function PremiumPlans() {
                 </p>
             </div>
 
-            {/* Plans Grid */}
+            // Plans Grid
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                 {selectablePlans.map((planId) => {
                     const tier = SUBSCRIPTION_TIERS[planId];
@@ -126,7 +127,7 @@ export function PremiumPlans() {
                                     : 'border-[#CF8D45]/50 bg-[#FFEAD4]/30 hover:border-[#CF8D45] hover:bg-[#FFEAD4]/50'
                             }`}
                         >
-                            {/* "Recommended" or "Current" badge */}
+                            // "Recommended" or "Current" badge
                             {isCurrentPlan && (
                                 <div className="absolute -top-3 left-4 rounded-full bg-[#7A3F00] px-3 py-1 text-xs font-semibold text-[#FFEAD4]">
                                     Current Plan
@@ -138,12 +139,12 @@ export function PremiumPlans() {
                                 </div>
                             )}
 
-                            {/* Plan Name */}
+                            // Plan Name
                             <h4 className="font-adamina text-lg font-bold text-[#7A3F00] mb-2">
                                 {tier.name}
                             </h4>
 
-                            {/* Price */}
+                            // Price
                             <div className="mb-4">
                                 {typeof tier.price === 'number' ? (
                                     <div className="font-adamina text-3xl font-bold text-[#7A3F00]">
@@ -165,7 +166,7 @@ export function PremiumPlans() {
                                 )}
                             </div>
 
-                            {/* CTA Button */}
+                            // CTA Button
                             <button
                                 disabled={isCurrentPlan}
                                 onClick={() => openPlanModal(planId)}
@@ -178,7 +179,7 @@ export function PremiumPlans() {
                                 {isCurrentPlan ? 'Current Plan' : 'Select'}
                             </button>
 
-                            {/* Features List */}
+                            // Features List
                             <ul className="space-y-2.5 text-sm">
                                 {tier.features.map((feature, idx) => (
                                     <li key={idx} className="flex items-start gap-2.5 font-cormorant text-[#7A3F00]">
@@ -192,7 +193,7 @@ export function PremiumPlans() {
                 })}
             </div>
 
-            {/* API Integrations with premium lock */}
+            // API Integrations with premium lock
             <section className="rounded-lg border border-[#CF8D45]/35 bg-[#FFEAD4]/35 p-6">
                 <div className="flex items-center justify-between gap-3">
                     <div>
@@ -240,7 +241,7 @@ export function PremiumPlans() {
                 </div>
             </section>
 
-            {/* Payment methods */}
+            // Payment methods
             <section className="rounded-lg border border-[#CF8D45]/35 bg-[#FFEAD4]/30 p-6">
                 <h4 className="font-adamina text-xl text-[#7A3F00]">Payment methods</h4>
                 <p className="mt-1 font-cormorant text-[#7A3F00]/75">
@@ -258,7 +259,7 @@ export function PremiumPlans() {
                 </div>
             </section>
 
-            {/* Invoice management */}
+            // Invoice management
             <section className="rounded-lg border border-[#CF8D45]/35 bg-[#FFEAD4]/30 p-6">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
@@ -282,7 +283,7 @@ export function PremiumPlans() {
                 </div>
             </section>
 
-            {/* FAQ or Additional Info */}
+            // FAQ or Additional Info
             <div className="mt-8 rounded-lg border border-[#CF8D45]/35 bg-[#FFEAD4]/30 p-6">
                 <p className="font-cormorant text-sm text-[#7A3F00]/80 mb-4">
                     <span className="font-semibold">Note:</span> Payment processing is currently in development. Premium features are available for testing with your current plan selection.
@@ -353,3 +354,4 @@ export function PremiumPlans() {
 }
 
 export default PremiumPlans;
+*/

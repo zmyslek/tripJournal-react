@@ -1,3 +1,4 @@
+/*
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { getUserSubscription, getFormattedRenewalDate, SUBSCRIPTION_TIERS } from '../types/subscription';
@@ -15,7 +16,7 @@ export function SubscriptionStatus() {
 
     return (
         <div className="mt-8 space-y-4">
-            {/* Subscription Banner */}
+            // Subscription Banner
             <div className={`rounded-[1rem] border p-6 shadow-[inset_0_1px_0_#ffffff2b] interactive-transition hover:shadow-[inset_0_1px_0_#ffffff2b,0_8px_20px_rgb(122_63_0_/_15%)] ${
                 isBeta 
                     ? 'border-[#eab681]/40 bg-gradient-to-r from-[#eab681]/25 to-[#cf8d45]/25'
@@ -65,7 +66,7 @@ export function SubscriptionStatus() {
                 </div>
             </div>
 
-            {/* Feature Highlights for Free Users */}
+            // Feature Highlights for Free Users
             {plan === 'free' && !isBeta && (
                 <div className="rounded-[1rem] border border-[#eab681]/20 bg-[#ffead40d] p-4 shadow-[inset_0_1px_0_#ffffff2b]">
                     <p className="font-cormorant text-sm font-semibold text-[#f6d7b5] mb-2">
@@ -84,3 +85,4 @@ export function SubscriptionStatus() {
 }
 
 export default SubscriptionStatus;
+*/

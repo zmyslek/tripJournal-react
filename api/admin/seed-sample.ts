@@ -149,7 +149,7 @@ export default async function handler(request: Request): Promise<Response> {
                     Authorization: `Bearer ${SERVICE_ROLE}`,
                     Prefer: "return=representation"
                 },
-                body: JSON.stringify({ username: "sample_user", avatar_url: null, subscription_tier: 'free', subscription_status: 'active' })
+                body: JSON.stringify({ username: "sample_user", avatar_url: null })
             });
         }
 

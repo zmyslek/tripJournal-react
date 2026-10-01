@@ -20,7 +20,7 @@ interface NotificationSettings {
     weeklyDigest: boolean;
     itineraryReminders: boolean;
     featureAnnouncements: boolean;
-    paymentAlerts: boolean;
+    // paymentAlerts: boolean;
 }
 
 // interface PremiumSettings {
@@ -57,7 +57,7 @@ const SETTINGS_CACHE_KEY = "tripjournal:settings:v1";
 
 const sections: SettingsSection[] = [
     { id: "account", label: "Account", description: "Profile details and contact info" },
-    { id: "notifications", label: "Notifications", description: "Email and billing alerts" },
+    { id: "notifications", label: "Notifications", description: "Email and journal alerts" },
     // { id: "premium", label: "Premium", description: "Plan, billing, and renewals" },
     { id: "about", label: "About & policies", description: "Help and legal pages" }
 ];
@@ -73,8 +73,7 @@ const defaultSettings: UserSettings = {
     notifications: {
         weeklyDigest: true,
         itineraryReminders: true,
-        featureAnnouncements: false,
-        paymentAlerts: true
+        featureAnnouncements: false
     },
     // premium: {
     //     plan: "free",
@@ -114,8 +113,7 @@ function getCachedSettings(): UserSettings {
             notifications: {
                 weeklyDigest: Boolean(parsedSettings.notifications?.weeklyDigest),
                 itineraryReminders: Boolean(parsedSettings.notifications?.itineraryReminders),
-                featureAnnouncements: Boolean(parsedSettings.notifications?.featureAnnouncements),
-                paymentAlerts: Boolean(parsedSettings.notifications?.paymentAlerts)
+                featureAnnouncements: Boolean(parsedSettings.notifications?.featureAnnouncements)
             },
             // premium: {
             //     plan: parsedSettings.premium?.plan === "monthly" || parsedSettings.premium?.plan === "yearly" ? parsedSettings.premium.plan : "free",
@@ -291,10 +289,12 @@ export function Settings() {
                                         <span className="font-[Cormorant_Garamond] text-[1.15rem] text-[#50300d]">Feature announcements</span>
                                         <input type="checkbox" checked={settings.notifications.featureAnnouncements} onChange={(event) => setSettings((prev) => ({ ...prev, notifications: { ...prev.notifications, featureAnnouncements: event.target.checked } }))} className="h-4 w-4 accent-[#7a3f00]" />
                                     </label>
+                                    {/*
                                     <label className="flex items-center justify-between gap-3 rounded-[0.8rem] border border-[#cf8d45]/30 bg-[#ffead4]/60 px-4 py-3">
                                         <span className="font-[Cormorant_Garamond] text-[1.15rem] text-[#50300d]">Payment and subscription alerts</span>
                                         <input type="checkbox" checked={settings.notifications.paymentAlerts} onChange={(event) => setSettings((prev) => ({ ...prev, notifications: { ...prev.notifications, paymentAlerts: event.target.checked } }))} className="h-4 w-4 accent-[#7a3f00]" />
                                     </label>
+                                    */}
                                 </div>
                             </article>
                         )}

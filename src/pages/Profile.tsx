@@ -4,7 +4,7 @@ import type { ChangeEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useScrollToTop } from "../hooks/useScrollToTop";
 import compassAvatar from "../assets/avatars/compass.png";
-import SubscriptionStatus from "../components/SubscriptionStatus";
+// import SubscriptionStatus from "../components/SubscriptionStatus";
 import globeAvatar from "../assets/avatars/globe.png";
 import mountainsAvatar from "../assets/avatars/mountains.png";
 import passportAvatar from "../assets/avatars/passport.png";
@@ -257,10 +257,11 @@ export function Profile() {
                                     <p className="font-[Adamina] text-[0.72rem] uppercase tracking-[0.18em] text-[#f6d7b5]">User record</p>
                                     <h2 className="mt-2 font-[Adamina] text-[1.35rem] text-[#fff4e7]">Account details</h2>
                                 </div>
-                                <p className="font-[Cormorant_Garamond] text-[1rem] text-[#f7dfca]">All information about subscriptions and account</p>
+                                <p className="font-[Cormorant_Garamond] text-[1rem] text-[#f7dfca]">All information about your account</p>
                             </div>
 
                             <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-2">
+                                {/*
                                 <div className="rounded-[0.8rem] border border-[#eab681]/20 bg-[#ffead40d] px-4 py-3">
                                     <p className="font-[Adamina] text-[0.78rem] uppercase tracking-[0.18em] text-[#f6d7b5]">Subscription tier</p>
                                     <p className="mt-1 font-[Cormorant_Garamond] text-[1.05rem] text-[#fff4e7]">{getStoredUserProfile()?.subscriptionTier || "free"}</p>
@@ -269,6 +270,7 @@ export function Profile() {
                                     <p className="font-[Adamina] text-[0.78rem] uppercase tracking-[0.18em] text-[#f6d7b5]">Subscription status</p>
                                     <p className="mt-1 font-[Cormorant_Garamond] text-[1.05rem] text-[#fff4e7]">{getStoredUserProfile()?.subscriptionStatus || "inactive"}</p>
                                 </div>
+                                */}
                                 <div className="rounded-[0.8rem] border border-[#eab681]/20 bg-[#ffead40d] px-4 py-3">
                                     <p className="font-[Adamina] text-[0.78rem] uppercase tracking-[0.18em] text-[#f6d7b5]">Profile created</p>
                                     <p className="mt-1 font-[Cormorant_Garamond] text-[1.05rem] text-[#fff4e7]">{getStoredUserProfile()?.createdAt ? new Date(getStoredUserProfile()!.createdAt).toLocaleDateString() : "Not set yet"}</p>
@@ -325,8 +327,9 @@ export function Profile() {
 
 
                     <aside className="flex flex-col gap-3 rounded-[1rem]">
-                        {/* Subscription badge (reads from localStorage key `subscriptionStatus`) */}
+                        {/*
                         <SubscriptionStatus />
+                        */}
 
                         <div className="mt-3 flex flex-col gap-2">
                             <Link
