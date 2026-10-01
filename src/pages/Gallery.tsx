@@ -393,7 +393,7 @@ function Gallery() {
                                     Explore your travel photographs and moments from around the world.
                                 </p>
                             </div>
-                            <div className="flex flex-col gap-3 pb-1">
+                            <div className="flex w-full flex-col items-end gap-3 self-end pb-1 sm:w-auto">
                                 <div className="w-full sm:w-auto" onClick={(event) => event.stopPropagation()}>
                                     <PhotoUploadButton
                                         onUpload={handleFileUpload}
