@@ -225,13 +225,6 @@ function Home({ countryStatuses, countryAddedDates, setCountryStatus, visitedCou
         return [...new Set(names)].sort((leftCountry, rightCountry) => leftCountry.localeCompare(rightCountry));
     }, [countriesData]);
 
-    const highlightedCountries = useMemo(() => {
-        return countryNames.filter((countryName) => {
-            const status = countryStatuses[countryName] ?? "not-explored";
-            return mapStatusFilters.has(status);
-        });
-    }, [countryNames, countryStatuses, mapStatusFilters]);
-
     const filteredCountryNames = useMemo(() => {
         const query = searchTerm.trim().toLowerCase();
         if (!query) {
@@ -454,7 +447,7 @@ function Home({ countryStatuses, countryAddedDates, setCountryStatus, visitedCou
                                 <div className="w-full max-w-[820px]">
                                     <Map
                                         countriesData={countriesData}
-                                        selectedCountries={highlightedCountries}
+                                        selectedCountries={visitedCountries}
                                         viewMode={mapViewMode}
                                         userLocation={userLocation}
                                         countryStatuses={countryStatuses}
