@@ -30,9 +30,43 @@ const countryImageUrls: Record<string, string> = {
     Japan: "photo-1493976040374-85c8e12f0c0e"
 };
 
-const getCountryImageUrl = (countryName: string) => {
-    const photoId = countryImageUrls[countryName];
-    return photoId ? `https://images.unsplash.com/${photoId}?auto=format&fit=crop&w=900&q=78` : undefined;
+interface UnsplashPhoto {
+    urls: {
+        small: string;
+    };
+    links: {
+        download_location: string;
+    };
+    user: {
+        name: string;
+        links: {
+            html: string;
+        };
+    };
+}
+
+const UNSPLASH_APP_NAME = "tripjournal";
+const UNSPLASH_ACCESS_KEY = import.meta.env.VITE_UNSPLASH_ACCESS_KEY?.trim();
+
+const getUnsplashProfileUrl = (photo: UnsplashPhoto) => {
+    const profileUrl = new URL(photo.user.links.html);
+    profileUrl.searchParams.set("utm_source", UNSPLASH_APP_NAME);
+    profileUrl.searchParams.set("utm_medium", "referral");
+    return profileUrl.toString();
+};
+
+const unsplashHomepageUrl = `https://unsplash.com/?utm_source=${UNSPLASH_APP_NAME}&utm_medium=referral`;
+
+const requestPhotoDownload = (photo: UnsplashPhoto) => {
+    if (!UNSPLASH_ACCESS_KEY) {
+        return;
+    }
+
+    void fetch(photo.links.download_location, {
+        headers: { Authorization: `Client-ID ${UNSPLASH_ACCESS_KEY}` }
+    }).catch((error: unknown) => {
+        console.error("Failed to register Unsplash photo download.", error);
+    });
 };
 
 const pointInRing = (lng: number, lat: number, ring: number[][]) => {
@@ -116,6 +150,47 @@ function Home({ countryStatuses, countryAddedDates, setCountryStatus, visitedCou
     const hasRequestedGeolocationRef = useRef(false);
     const { countriesData, isLoading, error } = useCountriesData();
     const { showScrollTop, scrollToTop } = useScrollToTop();
+    const [countryPhotos, setCountryPhotos] = useState<Record<string, UnsplashPhoto>>({});
+
+    useEffect(() => {
+        if (!UNSPLASH_ACCESS_KEY) {
+            console.error("Missing VITE_UNSPLASH_ACCESS_KEY. Country images require an Unsplash API access key.");
+            return;
+        }
+
+        let isCurrent = true;
+
+        const loadCountryPhotos = async () => {
+            const photoEntries = await Promise.all(
+                Object.entries(countryImageUrls).map(async ([countryName, photoId]) => {
+                    try {
+                        const response = await fetch(`https://api.unsplash.com/photos/${photoId}`, {
+                            headers: { Authorization: `Client-ID ${UNSPLASH_ACCESS_KEY}` }
+                        });
+
+                        if (!response.ok) {
+                            throw new Error(`Unsplash returned ${response.status} for ${countryName}.`);
+                        }
+
+                        return [countryName, await response.json() as UnsplashPhoto] as const;
+                    } catch (error: unknown) {
+                        console.error(`Failed to load the ${countryName} image from Unsplash.`, error);
+                        return null;
+                    }
+                })
+            );
+
+            if (isCurrent) {
+                setCountryPhotos(Object.fromEntries(photoEntries.filter((entry): entry is readonly [string, UnsplashPhoto] => entry !== null)));
+            }
+        };
+
+        void loadCountryPhotos();
+
+        return () => {
+            isCurrent = false;
+        };
+    }, []);
 
     useEffect(() => {
         if (hasRequestedGeolocationRef.current || !navigator.geolocation) {
@@ -658,10 +733,16 @@ function Home({ countryStatuses, countryAddedDates, setCountryStatus, visitedCou
                                     return (
                                         <div
                                             key={countryName}
+                                            onClick={() => {
+                                                const photo = countryPhotos[countryName];
+                                                if (photo) {
+                                                    requestPhotoDownload(photo);
+                                                }
+                                            }}
                                             className="group relative min-h-[14rem] overflow-hidden rounded-[1.2rem] border border-[#ffead4]/35 p-4 text-[#fff4e7] shadow-[0_12px_25px_rgb(35_18_8_/_20%)] transition hover:-translate-y-1"
                                         >
                                             <img
-                                                src={getCountryImageUrl(countryName)}
+                                                src={countryPhotos[countryName]?.urls.small}
                                                 alt=""
                                                 loading="lazy"
                                                 decoding="async"
@@ -700,6 +781,11 @@ function Home({ countryStatuses, countryAddedDates, setCountryStatus, visitedCou
                                                 {status === null && (
                                                     <span className="font-[Adamina] text-[0.63rem] uppercase tracking-[0.08em] text-[#fff4e7]/80">
                                                         Set status to unlock page
+                                                    </span>
+                                                )}
+                                                {countryPhotos[countryName] && (
+                                                    <span className="font-[Cormorant_Garamond] text-[0.78rem] text-[#fff4e7]/80">
+                                                        Photo by <a href={getUnsplashProfileUrl(countryPhotos[countryName])} target="_blank" rel="noreferrer" className="underline underline-offset-2">{countryPhotos[countryName].user.name}</a> on <a href={unsplashHomepageUrl} target="_blank" rel="noreferrer" className="underline underline-offset-2">Unsplash</a>
                                                     </span>
                                                 )}
                                                 <select
