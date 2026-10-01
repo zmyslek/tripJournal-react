@@ -12,8 +12,6 @@ import postcardAvatar from "../assets/avatars/postcard.png";
 import suitcaseAvatar from "../assets/avatars/suitcase.png";
 import { supabase } from "../lib/supabase/client";
 import { clearStoredUserProfile, getStoredUserProfile, saveStoredUserProfile } from "../types/user";
-import { UnsplashAttribution } from "../components/UnsplashAttribution";
-import { requestUnsplashDownload, useUnsplashPhoto } from "../lib/unsplash";
 
 export type ProfileProps = Record<string, never>;
 
@@ -89,10 +87,6 @@ function getCachedProfile(): ProfileForm {
 }
 
 export function Profile() {
-        const heroPhoto = useUnsplashPhoto("photo-1519501025264-65ba15a82390");
-        const florencePhoto = useUnsplashPhoto("photo-1543429257-37a54b3f4c4d");
-        const kyotoPhoto = useUnsplashPhoto("photo-1493976040374-85c8e12f0c0e");
-        const lisbonPhoto = useUnsplashPhoto("photo-1555881400-74d7acaacd8b");
     const navigate = useNavigate();
     const [profile, setProfile] = useState<ProfileForm>(() => getCachedProfile());
     const [draftProfile, setDraftProfile] = useState<ProfileForm>(() => getCachedProfile());
@@ -205,8 +199,7 @@ export function Profile() {
             <div className="overflow-hidden rounded-[1.35rem] border border-[#8f5a20]/25 bg-[#f8f4ee]/85 shadow-[0_18px_42px_rgb(80_48_13_/_13%)] transition-all">
                 <div
                     className="atlas-header relative flex min-h-[19rem] items-end bg-[#5a392b] px-6 py-7 text-[#ffead4] sm:min-h-[24rem] sm:px-9"
-                    onClick={() => heroPhoto && requestUnsplashDownload(heroPhoto)}
-                    style={{ backgroundImage: `linear-gradient(90deg, rgb(30 24 21 / 78%), rgb(30 24 21 / 20%)), linear-gradient(0deg, rgb(30 24 21 / 40%), transparent 65%), url(${heroPhoto?.urls.regular ?? "https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=1800&q=85"})`, backgroundSize: "cover", backgroundPosition: "center 55%" }}
+                    style={{ backgroundImage: `linear-gradient(90deg, rgb(30 24 21 / 78%), rgb(30 24 21 / 20%)), linear-gradient(0deg, rgb(30 24 21 / 40%), transparent 65%), url(https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=1800&q=85)`, backgroundSize: "cover", backgroundPosition: "center 55%" }}
                 >
                     <div className="relative z-10 flex w-full flex-wrap items-end justify-between gap-6">
                         <div>
@@ -217,33 +210,38 @@ export function Profile() {
                             <p className="mt-3 max-w-[42rem] font-[Cormorant_Garamond] text-[1.15rem] leading-[1.35] text-[#f7dfca]">
                                 {profile.currentFocus} · {profile.travelStyle}
                             </p>
-                            <UnsplashAttribution photo={heroPhoto} />
                         </div>
                         <button type="button" onClick={openEditor} className="absolute right-0 top-0 rounded-full border border-white/60 bg-black/20 px-5 py-2.5 font-[Adamina] text-sm text-white backdrop-blur-sm transition hover:bg-black/40">Edit profile</button>
                     </div>
                 </div>
 
-                <div className="grid gap-7 bg-[#5a392b]/95 px-4 py-5 sm:px-7 sm:py-7 lg:grid-cols-[minmax(0,1fr)_20rem]">
+                <div className="grid gap-7 px-4 py-5 sm:px-7 sm:py-7 lg:grid-cols-[minmax(0,1fr)_20rem] bg-[#5a392b]/95">
                     <div>
                         <div className="flex items-stretch rounded-[1rem] border border-[#eab681]/35 bg-[#ffead41f] p-5 shadow-[inset_0_1px_0_#ffffff2b,0_10px_28px_rgb(0_0_0_/_30%)] interactive-transition hover:shadow-[inset_0_1px_0_#ffffff2b,0_14px_34px_rgb(0_0_0_/_40%)]">
-                            <div className="mr-6 flex items-center justify-center">
-                                <div className="h-24 w-24 shrink-0 overflow-hidden rounded-full border border-[#f6d7b5]/70 bg-[#cf8d45] font-[Adamina] text-[1.5rem] text-[#fff4e7]">{profile.avatar ? <img src={profile.avatar} alt="" className="h-full w-full object-cover" /> : initials}</div>
+                            <div className="flex items-center justify-center mr-6">
+                                <div className="h-24 w-24 shrink-0 overflow-hidden rounded-full border border-[#f6d7b5]/70 bg-[#cf8d45] font-[Adamina] text-[1.5rem] text-[#fff4e7]"> {profile.avatar ? (
+                                    <img src={profile.avatar} alt="" className="h-full w-full object-cover" />) : (initials)}
+                                </div>
                             </div>
                             <div className="grid flex-1 gap-x-8 gap-y-5 sm:grid-cols-2">
                                 <div className="rounded-[0.8rem] border border-[#eab681]/20 bg-[#ffead40d] px-4 py-3">
-                                    <p className="font-[Adamina] text-[0.78rem] uppercase tracking-[0.18em] text-[#7a3f00]">Traveler name</p>
-                                    <p className="mt-1 font-[Cormorant_Garamond] text-[1.25rem] text-[#50300d]">{profile.name}</p>
+                                <p className="font-[Adamina] text-[0.78rem] uppercase tracking-[0.18em] text-[#f6d7b5]">Traveler name</p>
+                                <p className="mt-1 font-[Cormorant_Garamond] text-[1.25rem] text-[#fff4e7]">{profile.name}</p>
                                 </div>
+
                                 <div className="rounded-[0.8rem] border border-[#eab681]/20 bg-[#ffead40d] px-4 py-3">
-                                    <p className="font-[Adamina] text-[0.78rem] uppercase tracking-[0.18em] text-[#7a3f00]">Email address</p>
-                                    <p className="mt-1 font-[Cormorant_Garamond] text-[1.25rem] text-[#50300d]">{profile.email}</p>
+                                <p className="font-[Adamina] text-[0.78rem] uppercase tracking-[0.18em] text-[#f6d7b5]">Email address</p>
+                                <p className="mt-1 font-[Cormorant_Garamond] text-[1.25rem] text-[#fff4e7]">{profile.email}</p>
                                 </div>
-                                <div className="rounded-[0.8rem] border border-[#eab681]/20 bg-[#ffead40d] px-4 py-3 sm:col-span-2">
-                                    <p className="font-[Adamina] text-[0.78rem] uppercase tracking-[0.18em] text-[#7a3f00]">Favorite travel style</p>
-                                    <p className="mt-1 font-[Cormorant_Garamond] text-[1.25rem] text-[#50300d]">{profile.travelStyle}</p>
+
+                                <div className="sm:col-span-2 rounded-[0.8rem] border border-[#eab681]/20 bg-[#ffead40d] px-4 py-3">
+                                <p className="font-[Adamina] text-[0.78rem] uppercase tracking-[0.18em] text-[#f6d7b5]">Favorite travel style</p>
+                                <p className="mt-1 font-[Cormorant_Garamond] text-[1.25rem] text-[#fff4e7]">{profile.travelStyle}</p>
                                 </div>
                             </div>
+
                         </div>
+
 
                         <div className="mt-7 rounded-[1rem] border border-[#eab681]/35 bg-[#ffead41f] p-5 shadow-[inset_0_1px_0_#ffffff2b,0_10px_28px_rgb(0_0_0_/_30%)] interactive-transition hover:shadow-[inset_0_1px_0_#ffffff2b,0_14px_34px_rgb(0_0_0_/_40%)]">
                             <div className="flex flex-wrap items-center justify-between gap-3">
@@ -256,19 +254,19 @@ export function Profile() {
 
                             <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-2">
                                 <div className="rounded-[0.8rem] border border-[#eab681]/20 bg-[#ffead40d] px-4 py-3">
-                                    <p className="font-[Adamina] text-[0.78rem] uppercase tracking-[0.18em] text-[#7a3f00]">Subscription tier</p>
+                                    <p className="font-[Adamina] text-[0.78rem] uppercase tracking-[0.18em] text-[#f6d7b5]">Subscription tier</p>
                                     <p className="mt-1 font-[Cormorant_Garamond] text-[1.05rem] text-[#fff4e7]">{getStoredUserProfile()?.subscriptionTier || "free"}</p>
                                 </div>
                                 <div className="rounded-[0.8rem] border border-[#eab681]/20 bg-[#ffead40d] px-4 py-3">
-                                    <p className="font-[Adamina] text-[0.78rem] uppercase tracking-[0.18em] text-[#7a3f00]">Subscription status</p>
+                                    <p className="font-[Adamina] text-[0.78rem] uppercase tracking-[0.18em] text-[#f6d7b5]">Subscription status</p>
                                     <p className="mt-1 font-[Cormorant_Garamond] text-[1.05rem] text-[#fff4e7]">{getStoredUserProfile()?.subscriptionStatus || "inactive"}</p>
                                 </div>
                                 <div className="rounded-[0.8rem] border border-[#eab681]/20 bg-[#ffead40d] px-4 py-3">
-                                    <p className="font-[Adamina] text-[0.78rem] uppercase tracking-[0.18em] text-[#7a3f00]">Profile created</p>
+                                    <p className="font-[Adamina] text-[0.78rem] uppercase tracking-[0.18em] text-[#f6d7b5]">Profile created</p>
                                     <p className="mt-1 font-[Cormorant_Garamond] text-[1.05rem] text-[#fff4e7]">{getStoredUserProfile()?.createdAt ? new Date(getStoredUserProfile()!.createdAt).toLocaleDateString() : "Not set yet"}</p>
                                 </div>
                                 <div className="rounded-[0.8rem] border border-[#eab681]/20 bg-[#ffead40d] px-4 py-3">
-                                    <p className="font-[Adamina] text-[0.78rem] uppercase tracking-[0.18em] text-[#7a3f00]">Login method</p>
+                                    <p className="font-[Adamina] text-[0.78rem] uppercase tracking-[0.18em] text-[#f6d7b5]">Login method</p>
                                     <p className="mt-1 font-[Cormorant_Garamond] text-[1.05rem] text-[#fff4e7]">{getStoredUserProfile()?.authProvider || "email"}</p>
                                 </div>
                             </div>
@@ -277,53 +275,84 @@ export function Profile() {
                         <div className="mt-7 grid gap-3 sm:grid-cols-3">
                             {profileStats.map((stat) => (
                                 <article key={stat.label} className="rounded-[1.2rem] border border-[#eab681]/35 bg-[#ffead41f] p-4 shadow-[inset_0_1px_0_#ffffff2b,0_10px_28px_rgb(0_0_0_/_30%)] interactive-transition hover:shadow-[inset_0_1px_0_#ffffff2b,0_14px_34px_rgb(0_0_0_/_40%)] hover:-translate-y-0.5">
-                                    <p className="font-[Adamina] text-[0.72rem] uppercase tracking-[0.18em] text-[#7a3f00]">{stat.label}</p>
+                                    <p className="font-[Adamina] text-[0.72rem] uppercase tracking-[0.18em] text-[#f6d7b5]">{stat.label}</p>
                                     <p className="mt-2 font-[Adamina] text-[2rem] leading-none text-[#fff4e7]">{stat.value}</p>
                                 </article>
                             ))}
                         </div>
+
+                        <section className="mt-7 rounded-[1rem] border border-[#cf8d45]/30 bg-white p-5 shadow-[0_14px_34px_rgb(0_0_0_/_30%)] sm:p-7" aria-label="Recent journeys">
+                            <div className="mb-4 flex items-end justify-between gap-3">
+                                <div>
+                                    <p className="font-[Adamina] text-[0.68rem] uppercase tracking-[0.24em] text-[#936d58]">Recently remembered</p>
+                                    <h2 className="mt-1 font-[Cormorant_Garamond] text-3xl text-[#50300d]">Latest journeys</h2>
+                                </div>
+                                <Link to="/gallery" className="font-[Cormorant_Garamond] text-base text-[#936d58] hover:text-[#50300d]">View gallery →</Link>
+                            </div>
+                            <div className="grid gap-3 sm:grid-cols-3">
+                                {[
+                                    //replace with your own journey data or fetch from an API
+                                    { city: "Florence", country: "Italy", date: "A city to wander", image: "photo-1529260830199-42c24126f198" },
+                                    { city: "Kyoto", country: "Japan", date: "Quiet mornings", image: "photo-1493976040374-85c8e12f0c0e" },
+                                    { city: "Lisbon", country: "Portugal", date: "Down every lane", image: "photo-1555881400-74d7acaacd8b" }
+                                ].map((journey) => (
+                                    <Link
+                                        key={journey.city}
+                                        to="/gallery"
+                                        className="group relative flex min-h-52 items-end overflow-hidden rounded-xl bg-cover bg-center p-4 text-white"
+                                        style={{ backgroundImage: `linear-gradient(0deg, rgb(20 16 14 / 78%), transparent 72%), url(https://images.unsplash.com/${journey.image}?auto=format&fit=crop&w=700&q=80)` }}
+                                    >
+                                        <div className="transition group-hover:translate-y-[-2px]">
+                                            <p className="font-[Adamina] text-[0.6rem] uppercase tracking-[0.18em] text-[#f3d8bd]">{journey.date}</p>
+                                            <h3 className="font-[Cormorant_Garamond] text-3xl leading-tight">{journey.city}</h3>
+                                            <p className="font-[Cormorant_Garamond]">{journey.country}</p>
+                                        </div>
+                                    </Link>
+                                ))}
+                            </div>
+                        </section>
                     </div>
 
-                    <aside className="flex flex-col gap-3 rounded-[1rem] p-4">
+
+                    <aside className="flex flex-col gap-3 rounded-[1rem]">
+                        {/* Subscription badge (reads from localStorage key `subscriptionStatus`) */}
                         <SubscriptionStatus />
 
                         <div className="mt-3 flex flex-col gap-2">
-                            <Link to="/settings" className="flex items-center gap-3 rounded-full border border-[#eab681]/35 bg-[#ffead41a] px-4 py-2.5 font-[Cormorant_Garamond] text-[1.05rem] text-[#fff4e7] shadow-[inset_0_1px_0_#ffffff2b] interactive-transition hover:-translate-y-px hover:border-[#eab681]/60 hover:bg-[#ffead426] hover:shadow-[inset_0_1px_0_#ffffff2b,0_10px_22px_rgb(0_0_0_/_30%)]">
-                                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#cf8d45] text-[#fff4e7] shadow-[0_2px_8px_rgb(0_0_0_/_35%)]"><Settings size={16} /></span>
+                            <Link
+                                to="/settings"
+                                className="flex items-center gap-3 rounded-full border border-[#eab681]/35 bg-[#ffead41a] px-4 py-2.5 font-[Cormorant_Garamond] text-[1.05rem] text-[#fff4e7] shadow-[inset_0_1px_0_#ffffff2b] interactive-transition hover:-translate-y-px hover:border-[#eab681]/60 hover:bg-[#ffead426] hover:shadow-[inset_0_1px_0_#ffffff2b,0_10px_22px_rgb(0_0_0_/_30%)]"
+                            >
+                                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#cf8d45] text-[#fff4e7] shadow-[0_2px_8px_rgb(0_0_0_/_35%)]">
+                                    <Settings size={16} />
+                                </span>
                                 Settings
                             </Link>
 
-                            <Link to="/help-center" className="flex items-center gap-3 rounded-full border border-[#eab681]/35 bg-[#ffead41a] px-4 py-2.5 font-[Cormorant_Garamond] text-[1.05rem] text-[#fff4e7] shadow-[inset_0_1px_0_#ffffff2b] interactive-transition hover:-translate-y-px hover:border-[#eab681]/60 hover:bg-[#ffead426] hover:shadow-[inset_0_1px_0_#ffffff2b,0_10px_22px_rgb(0_0_0_/_30%)]">
-                                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#eab681] text-[#50300d] shadow-[0_2px_8px_rgb(0_0_0_/_35%)]"><HelpCircle size={16} /></span>
+                            <Link
+                                to="/help-center"
+                                className="flex items-center gap-3 rounded-full border border-[#eab681]/35 bg-[#ffead41a] px-4 py-2.5 font-[Cormorant_Garamond] text-[1.05rem] text-[#fff4e7] shadow-[inset_0_1px_0_#ffffff2b] interactive-transition hover:-translate-y-px hover:border-[#eab681]/60 hover:bg-[#ffead426] hover:shadow-[inset_0_1px_0_#ffffff2b,0_10px_22px_rgb(0_0_0_/_30%)]"
+                            >
+                                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#eab681] text-[#50300d] shadow-[0_2px_8px_rgb(0_0_0_/_35%)]">
+                                    <HelpCircle size={16} />
+                                </span>
                                 Help center
                             </Link>
 
-                            <button type="button" className="mt-1 flex items-center justify-center rounded-full border border-[#cf8d45] bg-[#cf8d45] px-4 py-2.5 font-[Adamina] text-[0.92rem] text-[#fff4e7] shadow-[0_8px_20px_rgb(0_0_0_/_25%)] interactive-transition hover:-translate-y-px hover:bg-[#b97731] hover:shadow-[0_12px_26px_rgb(0_0_0_/_32%)]" onClick={handleLogout}>
+                            <button
+                                type="button"
+                                className="mt-1 flex items-center justify-center rounded-full border border-[#cf8d45] bg-[#cf8d45] px-4 py-2.5 font-[Adamina] text-[0.92rem] text-[#fff4e7] shadow-[0_8px_20px_rgb(0_0_0_/_25%)] interactive-transition hover:-translate-y-px hover:bg-[#b97731] hover:shadow-[0_12px_26px_rgb(0_0_0_/_32%)]"
+                                onClick={handleLogout}
+                            >
                                 Log out
                             </button>
                         </div>
-
                         <blockquote className="relative flex flex-col justify-center rounded-[1rem] border border-[#eab681]/35 bg-[#5a392b] p-6 text-[#fff4e7] shadow-[0_18px_44px_rgb(0_0_0_/_45%)] sm:p-7">
                             <span aria-hidden="true" className="absolute right-4 top-0 font-[Cormorant_Garamond] text-9xl leading-none text-[#eab681]/20">“</span>
                             <p className="relative font-[Cormorant_Garamond] text-2xl leading-tight">The real voyage of discovery consists not in seeking new landscapes, but in having new eyes.</p>
                             <cite className="mt-4 font-[Adamina] text-[0.62rem] not-italic uppercase tracking-[0.2em] text-[#e0c3aa]">Marcel Proust</cite>
                         </blockquote>
                     </aside>
-                </div>
-                <div className="grid gap-6 px-4 pb-6 sm:px-7 lg:grid-cols-[minmax(0,1fr)_20rem]">
-                    <section className="rounded-[1rem] border border-[#50300d]/15 bg-white p-5 sm:p-7" aria-label="Recent journeys">
-                        <div className="mb-4 flex items-end justify-between gap-3">
-                            <div><p className="font-[Adamina] text-[0.68rem] uppercase tracking-[0.24em] text-[#936d58]">Recently remembered</p><h2 className="mt-1 font-[Cormorant_Garamond] text-3xl text-[#50300d]">Latest journeys</h2></div>
-                            <Link to="/gallery" className="font-[Cormorant_Garamond] text-base text-[#936d58] hover:text-[#50300d]">View gallery →</Link>
-                        </div>
-                        <div className="grid gap-3 sm:grid-cols-3">
-                            {[ 
-                                { city: "Florence", country: "Italy", date: "A city to wander", photo: florencePhoto, fallback: "photo-1543429257-37a54b3f4c4d" },
-                                { city: "Kyoto", country: "Japan", date: "Quiet mornings", photo: kyotoPhoto, fallback: "photo-1493976040374-85c8e12f0c0e" },
-                                { city: "Lisbon", country: "Portugal", date: "Down every lane", photo: lisbonPhoto, fallback: "photo-1555881400-74d7acaacd8b" }
-                            ].map((journey) => <Link key={journey.city} to="/gallery" onClick={() => journey.photo && requestUnsplashDownload(journey.photo)} className="group relative flex min-h-52 items-end overflow-hidden rounded-xl bg-cover bg-center p-4 text-white" style={{ backgroundImage: `linear-gradient(0deg, rgb(20 16 14 / 78%), transparent 72%), url(${journey.photo?.urls.small ?? `https://images.unsplash.com/${journey.fallback}?auto=format&fit=crop&w=700&q=80`})` }}><div className="transition group-hover:translate-y-[-2px]"><p className="font-[Adamina] text-[0.6rem] uppercase tracking-[0.18em] text-[#f3d8bd]">{journey.date}</p><h3 className="font-[Cormorant_Garamond] text-3xl leading-tight">{journey.city}</h3><p className="font-[Cormorant_Garamond]">{journey.country}</p><UnsplashAttribution photo={journey.photo} /></div></Link>)}
-                        </div>
-                    </section>
                 </div>
             </div>
 
@@ -375,7 +404,7 @@ export function Profile() {
                                     <input type="email" value={draftProfile.email} onChange={(event) => updateDraft("email", event.target.value)} className="w-full rounded-[0.7rem] border border-[#cf8d45]/55 bg-[#fff7ee] px-3 py-2 font-[Cormorant_Garamond] text-[1.1rem] text-[#50300d] outline-none interactive-transition hover:border-[#cf8d45]/70 focus:border-[#7a3f00] focus:ring-2 focus:ring-[#cf8d45]/35 focus:shadow-[0_0_8px_rgb(199_141_69_/_20%)]" />
                                 </label>
                                 <label className="block">
-                                    <span className="mb-1.5 block font-[Adamina] text-[0.72rem] uppercase tracking-[0.18em] text-[#7a3f00]">Favorite travel style</span>
+                                    <span className="mb-1.5 mt-4 block font-[Adamina] text-[0.72rem] uppercase tracking-[0.18em] text-[#7a3f00] px-4 py-3">Favorite travel style</span>
                                     <input value={draftProfile.travelStyle} onChange={(event) => updateDraft("travelStyle", event.target.value)} className="w-full rounded-[0.7rem] border border-[#cf8d45]/55 bg-[#fff7ee] px-3 py-2 font-[Cormorant_Garamond] text-[1.1rem] text-[#50300d] outline-none interactive-transition hover:border-[#cf8d45]/70 focus:border-[#7a3f00] focus:ring-2 focus:ring-[#cf8d45]/35 focus:shadow-[0_0_8px_rgb(199_141_69_/_20%)]" />
                                 </label>
                                 <div className="flex flex-wrap justify-end gap-3 pt-2">
