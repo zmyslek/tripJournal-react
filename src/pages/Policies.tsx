@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 import { useScrollToTop } from "../hooks/useScrollToTop";
-import paperBackground from "../assets/wrinkled-paper.png";
 
 type PolicySection = {
     heading: string;
@@ -210,8 +209,7 @@ function Policies() {
         <section className="mx-auto w-full max-w-[min(95vw,1120px)] px-[max(1.25rem,5%)] py-[max(2rem,6vh)] text-[#50300d]" aria-labelledby="policy-title">
             <div className="overflow-hidden rounded-[1.35rem] border border-[#8f5a20]/35 bg-[#ffead4]/95 shadow-[0_18px_42px_rgb(80_48_13_/_20%),inset_0_0_0_1px_rgb(255_244_231_/_55%)]">
                 <div
-                        className="atlas-header relative min-h-[11rem] bg-[#5a392b] px-6 py-7 text-[#ffead4] sm:px-9"
-                    style={{ backgroundImage: `linear-gradient(rgb(90 57 43 / 0.9), rgb(90 57 43 / 0.9)), url(${paperBackground})`, backgroundSize: "cover" }}
+                        className="atlas-header relative min-h-[11rem] bg-[#3f5960] px-6 py-7 text-[#ffead4] sm:px-9"
                 >
                     <div className="relative flex flex-wrap items-start justify-between gap-6">
                         <div>

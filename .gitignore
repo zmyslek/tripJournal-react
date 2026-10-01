@@ -24,3 +24,8 @@ public/temporary-gallery/Spain/Valencia/*.mp4
 docs/temporary-gallery/Spain/Valencia/*.mp4
 
 documentation/Google.txt
+
+# Keep the published architecture reference available to repository readers.
+!documentation/
+documentation/*
+!documentation/architecture.md

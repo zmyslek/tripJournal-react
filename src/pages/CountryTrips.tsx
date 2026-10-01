@@ -358,11 +358,7 @@ function CountryTrips({ countryStatuses }: CountryTripsProps) {
         <div className="mx-auto w-full max-w-[min(95vw,1380px)] px-[max(1.25rem,5%)] pb-[max(3rem,8vh)] pt-[max(1.5rem,4vh)]">
             <section className="overflow-hidden rounded-t-[1.35rem] border border-[#8f5a20]/35 shadow-[0_18px_42px_rgb(80_48_13_/_20%)]">
                 <div
-                    className="atlas-header bg-[#5a392b] px-6 py-6 sm:px-8"
-                    style={{
-                        backgroundImage: `linear-gradient(rgb(90 57 43 / 0.96), rgb(90 57 43 / 0.96)), url(${paperBackground})`,
-                        backgroundSize: "cover"
-                    }}
+                    className="atlas-header bg-[#38524f] px-6 py-6 sm:px-8"
                 >
                     <div className="flex items-start justify-between gap-6">
                         <div className="flex-1">
@@ -482,11 +478,7 @@ function CountryTrips({ countryStatuses }: CountryTripsProps) {
 
             <section className="mt-8 overflow-hidden rounded-[1.35rem] border border-[#8f5a20]/35 shadow-[0_12px_28px_rgb(80_48_13_/_14%)]">
                 <div
-                    className="bg-[#5a392b] px-6 py-5 sm:px-8"
-                    style={{
-                        backgroundImage: `linear-gradient(rgb(90 57 43 / 0.97), rgb(90 57 43 / 0.97)), url(${paperBackground})`,
-                        backgroundSize: "cover"
-                    }}
+                    className="bg-[#38524f] px-6 py-5 sm:px-8"
                 >
                     <h2 className="font-[Adamina] text-[1.8rem] text-[#fff4e7]">Travel integrations</h2>
                     {/* <p className="mt-2 font-[Cormorant_Garamond] text-[1.05rem] text-[#f7dfca] max-w-xl">Connect your travel experiences with music, fitness, and video data.</p> */}
@@ -621,11 +613,7 @@ function CountryTrips({ countryStatuses }: CountryTripsProps) {
 
             <section className="mt-8 overflow-hidden rounded-[1.35rem] border border-[#8f5a20]/25 shadow-[0_12px_28px_rgb(80_48_13_/_12%)]">
                 <div
-                    className="bg-[#5a392b] px-6 py-5 sm:px-8"
-                    style={{
-                        backgroundImage: `linear-gradient(rgb(90 57 43 / 0.97), rgb(90 57 43 / 0.97)), url(${paperBackground})`,
-                        backgroundSize: "cover"
-                    }}
+                    className="bg-[#38524f] px-6 py-5 sm:px-8"
                 >
                     <div className="flex flex-wrap items-start justify-between gap-4">
                         <div>

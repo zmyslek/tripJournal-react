@@ -5,7 +5,7 @@ import { helpFaqSections } from "../data/helpFaq";
 import { useScrollToTop } from "../hooks/useScrollToTop";
 
 function HelpCenter() {
-        const heroPhoto = useUnsplashPhoto("photo-1519501025264-65ba15a82390");
+    const heroPhoto = useUnsplashPhoto("photo-1456324504439-367cee3b3c32");
     const [activeSectionId, setActiveSectionId] = useState("all");
     const [searchTerm, setSearchTerm] = useState("");
     const [contactForm, setContactForm] = useState({ email: "", message: "" });
@@ -160,7 +160,7 @@ function HelpCenter() {
                 <div
                     className="atlas-header relative flex min-h-[19rem] items-end bg-[#5a392b] px-6 py-7 text-[#ffead4] sm:min-h-[24rem] sm:px-9"
                     onClick={() => heroPhoto && requestUnsplashDownload(heroPhoto)}
-                    style={{ backgroundImage: `linear-gradient(90deg, rgb(30 24 21 / 78%), rgb(30 24 21 / 20%)), linear-gradient(0deg, rgb(30 24 21 / 40%), transparent 65%), url(${heroPhoto?.urls.regular ?? "https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=1800&q=85"})`, backgroundSize: "cover", backgroundPosition: "center 55%" }}
+                    style={{ backgroundImage: `linear-gradient(90deg, rgb(50 63 67 / 88%), rgb(50 63 67 / 28%)), linear-gradient(0deg, rgb(50 63 67 / 48%), transparent 65%), url(${heroPhoto?.urls.regular ?? "https://images.unsplash.com/photo-1456324504439-367cee3b3c32?auto=format&fit=crop&w=1800&q=85"})`, backgroundSize: "cover", backgroundPosition: "center 55%" }}
                 >
                     <div className="relative flex flex-wrap items-start justify-between gap-6">
                         <div>

@@ -4,7 +4,6 @@ import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { useCountriesData } from "../hooks/useCountriesData";
 import { useScrollToTop } from "../hooks/useScrollToTop";
 import { useSupabaseGallery } from "../hooks/useSupabaseGallery";
-import paperBackground from "../assets/wrinkled-paper.png";
 import type { CountryStatus } from "./Home";
 import { decodeCountryParam } from "../utils/countryRouting";
 import { inferMediaKindFromName } from "../utils/mediaFiles";
@@ -333,8 +332,7 @@ function Itineraries(props: ItinerariesProps) {
         <div className="mx-auto w-full max-w-[min(96vw,1440px)] px-[max(1rem,4%)] pb-[max(3.5rem,10vh)] pt-[max(1.5rem,4vh)] text-[#50300d]">
             <section className="overflow-hidden rounded-[1.1rem] border border-[#8f5a20]/30 bg-[#fff4e7] shadow-[0_18px_42px_rgb(80_48_13_/_16%)]">
                 <div
-                    className="atlas-header bg-[#5a392b] p-6 text-[#fff4e7] sm:p-8"
-                    style={{ backgroundImage: `linear-gradient(rgb(90 57 43 / 0.95), rgb(90 57 43 / 0.98)), url(${paperBackground})`, backgroundSize: "cover" }}
+                    className="atlas-header bg-[#704b3b] p-6 text-[#fff4e7] sm:p-8"
                 >
                     <div className="flex flex-wrap items-start justify-between gap-5">
                         <div className="max-w-3xl">

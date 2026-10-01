@@ -144,7 +144,7 @@ function sectionFromHash(hash: string): SettingsSectionId {
 }
 
 export function Settings() {
-    const heroPhoto = useUnsplashPhoto("photo-1519501025264-65ba15a82390");
+    const heroPhoto = useUnsplashPhoto("photo-1500534623283-312aade485b7");
     const location = useLocation();
     const navigate = useNavigate();
     const [settings, setSettings] = useState<UserSettings>(() => getCachedSettings());
@@ -204,7 +204,7 @@ export function Settings() {
                 <div
                     className="atlas-header relative flex min-h-[19rem] items-end bg-[#5a392b] px-6 py-7 text-[#ffead4] sm:min-h-[24rem] sm:px-9"
                     onClick={() => heroPhoto && requestUnsplashDownload(heroPhoto)}
-                    style={{ backgroundImage: `linear-gradient(90deg, rgb(30 24 21 / 78%), rgb(30 24 21 / 20%)), linear-gradient(0deg, rgb(30 24 21 / 40%), transparent 65%), url(${heroPhoto?.urls.regular ?? "https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=1800&q=85"})`, backgroundSize: "cover", backgroundPosition: "center 55%" }}
+                    style={{ backgroundImage: `linear-gradient(90deg, rgb(39 57 51 / 86%), rgb(39 57 51 / 32%)), linear-gradient(0deg, rgb(39 57 51 / 48%), transparent 65%), url(${heroPhoto?.urls.regular ?? "https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=1800&q=85"})`, backgroundSize: "cover", backgroundPosition: "center 55%" }}
                 >
                     <div className="relative z-10">
                     <p className="m-0 font-[Adamina] text-[0.7rem] uppercase tracking-[0.24em] text-[#f6d7b5]">Your travel journal</p>
