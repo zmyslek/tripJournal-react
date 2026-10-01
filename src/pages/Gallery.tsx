@@ -205,7 +205,7 @@ function GalleryStrip({ items, bend, onItemClick }: GalleryStripProps) {
 }
 
 function Gallery() {
-    const heroPhoto = useUnsplashPhoto("6fA05-jKA1M");
+    const heroPhoto = useUnsplashPhoto("photo-1493976040374-85c8e12f0c0e");
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedIndex, setSelectedIndex] = useState(0);
     const { photos: supabasePhotos, isLoading: galleryLoading, error: galleryError } = useSupabaseGallery();
@@ -359,7 +359,7 @@ function Gallery() {
                     <div
                         className="atlas-header relative flex min-h-[19rem] items-end bg-[#5a392b] px-6 py-7 text-[#ffead4] sm:min-h-[24rem] sm:px-9"
                         onClick={() => heroPhoto && requestUnsplashDownload(heroPhoto)}
-                        style={{ backgroundImage: `linear-gradient(90deg, rgb(71 43 31 / 88%), rgb(71 43 31 / 28%)), linear-gradient(0deg, rgb(71 43 31 / 48%), transparent 65%), url(${heroPhoto?.urls.regular ?? "https://images.unsplash.com/photo-1603050906757-df6b62765342?auto=format&fit=crop&w=1800&q=85"})`, backgroundSize: "cover", backgroundPosition: "center 55%" }}
+                        style={{ backgroundImage: `linear-gradient(90deg, rgb(71 43 31 / 88%), rgb(71 43 31 / 28%)), linear-gradient(0deg, rgb(71 43 31 / 48%), transparent 65%), url(${heroPhoto?.urls.regular ?? "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=1800&q=85"})`, backgroundSize: "cover", backgroundPosition: "center 55%" }}
                     >
                         <div className="relative flex flex-wrap items-end justify-between gap-6">
                             <div className="max-w-[46rem]">

@@ -4,6 +4,7 @@ import { useCountriesData } from "../hooks/useCountriesData.ts";
 import { useScrollToTop } from "../hooks/useScrollToTop.ts";
 import { getCountryName, type CountriesGeoJson, type CountryFeature } from "../types/countries.ts";
 import { buildCountryTripsPath } from "../utils/countryRouting.ts";
+import paperBackground from "../assets/wrinkled-paper.png";
 import { fetchUnsplashPhoto, getUnsplashProfileUrl, requestUnsplashDownload, unsplashHomepageUrl, useUnsplashPhoto, type UnsplashPhoto } from "../lib/unsplash";
 
 const Map = lazy(() => import("../components/Map.tsx"));
@@ -94,9 +95,9 @@ const findCountryAtCoordinates = (countriesData: CountriesGeoJson, lng: number, 
 };
 
 function Home({ countryStatuses, countryAddedDates, setCountryStatus, visitedCountries, pageMode = "home" }: HomeProps) {
-    const heroPhotoId = pageMode === "home" ? "2_pz-gtNzEY" : "j9jBsNg2pSw";
+    const heroPhotoId = pageMode === "home" ? "photo-1500534623283-312aade485b7" : "j9jBsNg2pSw";
     const heroFallbackUrl = pageMode === "home"
-        ? "https://images.unsplash.com/photo-1448328391773-1d8cc46c25cc?auto=format&fit=crop&w=1800&q=85"
+        ? "https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=1800&q=85"
         : "https://images.unsplash.com/photo-1706823871410-ed8b01faef7e?auto=format&fit=crop&w=1800&q=85";
     const heroPhoto = useUnsplashPhoto(heroPhotoId);
     const [searchTerm, setSearchTerm] = useState("");
@@ -596,7 +597,7 @@ function Home({ countryStatuses, countryAddedDates, setCountryStatus, visitedCou
                     {/* Top section - Darker brown (5A392B) */}
                     <div
                         className="bg-[#5a392b] px-6 py-5 sm:px-8"
-                        style={{ backgroundImage: `linear-gradient(rgb(90 57 43 / 68%), rgb(90 57 43 / 68%)), url(${heroPhoto?.urls.regular ?? "https://images.unsplash.com/photo-1706823871410-ed8b01faef7e?auto=format&fit=crop&w=1800&q=85"})`, backgroundSize: "cover", backgroundPosition: "center" }}
+                        style={{ backgroundImage: `linear-gradient(rgb(90 57 43), rgb(90 57 43)), url(${paperBackground})`, backgroundSize: "cover" }}
                     >
                         <p className="font-[Adamina] text-[0.7rem] uppercase tracking-[0.24em] text-[#f6d7b5]">Complete directory</p>
                         <h2 className="mt-2 font-[Adamina] text-[clamp(1.8rem,4vw,2.5rem)] leading-none text-[#fff4e7]">All Countries</h2>
