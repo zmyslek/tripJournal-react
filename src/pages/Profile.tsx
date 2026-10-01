@@ -330,7 +330,7 @@ export function Profile() {
 
                         <div className="mt-3 flex flex-col gap-2">
                             <Link
-                                to="/settings"
+                                to="/settings#account"
                                 className="flex items-center gap-3 rounded-full border border-[#eab681]/35 bg-[#ffead41a] px-4 py-2.5 font-[Cormorant_Garamond] text-[1.05rem] text-[#fff4e7] shadow-[inset_0_1px_0_#ffffff2b] interactive-transition hover:-translate-y-px hover:border-[#eab681]/60 hover:bg-[#ffead426] hover:shadow-[inset_0_1px_0_#ffffff2b,0_10px_22px_rgb(0_0_0_/_30%)]"
                             >
                                 <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#cf8d45] text-[#fff4e7] shadow-[0_2px_8px_rgb(0_0_0_/_35%)]">

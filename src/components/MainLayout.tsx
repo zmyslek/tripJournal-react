@@ -174,7 +174,7 @@ function MainLayout() {
                         <p className="m-0 font-[Adamina] text-[clamp(0.5rem,1vw,0.58rem)] uppercase tracking-[0.2em] text-[#f6d7b5]">Policies</p>
                         <div className="flex items-center gap-2">
                             <Link
-                                to="/settings"
+                                to="/settings#about"
                                 className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-transparent bg-[#5a392b] text-[#ffead4] no-underline transition hover:bg-[#7a3f00]"
                                 aria-label="Settings"
                                 title="Settings"

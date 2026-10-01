@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import type { ChangeEvent } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useScrollToTop } from "../hooks/useScrollToTop";
 import { UnsplashAttribution } from "../components/UnsplashAttribution";
 import { requestUnsplashDownload, useUnsplashPhoto } from "../lib/unsplash";
@@ -140,12 +140,23 @@ function fieldValue(event: ChangeEvent<HTMLInputElement | HTMLSelectElement>): s
     return event.target.value;
 }
 
+function sectionFromHash(hash: string): SettingsSectionId {
+    const sectionId = hash.replace(/^#/, "") as SettingsSectionId;
+    return sections.some((section) => section.id === sectionId) ? sectionId : "account";
+}
+
 export function Settings() {
     const heroPhoto = useUnsplashPhoto("photo-1519501025264-65ba15a82390");
+    const location = useLocation();
+    const navigate = useNavigate();
     const [settings, setSettings] = useState<UserSettings>(() => getCachedSettings());
     const [activeSection, setActiveSection] = useState<SettingsSectionId>("account");
     const { showScrollTop, scrollToTop } = useScrollToTop();
     const [scrollBtnBottom, setScrollBtnBottom] = useState(window.innerHeight * 0.02);
+
+    useEffect(() => {
+        setActiveSection(sectionFromHash(location.hash));
+    }, [location.hash]);
 
     useEffect(() => {
         try {
@@ -209,7 +220,7 @@ export function Settings() {
                     </div>
                 </div>
 
-                <div className="grid gap-7 bg-[#5a392b]/95 px-4 py-5 sm:px-7 sm:py-7 lg:grid-cols-[minmax(0,1fr)_20rem]">
+                <div className="grid gap-7 bg-[#5a392b]/95 px-4 py-5 sm:px-7 sm:py-7 lg:grid-cols-[20rem_minmax(0,1fr)]">
                     <aside className="order-2 rounded-[1rem] border border-[#eab681]/35 bg-[#ffead41f] p-4 shadow-[inset_0_1px_0_#ffffff2b,0_10px_28px_rgb(0_0_0_/_30%)] lg:order-1">
                         <p className="font-[Adamina] text-[0.7rem] uppercase tracking-[0.2em] text-[#f6d7b5]">Settings menu</p>
                         <nav className="mt-3 flex flex-col gap-1.5" aria-label="Settings categories">
@@ -217,7 +228,7 @@ export function Settings() {
                                 <button
                                     key={section.id}
                                     type="button"
-                                    onClick={() => setActiveSection(section.id)}
+                                    onClick={() => navigate(`/settings#${section.id}`)}
                                     className={`w-full rounded-[0.9rem] px-3 py-2.5 text-left transition ${
                                         activeSection === section.id
                                             ? "border border-[#eab681]/60 bg-[#cf8d45]/30 shadow-[0_4px_12px_rgb(0_0_0_/_15%)]"
@@ -233,7 +244,7 @@ export function Settings() {
 
                     <div className="order-1 space-y-5 lg:order-2">
                         {activeSection === "account" && (
-                            <article className="rounded-[1rem] border border-[#eab681]/35 bg-[#ffead41f] p-5 shadow-[inset_0_1px_0_#ffffff2b,0_10px_28px_rgb(0_0_0_/_30%)]">
+                            <article id="account" className="rounded-[1rem] border border-[#eab681]/35 bg-[#ffead41f] p-5 shadow-[inset_0_1px_0_#ffffff2b,0_10px_28px_rgb(0_0_0_/_30%)]">
                                 <div className="flex flex-wrap items-center justify-between gap-3">
                                     <h2 className="font-[Adamina] text-[1.4rem] text-[#fff4e7]">User account settings</h2>
                                     <p className="font-[Cormorant_Garamond] text-[1.05rem] text-[#f7dfca]">Signed in as {accountName}</p>
@@ -264,7 +275,7 @@ export function Settings() {
                         )}
 
                         {activeSection === "notifications" && (
-                            <article className="rounded-[1rem] border border-[#eab681]/35 bg-[#ffead41f] p-5 shadow-[inset_0_1px_0_#ffffff2b,0_10px_28px_rgb(0_0_0_/_30%)]">
+                            <article id="notifications" className="rounded-[1rem] border border-[#eab681]/35 bg-[#ffead41f] p-5 shadow-[inset_0_1px_0_#ffffff2b,0_10px_28px_rgb(0_0_0_/_30%)]">
                                 <h2 className="font-[Adamina] text-[1.4rem] text-[#fff4e7]">Notifications</h2>
                                 <p className="mt-2 font-[Cormorant_Garamond] text-[1.1rem] text-[#f7dfca]">Choose what reaches your inbox.</p>
                                 <div className="mt-5 space-y-3">
@@ -289,7 +300,7 @@ export function Settings() {
                         )}
 
                         {/* {activeSection === "premium" && (
-                            <article className="rounded-[1rem] border border-[#eab681]/35 bg-[#ffead41f] p-5 shadow-[inset_0_1px_0_#ffffff2b,0_10px_28px_rgb(0_0_0_/_30%)]">
+                            <article id="about" className="rounded-[1rem] border border-[#eab681]/35 bg-[#ffead41f] p-5 shadow-[inset_0_1px_0_#ffffff2b,0_10px_28px_rgb(0_0_0_/_30%)]">
                                     <PremiumPlans />
                             </article>
                         )} */}
@@ -319,7 +330,7 @@ export function Settings() {
                                     </Link>
                                 </div>
 
-                                <div className="mt-6 grid gap-4 rounded-[0.9rem] border border-[#cf8d45]/30 bg-[#ffead4]/60 p-4 sm:grid-cols-2">
+                                {/* <div className="mt-6 grid gap-4 rounded-[0.9rem] border border-[#cf8d45]/30 bg-[#ffead4]/60 p-4 sm:grid-cols-2">
                                     <label className="block">
                                         <span className="mb-1.5 block font-[Adamina] text-[0.72rem] uppercase tracking-[0.18em] text-[#f6d7b5]">Theme</span>
                                         <select value={settings.app.theme} onChange={(event) => setSettings((prev) => ({ ...prev, app: { ...prev.app, theme: event.target.value as AppSettings["theme"] } }))} className="w-full rounded-[0.7rem] border border-[#cf8d45]/55 bg-[#fff7ee] px-3 py-2 font-[Cormorant_Garamond] text-[1.08rem] text-[#50300d] outline-none focus:border-[#7a3f00] focus:ring-2 focus:ring-[#cf8d45]/35">
@@ -342,7 +353,7 @@ export function Settings() {
                                         <span className="font-[Cormorant_Garamond] text-[1.12rem] text-[#50300d]">Compact cards</span>
                                         <input type="checkbox" checked={settings.app.compactCards} onChange={(event) => setSettings((prev) => ({ ...prev, app: { ...prev.app, compactCards: event.target.checked } }))} className="h-4 w-4 accent-[#7a3f00]" />
                                     </label>
-                                </div>
+                                </div> */}
                             </article>
                         )}
                     </div>

@@ -180,7 +180,7 @@ function HelpCenter() {
                     <div>
                         {/* Full-width search bar */}
                         <div className="mb-[max(1.5rem,4%)]">
-                            <p className="mb-[max(0.75rem,2%)] font-[Adamina] text-[clamp(0.65rem,1.5vw,0.72rem)] uppercase tracking-[0.2em] text-[#7a3f00]">Search questions</p>
+                            <p className="mb-[max(0.75rem,2%)] font-[Adamina] text-[clamp(0.65rem,1.5vw,0.72rem)] uppercase tracking-[0.2em] text-[#f6d7b5]">Search questions</p>
                             <input
                                 type="text"
                                 placeholder="Type keywords..."
@@ -193,14 +193,14 @@ function HelpCenter() {
 
                         {/* Categories with horizontal scroll */}
                         <div>
-                            <p className="mb-[max(0.75rem,2%)] font-[Adamina] text-[clamp(0.65rem,1.5vw,0.72rem)] uppercase tracking-[0.2em] text-[#7a3f00]">Frequently asked questions</p>
+                            <p className="mb-[max(0.75rem,2%)] font-[Adamina] text-[clamp(0.65rem,1.5vw,0.72rem)] uppercase tracking-[0.2em] text-[#f6d7b5]">Frequently asked questions</p>
                             <div className="relative flex items-center gap-2">
                                 {/* Left arrow */}
                                 {showLeftArrow && (
                                     <button
                                         type="button"
                                         onClick={() => scrollCategories("left")}
-                                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#5A392B] text-[2rem] font-semibold text-[#5A392B] shadow-[0_0.75rem_1.6rem_rgba(0,0,0,0.32)] transition-all hover:text-[#ffead4] hover:border-[#ffead4]/85 hover:bg-[#5a392b]"
+                                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#eab681]/70 text-[2rem] font-semibold text-[#f6d7b5] shadow-[0_0.75rem_1.6rem_rgba(0,0,0,0.32)] transition-all hover:text-[#ffead4] hover:border-[#ffead4]/85 hover:bg-[#5a392b]"
                                         aria-label="Scroll categories left"
                                     >
                                         <span className="text-xl leading-none">‹</span>
@@ -259,7 +259,7 @@ function HelpCenter() {
                                     <button
                                         type="button"
                                         onClick={() => scrollCategories("right")}
-                                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#5A392B] text-[2rem] font-semibold text-[#5A392B] shadow-[0_0.75rem_1.6rem_rgba(0,0,0,0.32)] transition-all hover:border-[#ffead4]/85 hover:text-[#ffead4] hover:bg-[#5a392b]"
+                                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#eab681]/70 text-[2rem] font-semibold text-[#f6d7b5] shadow-[0_0.75rem_1.6rem_rgba(0,0,0,0.32)] transition-all hover:border-[#ffead4]/85 hover:text-[#ffead4] hover:bg-[#5a392b]"
                                         aria-label="Scroll categories right"
                                     >
                                         <span className="text-xl leading-none">›</span>
@@ -286,7 +286,7 @@ function HelpCenter() {
                                             <div className="rounded-[0.9rem] border border-[#cf8d45]/35 bg-[#7A3F00]/60 px-5 py-3 shadow-[0_6px_12px_rgba(90,57,43,0.06)] ring-1 ring-[#eab681]/20">
                                                 <h3 className="font-[Adamina] text-[1.05rem] text-[#FFEAD4]">{section.title}</h3>
                                                 {section.description && (
-                                                    <p className="mt-1 font-[Cormorant_Garamond] text-[1rem] leading-[1.3] text-[#5a392b]">
+                                                    <p className="mt-1 font-[Cormorant_Garamond] text-[1rem] leading-[1.3] text-[#f7dfca]">
                                                         {section.description}
                                                     </p>
                                                 )}
@@ -319,7 +319,7 @@ function HelpCenter() {
                                 <div className="rounded-[0.9rem] border border-[#cf8d45]/35 bg-[#7A3F00]/60 px-5 py-3 shadow-[0_6px_12px_rgba(90,57,43,0.06)] ring-1 ring-[#eab681]/20">
                                     <h2 className="font-[Adamina] text-[1.05rem] text-[#FFEAD4]">{activeSection?.title}</h2>
                                     {activeSection?.description && (
-                                        <p className="mt-1 font-[Cormorant_Garamond] text-[1rem] leading-[1.3] text-[#5a392b]">
+                                        <p className="mt-1 font-[Cormorant_Garamond] text-[1rem] leading-[1.3] text-[#f7dfca]">
                                             {activeSection?.description}
                                         </p>
                                     )}
