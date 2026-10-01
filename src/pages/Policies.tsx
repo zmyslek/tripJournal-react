@@ -40,7 +40,7 @@ const policies: Record<string, Policy> = {
                 body: [
                     "TripJournal uses OpenStreetMap tiles. When the map loads, your browser may send standard technical information, including your IP address and map request details, to the tile provider.",
                     "The app also loads fonts from Google Fonts, which may involve requests from your browser to Google's font servers.",
-                    "TripJournal requests photo metadata and hotlinked image URLs from the Unsplash API. Photos remain hosted by Unsplash; TripJournal does not rehost or locally download them. When you interact with an Unsplash photo, TripJournal sends the API's download_location request with the app's public API key so Unsplash can record the interaction."
+                    "TripJournal requests photo metadata and hotlinked image URLs from the Unsplash API through TripJournal's server endpoint. Photos remain hosted by Unsplash; TripJournal does not rehost or locally download them. When you interact with an Unsplash photo, TripJournal forwards the API's download_location request server-side so Unsplash can record the interaction."
                 ]
             },
             {

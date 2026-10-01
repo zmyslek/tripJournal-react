@@ -12,6 +12,8 @@ import postcardAvatar from "../assets/avatars/postcard.png";
 import suitcaseAvatar from "../assets/avatars/suitcase.png";
 import { supabase } from "../lib/supabase/client";
 import { clearStoredUserProfile, getStoredUserProfile, saveStoredUserProfile } from "../types/user";
+import { UnsplashAttribution } from "../components/UnsplashAttribution";
+import { requestUnsplashDownload, useUnsplashPhoto } from "../lib/unsplash";
 
 export type ProfileProps = Record<string, never>;
 
@@ -88,6 +90,10 @@ function getCachedProfile(): ProfileForm {
 
 export function Profile() {
     const navigate = useNavigate();
+    const heroPhoto = useUnsplashPhoto("photo-1519501025264-65ba15a82390");
+    const florencePhoto = useUnsplashPhoto("photo-1529260830199-42c24126f198");
+    const kyotoPhoto = useUnsplashPhoto("photo-1493976040374-85c8e12f0c0e");
+    const lisbonPhoto = useUnsplashPhoto("photo-1555881400-74d7acaacd8b");
     const [profile, setProfile] = useState<ProfileForm>(() => getCachedProfile());
     const [draftProfile, setDraftProfile] = useState<ProfileForm>(() => getCachedProfile());
     const [isEditing, setIsEditing] = useState(false);
@@ -199,7 +205,8 @@ export function Profile() {
             <div className="overflow-hidden rounded-[1.35rem] border border-[#8f5a20]/25 bg-[#f8f4ee]/85 shadow-[0_18px_42px_rgb(80_48_13_/_13%)] transition-all">
                 <div
                     className="atlas-header relative flex min-h-[19rem] items-end bg-[#5a392b] px-6 py-7 text-[#ffead4] sm:min-h-[24rem] sm:px-9"
-                    style={{ backgroundImage: `linear-gradient(90deg, rgb(30 24 21 / 78%), rgb(30 24 21 / 20%)), linear-gradient(0deg, rgb(30 24 21 / 40%), transparent 65%), url(https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=1800&q=85)`, backgroundSize: "cover", backgroundPosition: "center 55%" }}
+                    onClick={() => heroPhoto && requestUnsplashDownload(heroPhoto)}
+                    style={{ backgroundImage: `linear-gradient(90deg, rgb(30 24 21 / 78%), rgb(30 24 21 / 20%)), linear-gradient(0deg, rgb(30 24 21 / 40%), transparent 65%), url(${heroPhoto?.urls.regular ?? "https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=1800&q=85"})`, backgroundSize: "cover", backgroundPosition: "center 55%" }}
                 >
                     <div className="relative z-10 flex w-full flex-wrap items-end justify-between gap-6">
                         <div>
@@ -210,6 +217,7 @@ export function Profile() {
                             <p className="mt-3 max-w-[42rem] font-[Cormorant_Garamond] text-[1.15rem] leading-[1.35] text-[#f7dfca]">
                                 {profile.currentFocus} · {profile.travelStyle}
                             </p>
+                            <UnsplashAttribution photo={heroPhoto} />
                         </div>
                         <button type="button" onClick={openEditor} className="absolute right-0 top-0 rounded-full border border-white/60 bg-black/20 px-5 py-2.5 font-[Adamina] text-sm text-white backdrop-blur-sm transition hover:bg-black/40">Edit profile</button>
                     </div>
@@ -292,20 +300,22 @@ export function Profile() {
                             <div className="grid gap-3 sm:grid-cols-3">
                                 {[
                                     //replace with your own journey data or fetch from an API
-                                    { city: "Florence", country: "Italy", date: "A city to wander", image: "photo-1529260830199-42c24126f198" },
-                                    { city: "Kyoto", country: "Japan", date: "Quiet mornings", image: "photo-1493976040374-85c8e12f0c0e" },
-                                    { city: "Lisbon", country: "Portugal", date: "Down every lane", image: "photo-1555881400-74d7acaacd8b" }
+                                    { city: "Florence", country: "Italy", date: "A city to wander", photo: florencePhoto, fallback: "photo-1529260830199-42c24126f198" },
+                                    { city: "Kyoto", country: "Japan", date: "Quiet mornings", photo: kyotoPhoto, fallback: "photo-1493976040374-85c8e12f0c0e" },
+                                    { city: "Lisbon", country: "Portugal", date: "Down every lane", photo: lisbonPhoto, fallback: "photo-1555881400-74d7acaacd8b" }
                                 ].map((journey) => (
                                     <Link
                                         key={journey.city}
                                         to="/gallery"
+                                        onClick={() => journey.photo && requestUnsplashDownload(journey.photo)}
                                         className="group relative flex min-h-52 items-end overflow-hidden rounded-xl bg-cover bg-center p-4 text-white"
-                                        style={{ backgroundImage: `linear-gradient(0deg, rgb(20 16 14 / 78%), transparent 72%), url(https://images.unsplash.com/${journey.image}?auto=format&fit=crop&w=700&q=80)` }}
+                                        style={{ backgroundImage: `linear-gradient(0deg, rgb(20 16 14 / 78%), transparent 72%), url(${journey.photo?.urls.small ?? `https://images.unsplash.com/${journey.fallback}?auto=format&fit=crop&w=700&q=80`})` }}
                                     >
                                         <div className="transition group-hover:translate-y-[-2px]">
                                             <p className="font-[Adamina] text-[0.6rem] uppercase tracking-[0.18em] text-[#f3d8bd]">{journey.date}</p>
                                             <h3 className="font-[Cormorant_Garamond] text-3xl leading-tight">{journey.city}</h3>
                                             <p className="font-[Cormorant_Garamond]">{journey.country}</p>
+                                            <UnsplashAttribution photo={journey.photo} />
                                         </div>
                                     </Link>
                                 ))}

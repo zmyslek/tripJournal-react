@@ -17,19 +17,12 @@ export interface UnsplashPhoto {
 }
 
 const UNSPLASH_APP_NAME = "tripjournal";
-const UNSPLASH_ACCESS_KEY = import.meta.env.VITE_UNSPLASH_ACCESS_KEY?.trim();
 
 export async function fetchUnsplashPhoto(photoId: string): Promise<UnsplashPhoto> {
-    if (!UNSPLASH_ACCESS_KEY) {
-        throw new Error("Missing VITE_UNSPLASH_ACCESS_KEY. Unsplash images require an API access key.");
-    }
-
-    const response = await fetch(`https://api.unsplash.com/photos/${photoId}`, {
-        headers: { Authorization: `Client-ID ${UNSPLASH_ACCESS_KEY}` }
-    });
+    const response = await fetch(`/api/unsplash-photo?id=${encodeURIComponent(photoId)}`);
 
     if (!response.ok) {
-        throw new Error(`Unsplash returned ${response.status} for ${photoId}.`);
+        throw new Error(`Unsplash photo request returned ${response.status} for ${photoId}.`);
     }
 
     return await response.json() as UnsplashPhoto;
@@ -39,11 +32,6 @@ export function useUnsplashPhoto(photoId: string): UnsplashPhoto | null {
     const [photo, setPhoto] = useState<UnsplashPhoto | null>(null);
 
     useEffect(() => {
-        if (!UNSPLASH_ACCESS_KEY) {
-            console.error("Missing VITE_UNSPLASH_ACCESS_KEY. Unsplash images require an API access key.");
-            return;
-        }
-
         let isCurrent = true;
 
         fetchUnsplashPhoto(photoId)
@@ -65,12 +53,10 @@ export function useUnsplashPhoto(photoId: string): UnsplashPhoto | null {
 }
 
 export function requestUnsplashDownload(photo: UnsplashPhoto): void {
-    if (!UNSPLASH_ACCESS_KEY) {
-        return;
-    }
-
-    void fetch(photo.links.download_location, {
-        headers: { Authorization: `Client-ID ${UNSPLASH_ACCESS_KEY}` }
+    void fetch("/api/unsplash-download", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ download_location: photo.links.download_location })
     }).catch((error: unknown) => {
         console.error("Failed to register Unsplash photo download.", error);
     });
