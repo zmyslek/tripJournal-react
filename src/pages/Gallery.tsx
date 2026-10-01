@@ -359,9 +359,9 @@ function Gallery() {
                     <div
                         className="atlas-header relative flex min-h-[19rem] items-end bg-[#5a392b] px-6 py-7 text-[#ffead4] sm:min-h-[24rem] sm:px-9"
                         onClick={() => heroPhoto && requestUnsplashDownload(heroPhoto)}
-                        style={{ backgroundImage: `linear-gradient(90deg, rgb(71 43 31 / 88%), rgb(71 43 31 / 28%)), linear-gradient(0deg, rgb(71 43 31 / 48%), transparent 65%), url(${heroPhoto?.urls.regular ?? "https://images.unsplash.com/photo-6fA05-jKA1M?auto=format&fit=crop&w=1800&q=85"})`, backgroundSize: "cover", backgroundPosition: "center 55%" }}
+                        style={{ backgroundImage: `linear-gradient(90deg, rgb(71 43 31 / 88%), rgb(71 43 31 / 28%)), linear-gradient(0deg, rgb(71 43 31 / 48%), transparent 65%), url(${heroPhoto?.urls.regular ?? "https://images.unsplash.com/photo-1603050906757-df6b62765342?auto=format&fit=crop&w=1800&q=85"})`, backgroundSize: "cover", backgroundPosition: "center 55%" }}
                     >
-                        <div className="relative flex flex-wrap items-start justify-between gap-6">
+                        <div className="relative flex flex-wrap items-end justify-between gap-6">
                             <div className="max-w-[46rem]">
                                 <p className="m-0 font-[Adamina] text-[0.7rem] uppercase tracking-[0.24em] text-[#f6d7b5]">Travel moments</p>
                                 <div className="mt-3 flex flex-wrap items-center gap-3 sm:gap-4">
@@ -393,7 +393,7 @@ function Gallery() {
                                     Explore your travel photographs and moments from around the world.
                                 </p>
                             </div>
-                            <div className="flex flex-col gap-3">
+                            <div className="flex flex-col gap-3 pb-1">
                                 <div className="w-full sm:w-auto" onClick={(event) => event.stopPropagation()}>
                                     <PhotoUploadButton
                                         onUpload={handleFileUpload}

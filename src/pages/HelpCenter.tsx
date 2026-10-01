@@ -160,7 +160,7 @@ function HelpCenter() {
                 <div
                     className="atlas-header relative flex min-h-[19rem] items-end bg-[#5a392b] px-6 py-7 text-[#ffead4] sm:min-h-[24rem] sm:px-9"
                     onClick={() => heroPhoto && requestUnsplashDownload(heroPhoto)}
-                    style={{ backgroundImage: `linear-gradient(90deg, rgb(50 43 38 / 88%), rgb(50 43 38 / 28%)), linear-gradient(0deg, rgb(50 43 38 / 48%), transparent 65%), url(${heroPhoto?.urls.regular ?? "https://images.unsplash.com/photo-SVOnqVnYKUA?auto=format&fit=crop&w=1800&q=85"})`, backgroundSize: "cover", backgroundPosition: "center 55%" }}
+                    style={{ backgroundImage: `linear-gradient(90deg, rgb(50 43 38 / 88%), rgb(50 43 38 / 28%)), linear-gradient(0deg, rgb(50 43 38 / 48%), transparent 65%), url(${heroPhoto?.urls.regular ?? "https://images.unsplash.com/photo-1648391950542-1862c46074ef?auto=format&fit=crop&w=1800&q=85"})`, backgroundSize: "cover", backgroundPosition: "center 55%" }}
                 >
                     <div className="relative flex flex-wrap items-start justify-between gap-6">
                         <div>

@@ -95,6 +95,9 @@ const findCountryAtCoordinates = (countriesData: CountriesGeoJson, lng: number, 
 
 function Home({ countryStatuses, countryAddedDates, setCountryStatus, visitedCountries, pageMode = "home" }: HomeProps) {
     const heroPhotoId = pageMode === "home" ? "2_pz-gtNzEY" : "j9jBsNg2pSw";
+    const heroFallbackUrl = pageMode === "home"
+        ? "https://images.unsplash.com/photo-1448328391773-1d8cc46c25cc?auto=format&fit=crop&w=1800&q=85"
+        : "https://images.unsplash.com/photo-1706823871410-ed8b01faef7e?auto=format&fit=crop&w=1800&q=85";
     const heroPhoto = useUnsplashPhoto(heroPhotoId);
     const [searchTerm, setSearchTerm] = useState("");
     const [mapViewMode, setMapViewMode] = useState<"globe" | "map">("globe");
@@ -334,7 +337,7 @@ function Home({ countryStatuses, countryAddedDates, setCountryStatus, visitedCou
                 <div
                     className="atlas-header relative min-h-[16rem] overflow-hidden rounded-[2rem] bg-[#5a4036] px-6 py-10 shadow-[0_18px_42px_rgb(80_48_13_/_18%)] sm:min-h-[18rem] sm:px-10 sm:py-12 lg:px-16"
                     onClick={() => heroPhoto && requestUnsplashDownload(heroPhoto)}
-                    style={{ backgroundImage: `linear-gradient(90deg, rgb(50 39 31 / 86%), rgb(50 39 31 / 30%)), linear-gradient(0deg, rgb(50 39 31 / 48%), transparent 65%), url(${heroPhoto?.urls.regular ?? `https://images.unsplash.com/photo-${heroPhotoId}?auto=format&fit=crop&w=1800&q=85`})`, backgroundSize: "cover", backgroundPosition: "center 55%" }}
+                    style={{ backgroundImage: `linear-gradient(90deg, rgb(50 39 31 / 86%), rgb(50 39 31 / 30%)), linear-gradient(0deg, rgb(50 39 31 / 48%), transparent 65%), url(${heroPhoto?.urls.regular ?? heroFallbackUrl})`, backgroundSize: "cover", backgroundPosition: "center 55%" }}
                 >
                     <div className="relative z-10 max-w-[72rem] pr-10 sm:pr-16">
                         <p className="m-0 font-[Adamina] text-[0.72rem] uppercase tracking-[0.28em] text-[#f6d7b5]">Your travel atlas</p>
@@ -593,7 +596,7 @@ function Home({ countryStatuses, countryAddedDates, setCountryStatus, visitedCou
                     {/* Top section - Darker brown (5A392B) */}
                     <div
                         className="bg-[#5a392b] px-6 py-5 sm:px-8"
-                        style={{ backgroundImage: `linear-gradient(rgb(90 57 43 / 68%), rgb(90 57 43 / 68%)), url(${heroPhoto?.urls.regular ?? "https://images.unsplash.com/photo-j9jBsNg2pSw?auto=format&fit=crop&w=1800&q=85"})`, backgroundSize: "cover", backgroundPosition: "center" }}
+                        style={{ backgroundImage: `linear-gradient(rgb(90 57 43 / 68%), rgb(90 57 43 / 68%)), url(${heroPhoto?.urls.regular ?? "https://images.unsplash.com/photo-1706823871410-ed8b01faef7e?auto=format&fit=crop&w=1800&q=85"})`, backgroundSize: "cover", backgroundPosition: "center" }}
                     >
                         <p className="font-[Adamina] text-[0.7rem] uppercase tracking-[0.24em] text-[#f6d7b5]">Complete directory</p>
                         <h2 className="mt-2 font-[Adamina] text-[clamp(1.8rem,4vw,2.5rem)] leading-none text-[#fff4e7]">All Countries</h2>
