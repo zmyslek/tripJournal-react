@@ -66,7 +66,7 @@ const simplifyLine = (line) => {
       }
     }
 
-    if (maxIndex !== -1 && maxDistance > squaredTolerance) {
+    if (maxDistance > squaredTolerance) {
       keep[maxIndex] = 1;
       stack.push([first, maxIndex], [maxIndex, last]);
     }
@@ -99,14 +99,14 @@ const normalizeLine = (line, isRing) => {
       return simplified;
     }
 
-    if (deduped.length < MIN_RING_POINTS) {
-      while (deduped.length < MIN_RING_POINTS) {
-        deduped.push([...deduped[deduped.length - 1]]);
-      }
+    while (deduped.length < MIN_RING_POINTS) {
+      deduped.push([...deduped[deduped.length - 1]]);
     }
+
+    return deduped;
   }
 
-  return isRing ? deduped : simplifyLine(deduped);
+  return simplifyLine(deduped);
 };
 
 const normalizeGeometry = (geometry) => {
