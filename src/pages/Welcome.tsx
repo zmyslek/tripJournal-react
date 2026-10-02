@@ -4,6 +4,7 @@ import { getAuthRedirectUrl, supabase } from "../lib/supabase/client";
 import { createStoredUserProfileFromSession, saveStoredUserProfile, type AuthProvider } from "../types/user";
 import { UnsplashAttribution } from "../components/UnsplashAttribution";
 import { requestUnsplashDownload, useUnsplashPhoto } from "../lib/unsplash";
+import { getGuestAccessCount, hasStoredAuth, MAX_GUEST_ACCESS, recordGuestAccess } from "../lib/guestAccess";
 
 interface WelcomeFormState {
   email: string;
@@ -12,27 +13,16 @@ interface WelcomeFormState {
   isLoading: boolean;
 }
 
-const AUTH_CACHE_KEY = "tripjournal:auth:v1";
 const FLORENCE_IMAGE_URL =
   "https://images.unsplash.com/photo-1529260830199-42c24126f198?auto=format&fit=crop&w=1400&q=85";
 const FLORENCE_PHOTO_ID = "photo-1529260830199-42c24126f198";
+const AUTH_CACHE_KEY = "tripjournal:auth:v1";
 
 export interface AuthUser {
   id: string;
   email: string;
   provider: AuthProvider;
   loginTime: string;
-}
-
-function getStoredAuth(): AuthUser | null {
-  try {
-    const stored = localStorage.getItem(AUTH_CACHE_KEY);
-    if (!stored) return null;
-    const parsed = JSON.parse(stored);
-    return parsed && typeof parsed === "object" && parsed.email ? parsed : null;
-  } catch {
-    return null;
-  }
 }
 
 function saveAuth(user: AuthUser): void {
@@ -104,7 +94,8 @@ function Welcome() {
     const florencePhoto = useUnsplashPhoto(FLORENCE_PHOTO_ID);
   const navigate = useNavigate();
   const location = useLocation();
-  const [isAuthReady, setIsAuthReady] = useState(() => Boolean(getStoredAuth()));
+  const [isAuthReady, setIsAuthReady] = useState(() => hasStoredAuth());
+  const [guestAccessCount, setGuestAccessCount] = useState(() => getGuestAccessCount());
   const [formState, setFormState] = useState<WelcomeFormState>({
     email: "",
     password: "",
@@ -280,6 +271,15 @@ function Welcome() {
   };
 
   const handleEnterTripJournal = () => {
+    if (!isAuthReady && guestAccessCount >= MAX_GUEST_ACCESS) {
+      setFormState((prev) => ({ ...prev, error: "Guest access has ended. Log in or create an account to continue." }));
+      return;
+    }
+
+    if (!isAuthReady) {
+      setGuestAccessCount(recordGuestAccess());
+    }
+
     navigate("/home", { replace: true });
   };
 
@@ -314,7 +314,7 @@ function Welcome() {
               onClick={handleEnterTripJournal}
               className="rounded-full border border-[#EAB681] bg-[#EAB681] px-6 py-2.5 font-cormorant text-base font-semibold text-[#1a1a1a] transition hover:brightness-110"
             >
-              {isAuthReady ? "Continue to countries" : "Explore as guest"}
+              {isAuthReady ? "Continue to countries" : guestAccessCount >= MAX_GUEST_ACCESS ? "Log in to continue" : "Explore as guest"}
             </button>
           </div>
 

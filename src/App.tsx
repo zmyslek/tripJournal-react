@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import MainLayout from "./components/MainLayout.tsx";
 import { appDependencies } from "./app/composition.ts";
 import type { CountryStatus } from "./domain/country/Country.ts";
+import { canAccessAsGuest, hasStoredAuth } from "./lib/guestAccess.ts";
 
 const Home = lazy(() => import("./pages/Home.tsx"));
 const Welcome = lazy(() => import("./pages/Welcome"));
@@ -16,6 +17,10 @@ const Itineraries = lazy(() => import("./pages/Itineraries"));
 const AdminSeed = lazy(() => import("./pages/AdminSeed"));
 function RouteFallback() {
     return <div className="h-20" />;
+}
+
+function MainRouteGuard() {
+    return hasStoredAuth() || canAccessAsGuest() ? <MainLayout /> : <Navigate to="/welcome" replace />;
 }
 
 function App() {
@@ -44,7 +49,7 @@ function App() {
                     </Suspense>
                 }
             />
-            <Route element={<MainLayout />}>
+            <Route element={<MainRouteGuard />}>
                 <Route
                     path="/home"
                     element={
