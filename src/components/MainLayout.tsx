@@ -1,8 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { Settings, HelpCircle } from "lucide-react";
 import leatherBackground from "../assets/dark-leather.png";
 import paperBackground from "../assets/wrinkled-paper.png";
+import guestAvatar from "../assets/avatars/compass.png";
+import { hasStoredAuth } from "../lib/guestAccess";
+import { getStoredUserProfile } from "../types/user";
 
 const COOKIE_CONSENT_KEY = "tripjournal:cookie-consent:v1";
 const policyLinks = [
@@ -19,6 +22,43 @@ const leatherSurfaceStyle = {
     backgroundPosition: "center"
 };
 
+const PROFILE_UPDATED_EVENT = "tripjournal:profile-updated";
+const PROFILE_CACHE_KEY = "tripjournal:profile:v1";
+
+type NavigationProfile = {
+    name: string;
+    avatar: string | null;
+};
+
+function getNavigationProfile(): NavigationProfile {
+    const storedUser = getStoredUserProfile();
+    if (!hasStoredAuth()) {
+        return { name: "Guest", avatar: guestAvatar };
+    }
+
+    try {
+        const cachedProfile = JSON.parse(localStorage.getItem(PROFILE_CACHE_KEY) ?? "null") as { name?: unknown; avatar?: unknown } | null;
+        return {
+            name: storedUser?.username?.trim() || (typeof cachedProfile?.name === "string" ? cachedProfile.name.trim() : "") || storedUser?.email?.split("@")[0] || "Traveler",
+            avatar: storedUser?.avatarUrl || (typeof cachedProfile?.avatar === "string" && cachedProfile.avatar.trim() ? cachedProfile.avatar : null)
+        };
+    } catch {
+        return {
+            name: storedUser?.username?.trim() || storedUser?.email?.split("@")[0] || "Traveler",
+            avatar: storedUser?.avatarUrl || null
+        };
+    }
+}
+
+function getInitials(name: string): string {
+    return name
+        .split(" ")
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join("") || "TR";
+}
+
 function getSavedCookieConsent(): "accepted" | "rejected" | null {
     try {
         const savedConsent = localStorage.getItem(COOKIE_CONSENT_KEY);
@@ -30,6 +70,19 @@ function getSavedCookieConsent(): "accepted" | "rejected" | null {
 
 function MainLayout() {
     const [cookieConsent, setCookieConsent] = useState<"accepted" | "rejected" | null>(() => getSavedCookieConsent());
+    const [navigationProfile, setNavigationProfile] = useState<NavigationProfile>(() => getNavigationProfile());
+
+    useEffect(() => {
+        const refreshNavigationProfile = () => setNavigationProfile(getNavigationProfile());
+        window.addEventListener(PROFILE_UPDATED_EVENT, refreshNavigationProfile);
+        window.addEventListener("storage", refreshNavigationProfile);
+        return () => {
+            window.removeEventListener(PROFILE_UPDATED_EVENT, refreshNavigationProfile);
+            window.removeEventListener("storage", refreshNavigationProfile);
+        };
+    }, []);
+
+    const navigationInitials = useMemo(() => getInitials(navigationProfile.name), [navigationProfile.name]);
 
     useEffect(() => {
         if (cookieConsent === null) {
@@ -87,7 +140,11 @@ function MainLayout() {
                         aria-label="Profile"
                         title="Profile"
                     >
-                        JD
+                        {navigationProfile.avatar ? (
+                            <img src={navigationProfile.avatar} alt="" className="h-full w-full rounded-full object-cover" />
+                        ) : (
+                            navigationInitials
+                        )}
                     </NavLink>
                     <NavLink
                         to="/settings"

@@ -51,6 +51,7 @@ const defaultProfile: ProfileForm = {
 
 const PROFILE_CACHE_KEY = "tripjournal:profile:v1";
 const AUTH_CACHE_KEY = "tripjournal:auth:v1";
+const PROFILE_UPDATED_EVENT = "tripjournal:profile-updated";
 
 function getCachedProfile(): ProfileForm {
     const storedUser = getStoredUserProfile();
@@ -182,6 +183,7 @@ export function Profile() {
         } catch {
             // Ignore profile cache write failures.
         }
+        window.dispatchEvent(new Event(PROFILE_UPDATED_EVENT));
         setIsEditing(false);
     };
 
