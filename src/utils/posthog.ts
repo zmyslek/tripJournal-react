@@ -25,3 +25,11 @@ export function capturePostHogPageView(url: string): void {
 
   posthog.capture('$pageview', { $current_url: url })
 }
+
+export function capturePostHogEventBeforeReload(event: string, properties: Record<string, string>): void {
+  if (!isInitialized) {
+    return
+  }
+
+  posthog.capture(event, properties, { send_instantly: true, transport: 'sendBeacon' })
+}
