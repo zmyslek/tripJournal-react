@@ -135,7 +135,7 @@ export function Profile() {
             .filter(Boolean)
             .slice(0, 2)
             .map((part) => part[0]?.toUpperCase())
-            .join("") || "JD";
+            .join("") || "TR";
     }, [profile.name]);
 
     const openEditor = () => {
