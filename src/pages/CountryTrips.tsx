@@ -355,13 +355,13 @@ function CountryTrips({ countryStatuses }: CountryTripsProps) {
     }
 
     return (
-        <div className="mx-auto w-full max-w-[min(95vw,1380px)] px-[max(1.25rem,5%)] pb-[max(3rem,8vh)] pt-[max(1.5rem,4vh)]">
-            <section className="overflow-hidden rounded-t-[1.35rem] border border-[#8f5a20]/35 shadow-[0_18px_42px_rgb(80_48_13_/_20%)]">
+        <div className="mx-auto w-full max-w-[min(95vw,1380px)] px-[max(1.25rem,5%)] pb-[max(3rem,8vh)] pt-[max(1.5rem,4vh)] text-[#50300d]">
+            <section className="overflow-hidden rounded-[1.1rem] border border-[#8f5a20]/30 bg-[#fff4e7] shadow-[0_18px_42px_rgb(80_48_13_/_16%)]">
                 <div
-                    className="atlas-header bg-[#38524f] px-6 py-6 sm:px-8"
+                    className="atlas-header bg-[#704b3b] px-6 py-6 sm:px-8"
                 >
-                    <div className="flex items-start justify-between gap-6">
-                        <div className="flex-1">
+                    <div className="flex flex-wrap items-start justify-between gap-5">
+                        <div className="max-w-3xl">
                             <p className="font-[Adamina] text-[0.72rem] uppercase tracking-[0.24em] text-[#f6d7b5]">Your travels</p>
                             <h1 className="mt-2 font-[Adamina] text-[clamp(1.8rem,4vw,2.8rem)] text-[#fff4e7]">{resolvedCountryName}</h1>
                             {countryDetails && (
@@ -372,7 +372,7 @@ function CountryTrips({ countryStatuses }: CountryTripsProps) {
                             )}
                         </div>
 
-                        <div className="flex w-48 flex-col items-end gap-3">
+                        <div className="flex w-full flex-wrap items-start justify-start gap-3 sm:w-auto sm:flex-col sm:items-end">
                             <div className="flex items-center gap-2">
                                 <Rating value={4.5} />
                             </div>
@@ -422,10 +422,17 @@ function CountryTrips({ countryStatuses }: CountryTripsProps) {
                 {galleriesLoaded && (
                     <section className="overflow-hidden rounded-[1.35rem] border border-[#8f5a20]/35 shadow-[0_12px_28px_rgb(80_48_13_/_14%)]">
                         {galleryItems.length > 0 && currentImage ? (
-                            <button
-                                type="button"
+                            <div
                                 onClick={() => handleOpenModal(currentGalleryIndex)}
                                 className="relative aspect-[3/4] w-full max-h-[clamp(20rem,50vh,35rem)] cursor-zoom-in overflow-hidden"
+                                role="button"
+                                tabIndex={0}
+                                onKeyDown={(event) => {
+                                    if (event.key === "Enter" || event.key === " ") {
+                                        event.preventDefault();
+                                        handleOpenModal(currentGalleryIndex);
+                                    }
+                                }}
                             >
                                 {currentImage.kind === "image" ? (
                                     <HeicPreview src={currentImage.src} alt={currentImage.label} eager />
@@ -443,7 +450,10 @@ function CountryTrips({ countryStatuses }: CountryTripsProps) {
                                     <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between px-3">
                                         <button
                                             type="button"
-                                            onClick={() => setCurrentGalleryIndex((prev) => (prev - 1 + galleryItems.length) % galleryItems.length)}
+                                            onClick={(event) => {
+                                                event.stopPropagation();
+                                                setCurrentGalleryIndex((prev) => (prev - 1 + galleryItems.length) % galleryItems.length);
+                                            }}
                                             className="rounded-full bg-[#000]/40 p-2 text-[#ffead4] transition hover:bg-[#000]/60"
                                             aria-label="Previous image"
                                         >
@@ -451,7 +461,10 @@ function CountryTrips({ countryStatuses }: CountryTripsProps) {
                                         </button>
                                         <button
                                             type="button"
-                                            onClick={() => setCurrentGalleryIndex((prev) => (prev + 1) % galleryItems.length)}
+                                            onClick={(event) => {
+                                                event.stopPropagation();
+                                                setCurrentGalleryIndex((prev) => (prev + 1) % galleryItems.length);
+                                            }}
                                             className="rounded-full bg-[#000]/40 p-2 text-[#ffead4] transition hover:bg-[#000]/60"
                                             aria-label="Next image"
                                         >
@@ -459,7 +472,7 @@ function CountryTrips({ countryStatuses }: CountryTripsProps) {
                                         </button>
                                     </div>
                                 )}
-                            </button>
+                            </div>
                         ) : (
                             <div className="flex h-[20rem] items-center justify-center bg-[#ffead4]/85 p-6">
                                 <div className="text-center">
@@ -478,9 +491,9 @@ function CountryTrips({ countryStatuses }: CountryTripsProps) {
 
             <section className="mt-8 overflow-hidden rounded-[1.35rem] border border-[#8f5a20]/35 shadow-[0_12px_28px_rgb(80_48_13_/_14%)]">
                 <div
-                    className="bg-[#38524f] px-6 py-5 sm:px-8"
+                    className="bg-[#704b3b] px-6 py-5 sm:px-8"
                 >
-                    <h2 className="font-[Adamina] text-[1.8rem] text-[#fff4e7]">Travel integrations</h2>
+                    <h2 className="font-[Adamina] text-[1.8rem] text-[#fff4e7]">Travel memories</h2>
                     {/* <p className="mt-2 font-[Cormorant_Garamond] text-[1.05rem] text-[#f7dfca] max-w-xl">Connect your travel experiences with music, fitness, and video data.</p> */}
                 </div>
 
@@ -613,7 +626,7 @@ function CountryTrips({ countryStatuses }: CountryTripsProps) {
 
             <section className="mt-8 overflow-hidden rounded-[1.35rem] border border-[#8f5a20]/25 shadow-[0_12px_28px_rgb(80_48_13_/_12%)]">
                 <div
-                    className="bg-[#38524f] px-6 py-5 sm:px-8"
+                    className="bg-[#704b3b] px-6 py-5 sm:px-8"
                 >
                     <div className="flex flex-wrap items-start justify-between gap-4">
                         <div>

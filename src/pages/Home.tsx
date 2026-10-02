@@ -693,7 +693,9 @@ function Home({ countryStatuses, countryAddedDates, setCountryStatus, visitedCou
                                             className="group relative min-h-[14rem] overflow-hidden rounded-[1.2rem] border border-[#ffead4]/35 p-4 text-[#fff4e7] shadow-[0_12px_25px_rgb(35_18_8_/_20%)] transition hover:-translate-y-1"
                                         >
                                             <img
-                                                src={countryPhotos[countryName]?.urls.small}
+                                                src={countryPhotos[countryName]?.urls.small ?? (countryImageUrls[countryName]
+                                                    ? `https://images.unsplash.com/${countryImageUrls[countryName]}?auto=format&fit=crop&w=900&q=80`
+                                                    : undefined)}
                                                 alt=""
                                                 loading="lazy"
                                                 decoding="async"
