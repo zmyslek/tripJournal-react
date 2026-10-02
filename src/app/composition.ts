@@ -1,7 +1,7 @@
 import { createCountryStatusService } from "../application/country/CountryStatusService.ts";
-import { LocalCountryStatusRepository } from "../infrastructure/country/LocalCountryStatusRepository.ts";
+import { SupabaseCountryStatusRepository } from "../infrastructure/country/SupabaseCountryStatusRepository.ts";
 
-const countryStatusRepository = new LocalCountryStatusRepository();
+const countryStatusRepository = new SupabaseCountryStatusRepository();
 
 export const appDependencies = {
     countryStatus: createCountryStatusService(countryStatusRepository)

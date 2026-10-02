@@ -14,6 +14,7 @@ import { supabase } from "../lib/supabase/client";
 import { clearStoredUserProfile, getStoredUserProfile, saveStoredUserProfile } from "../types/user";
 import { UnsplashAttribution } from "../components/UnsplashAttribution";
 import { requestUnsplashDownload, useUnsplashPhoto } from "../lib/unsplash";
+import { loadCloudUserProfile, loadCloudUserStats, saveCloudUserProfile, type CloudUserStats } from "../infrastructure/user/SupabaseUserProfileRepository";
 
 export type ProfileProps = Record<string, never>;
 
@@ -32,13 +33,6 @@ const avatarOptions = [
     { id: "passport", label: "Passport", src: passportAvatar },
     { id: "postcard", label: "Postcard", src: postcardAvatar },
     { id: "globe", label: "Globe", src: globeAvatar }
-];
-
-const profileStats = [
-    //replace with your own stats or fetch from an API
-    { label: "Visited", value: "18" },
-    { label: "Wishlist", value: "7" },
-    { label: "Returns", value: "4" }
 ];
 
 const defaultProfile: ProfileForm = {
@@ -92,14 +86,48 @@ function getCachedProfile(): ProfileForm {
 export function Profile() {
     const navigate = useNavigate();
     const heroPhoto = useUnsplashPhoto("photo-1519501025264-65ba15a82390");
-    const florencePhoto = useUnsplashPhoto("photo-1529260830199-42c24126f198");
-    const kyotoPhoto = useUnsplashPhoto("photo-1493976040374-85c8e12f0c0e");
-    const lisbonPhoto = useUnsplashPhoto("photo-1555881400-74d7acaacd8b");
     const [profile, setProfile] = useState<ProfileForm>(() => getCachedProfile());
     const [draftProfile, setDraftProfile] = useState<ProfileForm>(() => getCachedProfile());
     const [isEditing, setIsEditing] = useState(false);
+    const [cloudStats, setCloudStats] = useState<CloudUserStats | null>(null);
+    const [profileError, setProfileError] = useState<string | null>(null);
+    const [isSaving, setIsSaving] = useState(false);
     const { showScrollTop, scrollToTop } = useScrollToTop();
     const [scrollBtnBottom, setScrollBtnBottom] = useState(window.innerHeight * 0.02);
+
+    useEffect(() => {
+        let isMounted = true;
+
+        void Promise.all([loadCloudUserProfile(), loadCloudUserStats()])
+            .then(([cloudProfile, stats]) => {
+                if (!isMounted) {
+                    return;
+                }
+
+                if (cloudProfile) {
+                    const nextProfile: ProfileForm = {
+                        name: cloudProfile.username || cloudProfile.email.split("@")[0] || defaultProfile.name,
+                        email: cloudProfile.email,
+                        travelStyle: cloudProfile.travelStyle || defaultProfile.travelStyle,
+                        currentFocus: cloudProfile.currentFocus || defaultProfile.currentFocus,
+                        avatar: cloudProfile.avatarUrl || defaultProfile.avatar
+                    };
+                    setProfile(nextProfile);
+                    setDraftProfile(nextProfile);
+                }
+                setCloudStats(stats);
+                setProfileError(null);
+            })
+            .catch((error: unknown) => {
+                if (isMounted) {
+                    setProfileError(error instanceof Error ? error.message : "Unable to load your profile.");
+                }
+            });
+
+        return () => {
+            isMounted = false;
+        };
+    }, []);
 
     useEffect(() => {
         function adjustScrollButton() {
@@ -165,26 +193,47 @@ export function Profile() {
         reader.readAsDataURL(file);
     };
 
-    const saveProfile = () => {
-        setProfile(draftProfile);
-        const storedUser = getStoredUserProfile();
-        if (storedUser) {
-            saveStoredUserProfile({
-                ...storedUser,
-                username: draftProfile.name.trim() || storedUser.username,
-                email: draftProfile.email.trim() || storedUser.email,
-                avatarUrl: draftProfile.avatar || storedUser.avatarUrl,
-                travelStyle: draftProfile.travelStyle,
-                currentFocus: draftProfile.currentFocus
-            });
-        }
+    const saveProfile = async () => {
+        setIsSaving(true);
+        setProfileError(null);
+
         try {
-            localStorage.setItem(PROFILE_CACHE_KEY, JSON.stringify(draftProfile));
-        } catch {
-            // Ignore profile cache write failures.
+            const storedUser = getStoredUserProfile();
+            if (storedUser) {
+                await saveCloudUserProfile({
+                    id: storedUser.id,
+                    email: draftProfile.email.trim() || storedUser.email,
+                    username: draftProfile.name.trim() || storedUser.username,
+                    avatarUrl: draftProfile.avatar || storedUser.avatarUrl,
+                    createdAt: storedUser.createdAt,
+                    authProvider: storedUser.authProvider,
+                    travelStyle: draftProfile.travelStyle,
+                    currentFocus: draftProfile.currentFocus
+                });
+                saveStoredUserProfile({
+                    ...storedUser,
+                    username: draftProfile.name.trim() || storedUser.username,
+                    email: draftProfile.email.trim() || storedUser.email,
+                    avatarUrl: draftProfile.avatar || storedUser.avatarUrl,
+                    travelStyle: draftProfile.travelStyle,
+                    currentFocus: draftProfile.currentFocus
+                });
+            } else {
+                try {
+                    localStorage.setItem(PROFILE_CACHE_KEY, JSON.stringify(draftProfile));
+                } catch {
+                    // Ignore guest profile cache failures.
+                }
+            }
+
+            setProfile(draftProfile);
+            window.dispatchEvent(new Event(PROFILE_UPDATED_EVENT));
+            setIsEditing(false);
+        } catch (error: unknown) {
+            setProfileError(error instanceof Error ? error.message : "Unable to save your profile.");
+        } finally {
+            setIsSaving(false);
         }
-        window.dispatchEvent(new Event(PROFILE_UPDATED_EVENT));
-        setIsEditing(false);
     };
 
     const handleLogout = () => {
@@ -293,8 +342,18 @@ export function Profile() {
                             </div>
                         </div>
 
+                        {profileError && (
+                            <p className="mt-5 rounded-[0.7rem] border border-[#b16a55]/45 bg-[#fff4e7] px-4 py-3 font-[Cormorant_Garamond] text-[#8d3324]">
+                                {profileError}
+                            </p>
+                        )}
+
                         <div className="mt-7 grid gap-3 sm:grid-cols-3">
-                            {profileStats.map((stat) => (
+                            {[
+                                { label: "Visited", value: cloudStats?.visited ?? 0 },
+                                { label: "Wishlist", value: cloudStats?.wishlist ?? 0 },
+                                { label: "Returns", value: cloudStats?.returns ?? 0 }
+                            ].map((stat) => (
                                 <article key={stat.label} className="rounded-[1.2rem] border border-[#eab681]/35 bg-[#ffead41f] p-4 shadow-[inset_0_1px_0_#ffffff2b,0_10px_28px_rgb(0_0_0_/_30%)] interactive-transition hover:shadow-[inset_0_1px_0_#ffffff2b,0_14px_34px_rgb(0_0_0_/_40%)] hover:-translate-y-0.5">
                                     <p className="font-[Adamina] text-[0.72rem] uppercase tracking-[0.18em] text-[#f6d7b5]">{stat.label}</p>
                                     <p className="mt-2 font-[Adamina] text-[2rem] leading-none text-[#fff4e7]">{stat.value}</p>
@@ -310,28 +369,8 @@ export function Profile() {
                                 </div>
                                 <Link to="/gallery" className="font-[Cormorant_Garamond] text-base text-[#936d58] hover:text-[#50300d]">View gallery →</Link>
                             </div>
-                            <div className="grid gap-3 sm:grid-cols-3">
-                                {[
-                                    //replace with your own journey data or fetch from an API
-                                    { city: "Florence", country: "Italy", date: "A city to wander", photo: florencePhoto, fallback: "photo-1529260830199-42c24126f198" },
-                                    { city: "Kyoto", country: "Japan", date: "Quiet mornings", photo: kyotoPhoto, fallback: "photo-1493976040374-85c8e12f0c0e" },
-                                    { city: "Lisbon", country: "Portugal", date: "Down every lane", photo: lisbonPhoto, fallback: "photo-1555881400-74d7acaacd8b" }
-                                ].map((journey) => (
-                                    <Link
-                                        key={journey.city}
-                                        to="/gallery"
-                                        onClick={() => journey.photo && requestUnsplashDownload(journey.photo)}
-                                        className="group relative flex min-h-52 items-end overflow-hidden rounded-xl bg-cover bg-center p-4 text-white"
-                                        style={{ backgroundImage: `linear-gradient(0deg, rgb(20 16 14 / 78%), transparent 72%), url(${journey.photo?.urls.small ?? `https://images.unsplash.com/${journey.fallback}?auto=format&fit=crop&w=700&q=80`})` }}
-                                    >
-                                        <div className="transition group-hover:translate-y-[-2px]">
-                                            <p className="font-[Adamina] text-[0.6rem] uppercase tracking-[0.18em] text-[#f3d8bd]">{journey.date}</p>
-                                            <h3 className="font-[Cormorant_Garamond] text-3xl leading-tight">{journey.city}</h3>
-                                            <p className="font-[Cormorant_Garamond]">{journey.country}</p>
-                                            <UnsplashAttribution photo={journey.photo} />
-                                        </div>
-                                    </Link>
-                                ))}
+                            <div className="rounded-[0.8rem] border border-dashed border-[#cf8d45]/40 bg-[#fffaf4] px-4 py-6 text-center font-[Cormorant_Garamond] text-[1.1rem] text-[#6a4630]">
+                                {cloudStats?.trips ? `${cloudStats.trips} trip${cloudStats.trips === 1 ? "" : "s"} saved in your journal.` : "No journeys saved yet."}
                             </div>
                         </section>
                     </div>
@@ -435,8 +474,8 @@ export function Profile() {
                                     <button type="button" className="rounded-full border border-[#cf8d45] bg-[#fff7ee] px-5 py-2.5 font-[Adamina] text-[0.92rem] text-[#50300d] interactive-transition hover:-translate-y-px hover:bg-[#f6dfc1] hover:shadow-[0_4px_12px_rgb(122_63_0_/_15%)] active:translate-y-px" onClick={() => setIsEditing(false)}>
                                         Cancel
                                     </button>
-                                    <button type="submit" className="rounded-full border border-[#7a3f00] bg-[#5a392b] px-5 py-2.5 font-[Adamina] text-[0.92rem] text-[#ffead4] interactive-transition hover:-translate-y-px hover:bg-[#7a3f00] hover:shadow-[0_4px_12px_rgb(122_63_0_/_20%)] active:translate-y-px">
-                                        Save profile
+                                    <button type="submit" disabled={isSaving} className="rounded-full border border-[#7a3f00] bg-[#5a392b] px-5 py-2.5 font-[Adamina] text-[0.92rem] text-[#ffead4] interactive-transition hover:-translate-y-px hover:bg-[#7a3f00] hover:shadow-[0_4px_12px_rgb(122_63_0_/_20%)] active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60">
+                                        {isSaving ? "Saving..." : "Save profile"}
                                     </button>
                                 </div>
                             </form>

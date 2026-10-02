@@ -12,9 +12,9 @@ import {
     type ItineraryLocationType,
     type ItineraryStatus,
     itineraryKey,
-    readItineraries,
-    seedItinerariesFromCatalog
+    readItineraries
 } from "../utils/itineraryStorage";
+import { deleteCloudItinerary, loadCloudItineraries, saveCloudItinerary } from "../infrastructure/trip/SupabaseItineraryRepository";
 
 type CountryStatusMap = Record<string, CountryStatus>;
 type CountryAddedDateMap = Record<string, string>;
@@ -189,6 +189,9 @@ function Itineraries(props: ItinerariesProps) {
     const [itineraries, dispatchItineraries] = useReducer(itineraryReducer, []);
     const { photos: supabasePhotos } = useSupabaseGallery();
     const [editingItineraryId, setEditingItineraryId] = useState<string | null>(null);
+    const [isCloudUser, setIsCloudUser] = useState(false);
+    const [isItinerariesLoaded, setIsItinerariesLoaded] = useState(false);
+    const [itineraryError, setItineraryError] = useState<string | null>(null);
 
     const countryNames = useMemo(() => {
         if (!countriesData) return [];
@@ -208,9 +211,30 @@ function Itineraries(props: ItinerariesProps) {
     }, [countryNames, routeCountryName]);
 
     useEffect(() => {
-        const seeded = routeCountryName ? seedItinerariesFromCatalog(routeCountryName) : [];
-        const payload = seeded.length > 0 ? seeded : (routeCountryName ? readItineraries(routeCountryName) : []);
-        dispatchItineraries({ type: "hydrate", payload });
+        let isMounted = true;
+        setIsItinerariesLoaded(false);
+
+        void loadCloudItineraries(routeCountryName)
+            .then((cloudItems) => {
+                if (!isMounted) return;
+                if (cloudItems) {
+                    setIsCloudUser(true);
+                    dispatchItineraries({ type: "hydrate", payload: cloudItems });
+                } else {
+                    setIsCloudUser(false);
+                    dispatchItineraries({ type: "hydrate", payload: routeCountryName ? readItineraries(routeCountryName) : [] });
+                }
+                setIsItinerariesLoaded(true);
+                setItineraryError(null);
+            })
+            .catch((error: unknown) => {
+                if (isMounted) {
+                    setItineraryError(error instanceof Error ? error.message : "Unable to load your itineraries.");
+                    setIsItinerariesLoaded(true);
+                }
+            });
+
+        return () => { isMounted = false; };
     }, [routeCountryName]);
 
     const focusedItineraryId = useMemo(() => {
@@ -219,14 +243,20 @@ function Itineraries(props: ItinerariesProps) {
     }, [location.search]);
 
     useEffect(() => {
-        if (!routeCountryName) return;
+        if (!routeCountryName || !isItinerariesLoaded) return;
+
+        if (isCloudUser) {
+            void Promise.all(itineraries.map(itinerary => saveCloudItinerary(routeCountryName, itinerary)))
+                .catch((error: unknown) => setItineraryError(error instanceof Error ? error.message : "Unable to save your itinerary."));
+            return;
+        }
 
         try {
             localStorage.setItem(itineraryKey(routeCountryName), JSON.stringify(itineraries));
         } catch {
-            // Ignore storage failures.
+            setItineraryError("Unable to save your local itinerary draft.");
         }
-    }, [itineraries, routeCountryName]);
+    }, [isCloudUser, isItinerariesLoaded, itineraries, routeCountryName]);
 
     const primaryItinerary = useMemo(() => {
         if (focusedItineraryId) {
@@ -280,6 +310,9 @@ function Itineraries(props: ItinerariesProps) {
 
         setEditingItineraryId(null);
         dispatchItineraries({ type: "remove", payload: primaryItinerary.id });
+        if (isCloudUser) {
+            void deleteCloudItinerary(primaryItinerary.id).catch((error: unknown) => setItineraryError(error instanceof Error ? error.message : "Unable to delete your itinerary."));
+        }
         const next = itineraries.find((item) => item.id !== primaryItinerary.id);
         navigate(
             {
@@ -311,6 +344,7 @@ function Itineraries(props: ItinerariesProps) {
         return (
             <div className="mx-auto w-full max-w-[min(95vw,1040px)] px-[max(1rem,4%)] py-[max(2rem,7vh)]">
                 <section className="rounded-[1rem] border border-dashed border-[#8f5a20]/35 bg-[#fffaf4] p-6 text-[#50300d]">
+                    {itineraryError && <p className="mb-3 rounded border border-[#b16a55]/45 bg-[#fff4e7] px-3 py-2 text-[#8d3324]">{itineraryError}</p>}
                     <p className="font-[Adamina] text-[1.2rem]">No itinerary found for {resolvedCountryName}</p>
                     <p className="mt-2 font-[Cormorant_Garamond] text-[1.1rem] text-[#6a4630]">Create a trip from the country page, then open the board here.</p>
                     <Link to={`/trips/${encodeURIComponent(resolvedCountryName)}`} className="mt-4 inline-block rounded-full border border-[#cf8d45] bg-[#cf8d45] px-4 py-2 font-[Adamina] text-[0.78rem] uppercase tracking-[0.08em] text-[#5a392b] no-underline transition hover:bg-[#eab681]">Back to country</Link>

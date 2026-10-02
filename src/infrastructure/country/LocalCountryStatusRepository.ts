@@ -45,11 +45,11 @@ function readAddedDates(): CountryAddedDateMap {
 }
 
 export class LocalCountryStatusRepository implements CountryStatusRepository {
-    load(): CountryStatusState {
+    async load(): Promise<CountryStatusState> {
         return { statuses: readStatuses(), addedDates: readAddedDates() };
     }
 
-    save(state: CountryStatusState): void {
+    async save(state: CountryStatusState): Promise<void> {
         try {
             localStorage.setItem(COUNTRY_STATUS_CACHE_KEY, JSON.stringify(state.statuses));
             localStorage.setItem(COUNTRY_ADDED_CACHE_KEY, JSON.stringify(state.addedDates));

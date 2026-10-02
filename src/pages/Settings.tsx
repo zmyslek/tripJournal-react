@@ -4,6 +4,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useScrollToTop } from "../hooks/useScrollToTop";
 import { UnsplashAttribution } from "../components/UnsplashAttribution";
 import { requestUnsplashDownload, useUnsplashPhoto } from "../lib/unsplash";
+import { loadCloudUserPreferences, loadCloudUserProfile, saveCloudUserSettings, type CloudUserPreferences } from "../infrastructure/user/SupabaseUserProfileRepository";
 // import PremiumPlans from "../components/PremiumPlans";
 
 export type SettingsProps = Record<string, never>;
@@ -64,10 +65,10 @@ const sections: SettingsSection[] = [
 
 const defaultSettings: UserSettings = {
     account: {
-        firstName: "John",
-        lastName: "Doe",
-        username: "journey.john",
-        email: "john.doe@example.com",
+        firstName: "",
+        lastName: "",
+        username: "",
+        email: "",
         secondaryEmail: ""
     },
     notifications: {
@@ -148,6 +149,9 @@ export function Settings() {
     const location = useLocation();
     const navigate = useNavigate();
     const [settings, setSettings] = useState<UserSettings>(() => getCachedSettings());
+    const [cloudUserId, setCloudUserId] = useState<string | null>(null);
+    const [isHydrated, setIsHydrated] = useState(false);
+    const [settingsError, setSettingsError] = useState<string | null>(null);
     const [activeSection, setActiveSection] = useState<SettingsSectionId>("account");
     const { showScrollTop, scrollToTop } = useScrollToTop();
     const [scrollBtnBottom, setScrollBtnBottom] = useState(window.innerHeight * 0.02);
@@ -157,12 +161,89 @@ export function Settings() {
     }, [location.hash]);
 
     useEffect(() => {
+        let isMounted = true;
+
+        void Promise.all([loadCloudUserProfile(), loadCloudUserPreferences()])
+            .then(([profile, preferenceResult]) => {
+                if (!isMounted) {
+                    return;
+                }
+
+                if (profile) {
+                    const nameParts = (profile.username ?? "").trim().split(/\s+/).filter(Boolean);
+                    setSettings((current) => ({
+                        ...current,
+                        account: {
+                            ...current.account,
+                            firstName: nameParts[0] ?? "",
+                            lastName: nameParts.slice(1).join(" "),
+                            username: profile.username ?? "",
+                            email: profile.email
+                        }
+                    }));
+                }
+
+                if (preferenceResult) {
+                    setCloudUserId(preferenceResult.userId);
+                    const preferences = preferenceResult.preferences;
+                    setSettings((current) => ({
+                        ...current,
+                        notifications: {
+                            weeklyDigest: preferences.weeklyDigest,
+                            itineraryReminders: preferences.itineraryReminders,
+                            featureAnnouncements: preferences.featureAnnouncements
+                        },
+                        app: {
+                            theme: preferences.theme,
+                            language: preferences.language,
+                            mapAutoRotate: preferences.mapAutoRotate,
+                            compactCards: preferences.compactCards
+                        }
+                    }));
+                }
+
+                setIsHydrated(true);
+                setSettingsError(null);
+            })
+            .catch((error: unknown) => {
+                if (isMounted) {
+                    setIsHydrated(true);
+                    setSettingsError(error instanceof Error ? error.message : "Unable to load your settings.");
+                }
+            });
+
+        return () => {
+            isMounted = false;
+        };
+    }, []);
+
+    useEffect(() => {
+        if (!isHydrated) {
+            return;
+        }
+
         try {
             localStorage.setItem(SETTINGS_CACHE_KEY, JSON.stringify(settings));
         } catch {
             // Ignore cache write failures.
         }
-    }, [settings]);
+
+        if (!cloudUserId) {
+            return;
+        }
+
+        const notifications: CloudUserPreferences = {
+            ...settings.notifications,
+            ...settings.app
+        };
+        void saveCloudUserSettings(cloudUserId, {
+            username: settings.account.username.trim(),
+            notifications
+        }).catch((error: unknown) => {
+                                                    <input value={settings.account.email} readOnly className="w-full rounded-[0.7rem] border border-[#cf8d45]/55 bg-[#fff7ee] px-3 py-2 font-[Cormorant_Garamond] text-[1.08rem] text-[#50300d] outline-none" />
+            setSettingsError(error instanceof Error ? error.message : "Unable to save your settings.");
+        });
+    }, [cloudUserId, isHydrated, settings]);
 
     // Keep the scroll button clear of the footer overlap area.
     useEffect(() => {
@@ -269,6 +350,11 @@ export function Settings() {
                                         <input type="email" value={settings.account.secondaryEmail} onChange={(event) => setSettings((prev) => ({ ...prev, account: { ...prev.account, secondaryEmail: fieldValue(event) } }))} placeholder="Optional backup email" className="w-full rounded-[0.7rem] border border-[#cf8d45]/55 bg-[#fff7ee] px-3 py-2 font-[Cormorant_Garamond] text-[1.08rem] text-[#50300d] outline-none focus:border-[#7a3f00] focus:ring-2 focus:ring-[#cf8d45]/35" />
                                     </label>
                                 </div>
+                                {settingsError && (
+                                    <p className="mt-4 rounded-[0.7rem] border border-[#b16a55]/45 bg-[#fff4e7] px-4 py-3 font-[Cormorant_Garamond] text-[#8d3324]">
+                                        {settingsError}
+                                    </p>
+                                )}
                             </article>
                         )}
 

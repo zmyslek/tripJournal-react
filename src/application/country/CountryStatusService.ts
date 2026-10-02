@@ -10,8 +10,8 @@ export interface CountryStatusState {
 }
 
 export interface CountryStatusService {
-    load(): CountryStatusState;
-    save(state: CountryStatusState): void;
+    load(): Promise<CountryStatusState>;
+    save(state: CountryStatusState): Promise<void>;
     update(state: CountryStatusState, countryName: string, status: CountryStatus | null): CountryStatusState;
 }
 

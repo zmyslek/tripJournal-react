@@ -8,7 +8,8 @@ import { useSupabaseGallery } from "../hooks/useSupabaseGallery";
 import paperBackground from "../assets/wrinkled-paper.png";
 import type { CountryStatus } from "./Home";
 import { decodeCountryParam } from "../utils/countryRouting";
-import { itineraryKey, readItineraries, seedItinerariesFromCatalog, type ItineraryItem } from "../utils/itineraryStorage";
+import { itineraryKey, readItineraries, type ItineraryItem } from "../utils/itineraryStorage";
+import { loadCloudItineraries, saveCloudItinerary } from "../infrastructure/trip/SupabaseItineraryRepository";
 import { inferMediaKindFromName } from "../utils/mediaFiles";
 
 type CountryStatusMap = Record<string, CountryStatus>;
@@ -156,6 +157,8 @@ function CountryTrips({ countryStatuses }: CountryTripsProps) {
     const [remainingGallery, setRemainingGallery] = useState<CountryGalleryItem[]>([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedIndex, setSelectedIndex] = useState(0);
+    const [itineraryPreviewItems, setItineraryPreviewItems] = useState<ItineraryItem[]>([]);
+    const [itineraryError, setItineraryError] = useState<string | null>(null);
     const INITIAL_GALLERY_LIMIT = 24;
 
     const countryNames = useMemo(() => {
@@ -200,17 +203,25 @@ function CountryTrips({ countryStatuses }: CountryTripsProps) {
         });
     }, [routeCountryName, supabasePhotos]);
 
-    const itineraryPreviewItems = useMemo<ItineraryItem[]>(() => {
-        if (!routeCountryName) {
-            return [];
-        }
+    useEffect(() => {
+        let isMounted = true;
 
-        const seeded = seedItinerariesFromCatalog(routeCountryName);
-        const stored = readItineraries(routeCountryName);
-        return (stored.length > 0 ? stored : seeded).slice(0, 2);
+        void loadCloudItineraries(routeCountryName)
+            .then((cloudItems) => {
+                if (!isMounted) return;
+                setItineraryPreviewItems((cloudItems ?? readItineraries(routeCountryName)).slice(0, 2));
+                setItineraryError(null);
+            })
+            .catch((error: unknown) => {
+                if (isMounted) {
+                    setItineraryError(error instanceof Error ? error.message : "Unable to load your itineraries.");
+                }
+            });
+
+        return () => { isMounted = false; };
     }, [routeCountryName]);
 
-    function handleCreateItinerary() {
+    async function handleCreateItinerary() {
         if (!routeCountryName) return;
 
         const now = new Date().toISOString();
@@ -244,14 +255,18 @@ function CountryTrips({ countryStatuses }: CountryTripsProps) {
             notes: []
         };
 
-        const existing = readItineraries(routeCountryName);
-        const seeded = seedItinerariesFromCatalog(routeCountryName);
-        const next = [newItinerary, ...(existing.length > 0 ? existing : seeded)];
-
         try {
-            localStorage.setItem(itineraryKey(routeCountryName), JSON.stringify(next));
-        } catch {
-            // Ignore storage failures and still navigate to the editor.
+            const cloudItems = await loadCloudItineraries(routeCountryName);
+            if (cloudItems) {
+                await saveCloudItinerary(routeCountryName, newItinerary);
+            } else {
+                const existing = readItineraries(routeCountryName);
+                localStorage.setItem(itineraryKey(routeCountryName), JSON.stringify([newItinerary, ...existing]));
+            }
+            setItineraryPreviewItems(current => [newItinerary, ...current].slice(0, 2));
+        } catch (error: unknown) {
+            setItineraryError(error instanceof Error ? error.message : "Unable to create your itinerary.");
+            return;
         }
 
         navigate(`/itineraries/${encodeURIComponent(resolvedCountryName)}?open=${newItinerary.id}`);
@@ -648,6 +663,7 @@ function CountryTrips({ countryStatuses }: CountryTripsProps) {
                 </div>
 
                 <div className="bg-[#ffead4]/90 p-6 sm:p-8">
+                    {itineraryError && <p className="mb-4 rounded border border-[#b16a55]/45 bg-[#fff4e7] px-3 py-2 text-[#8d3324]">{itineraryError}</p>}
                     {itineraryPreviewItems.length === 0 ? (
                         <div className="rounded-[1rem] border border-dashed border-[#8f5a20]/25 bg-[#fff4e7] p-6 text-[#6a4630]">
                             <p className="font-[Adamina] text-[1rem] text-[#50300d]">No saved itineraries yet</p>
