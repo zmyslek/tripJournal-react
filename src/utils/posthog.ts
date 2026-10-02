@@ -25,3 +25,10 @@ export function capturePostHogPageView(url: string): void {
 
   posthog.capture('$pageview', { $current_url: url })
 }
+export function capturePostHogEvent(event: string, properties?: Record<string, string | number | boolean>): void {
+  if (!isInitialized) {
+    return
+  }
+
+  posthog.capture(event, properties)
+}

@@ -60,7 +60,7 @@ export const helpFaqSections: HelpFaqSection[] = [
             {
                 id: "country-data-loading",
                 question: "What should I do if the map data does not load?",
-                answer: "Refresh the page first. TripJournal loads country outlines from the bundled countries.geojson file and may also cache that data in local storage."
+                answer: "Refresh the page first. TripJournal loads country outlines from the bundled countries.geojson file and may also cache that data in browser storage."
             },
             {
                 id: "map-accuracy",
