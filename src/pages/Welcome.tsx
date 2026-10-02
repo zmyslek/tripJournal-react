@@ -17,6 +17,7 @@ const FLORENCE_IMAGE_URL =
   "https://images.unsplash.com/photo-1529260830199-42c24126f198?auto=format&fit=crop&w=1400&q=85";
 const FLORENCE_PHOTO_ID = "photo-1529260830199-42c24126f198";
 const AUTH_CACHE_KEY = "tripjournal:auth:v1";
+const PROFILE_UPDATED_EVENT = "tripjournal:profile-updated";
 
 export interface AuthUser {
   id: string;
@@ -37,6 +38,7 @@ function getAuthUserFromSession(sessionUser: { id: string; email?: string | null
   const profile = createStoredUserProfileFromSession(sessionUser);
 
   saveStoredUserProfile(profile);
+  window.dispatchEvent(new Event(PROFILE_UPDATED_EVENT));
 
   return {
     id: profile.id,

@@ -32,7 +32,7 @@ type NavigationProfile = {
 
 function getNavigationProfile(): NavigationProfile {
     const storedUser = getStoredUserProfile();
-    if (!hasStoredAuth()) {
+    if (!hasStoredAuth() && !storedUser?.id) {
         return { name: "Guest", avatar: guestAvatar };
     }
 
