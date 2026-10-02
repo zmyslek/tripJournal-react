@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { Settings, HelpCircle } from "lucide-react";
 import leatherBackground from "../assets/dark-leather.png";
@@ -50,14 +50,14 @@ function getNavigationProfile(): NavigationProfile {
     }
 }
 
-function getInitials(name: string): string {
-    return name
-        .split(" ")
-        .filter(Boolean)
-        .slice(0, 2)
-        .map((part) => part[0]?.toUpperCase())
-        .join("") || "TR";
-}
+// function getInitials(name: string): string {
+//     return name
+//         .split(" ")
+//         .filter(Boolean)
+//         .slice(0, 2)
+//         .map((part) => part[0]?.toUpperCase())
+//         .join("") || "TR";
+// }
 
 function getSavedCookieConsent(): "accepted" | "rejected" | null {
     try {
@@ -82,7 +82,6 @@ function MainLayout() {
         };
     }, []);
 
-    const navigationInitials = useMemo(() => getInitials(navigationProfile.name), [navigationProfile.name]);
 
     useEffect(() => {
         if (cookieConsent === null) {
@@ -143,7 +142,10 @@ function MainLayout() {
                         {navigationProfile.avatar ? (
                             <img src={navigationProfile.avatar} alt="" className="h-full w-full rounded-full object-cover" />
                         ) : (
-                            navigationInitials
+                            <svg aria-hidden="true" viewBox="0 0 24 24" className="h-[1.15rem] w-[1.15rem]" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                                <circle cx="12" cy="8" r="3.2" />
+                                <path d="M5.5 20c.7-3.4 3-5.2 6.5-5.2s5.8 1.8 6.5 5.2" />
+                            </svg>
                         )}
                     </NavLink>
                     <NavLink
