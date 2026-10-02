@@ -4,6 +4,7 @@ import { useCountriesData } from "../hooks/useCountriesData.ts";
 import { useScrollToTop } from "../hooks/useScrollToTop.ts";
 import { getCountryName, type CountriesGeoJson, type CountryFeature } from "../types/countries.ts";
 import { buildCountryTripsPath } from "../utils/countryRouting.ts";
+import { capturePostHogEvent } from "../utils/posthog.ts";
 import paperBackground from "../assets/wrinkled-paper.png";
 import { fetchUnsplashPhoto, getUnsplashProfileUrl, requestUnsplashDownload, unsplashHomepageUrl, useUnsplashPhoto, type UnsplashPhoto } from "../lib/unsplash";
 
@@ -115,7 +116,8 @@ function Home({ countryStatuses, countryAddedDates, setCountryStatus, visitedCou
     const [scrollBtnBottom, setScrollBtnBottom] = useState(window.innerHeight * 0.02);
     const autoSelectedLocationKeyRef = useRef<string | null>(null);
     const hasRequestedGeolocationRef = useRef(false);
-    const { countriesData, isLoading, error } = useCountriesData();
+    const { countriesData, isLoading, error, retry } = useCountriesData();
+    const mountedAtRef = useRef(0);
     const { showScrollTop, scrollToTop } = useScrollToTop();
     const [countryPhotos, setCountryPhotos] = useState<Record<string, UnsplashPhoto>>({});
 
@@ -247,9 +249,7 @@ function Home({ countryStatuses, countryAddedDates, setCountryStatus, visitedCou
             wantToVisitAgain: 0
         };
 
-        countryNames.forEach((countryName) => {
-            const status = countryStatuses[countryName];
-
+        Object.values(countryStatuses).forEach((status) => {
             if (status === "want-to-go") {
                 counts.wantToGo += 1;
                 return;
@@ -262,14 +262,27 @@ function Home({ countryStatuses, countryAddedDates, setCountryStatus, visitedCou
 
             if (status === "want-to-visit-again") {
                 counts.wantToVisitAgain += 1;
-                return;
             }
-
-            counts.notInterested += 1;
         });
+
+        counts.notInterested = countryNames.filter((countryName) => !countryStatuses[countryName]).length;
 
         return counts;
     }, [countryNames, countryStatuses]);
+
+    useEffect(() => {
+        mountedAtRef.current = performance.now();
+    }, []);
+
+    useEffect(() => {
+        if (error) {
+            capturePostHogEvent("map_load_failed", { error });
+        }
+    }, [error]);
+
+    const handleMapLoad = () => {
+        capturePostHogEvent("map_loaded", { load_time_ms: Math.round(performance.now() - mountedAtRef.current) });
+    };
 
     const toggleMapStatusFilter = (status: CountryStatus | "not-explored") => {
         const newFilters = new Set(mapStatusFilters);
@@ -441,9 +454,20 @@ function Home({ countryStatuses, countryAddedDates, setCountryStatus, visitedCou
                 {pageMode === "home" && (
                 <section className="grid gap-6 xl:grid-cols-[minmax(0,1.25fr)_minmax(360px,1fr)]">
                     <div className="mt-6 flex min-h-[420px] flex-col items-center justify-center gap-4">
-                        {isLoading || !countriesData ? (
+                        {isLoading ? (
                             <div className="flex min-h-[420px] w-full max-w-[820px] items-center justify-center px-6 text-center font-[Cormorant_Garamond] text-[1.3rem] text-[#6a4630]">
                                 Loading map data...
+                            </div>
+                        ) : !countriesData ? (
+                            <div className="flex min-h-[420px] w-full max-w-[820px] flex-col items-center justify-center gap-4 px-6 text-center font-[Cormorant_Garamond] text-[1.3rem] text-[#6a4630]">
+                                <p>The map could not load.</p>
+                                <button
+                                    type="button"
+                                    onClick={retry}
+                                    className="min-h-[44px] rounded-full border border-[#50300d] bg-[#f6dfc1] px-5 text-[1.1rem] text-[#50300d] shadow-[0_3px_10px_#50300d2e] interactive-transition hover:bg-[#eab681]"
+                                >
+                                    Try again
+                                </button>
                             </div>
                         ) : (
                             <Suspense
@@ -461,6 +485,7 @@ function Home({ countryStatuses, countryAddedDates, setCountryStatus, visitedCou
                                         userLocation={userLocation}
                                         countryStatuses={countryStatuses}
                                         visibleStatuses={mapStatusFilters}
+                                        onLoad={handleMapLoad}
                                     />
                                 </div>
                             </Suspense>
@@ -675,8 +700,10 @@ function Home({ countryStatuses, countryAddedDates, setCountryStatus, visitedCou
 
                     {/* Bottom section - Countries list */}
                     <div className="bg-[#5a392b]/95 p-6">
-                        {isLoading || !countriesData ? (
-                            <div className="text-center font-[Cormorant_Garamond] text-[1.1rem] text-[#6a4630]">Loading countries...</div>
+                        {!countriesData ? (
+                            <div className="text-center font-[Cormorant_Garamond] text-[1.1rem] text-[#6a4630]">
+                                {isLoading ? "Loading countries..." : "The country list could not load."}
+                            </div>
                         ) : (
                             <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
                                 {filteredAndSortedCountries.map((countryName) => {

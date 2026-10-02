@@ -19,9 +19,12 @@ export function initializePostHog(): void {
 }
 
 export function capturePostHogPageView(url: string): void {
+  capturePostHogEvent('$pageview', { $current_url: url })
+}
+export function capturePostHogEvent(event: string, properties?: Record<string, string | number | boolean>): void {
   if (!isInitialized) {
     return
   }
 
-  posthog.capture('$pageview', { $current_url: url })
+  posthog.capture(event, properties)
 }

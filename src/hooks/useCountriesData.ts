@@ -1,79 +1,64 @@
 import { useEffect, useState } from "react";
 import type { CountriesGeoJson } from "../types/countries";
 
-const COUNTRIES_CACHE_KEY = "tripjournal:countries:v1";
+// Shared across mounts so that navigating back to a page does not load the data again.
+// Across reloads, the browser HTTP cache serves the file ("force-cache").
+let loadedCountries: CountriesGeoJson | null = null;
+let countriesRequest: Promise<CountriesGeoJson> | null = null;
 
-function readCachedCountries(): CountriesGeoJson | null {
+async function fetchCountries(): Promise<CountriesGeoJson> {
+    const response = await fetch(`${import.meta.env.BASE_URL}countries.geojson`, { cache: "force-cache" });
+    if (!response.ok) {
+        throw new Error(`Failed to fetch countries.geojson: ${response.status}`);
+    }
+
+    return (await response.json()) as CountriesGeoJson;
+}
+
+async function loadCountries(): Promise<CountriesGeoJson> {
+    countriesRequest ??= fetchCountries();
+
     try {
-        const cachedValue = localStorage.getItem(COUNTRIES_CACHE_KEY);
-        if (!cachedValue) {
-            return null;
-        }
-
-        return JSON.parse(cachedValue) as CountriesGeoJson;
-    } catch {
-        return null;
+        loadedCountries = await countriesRequest;
+        return loadedCountries;
+    } catch (loadError) {
+        countriesRequest = null;
+        throw loadError;
     }
 }
 
 export function useCountriesData() {
-    const cachedCountries = readCachedCountries();
-    const [countriesData, setCountriesData] = useState<CountriesGeoJson | null>(() => cachedCountries);
-    const [isLoading, setIsLoading] = useState(() => !cachedCountries);
+    const [countriesData, setCountriesData] = useState<CountriesGeoJson | null>(loadedCountries);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
+        if (countriesData || error) {
+            return;
+        }
+
         let isMounted = true;
-        const abortController = new AbortController();
 
-        const loadCountries = async () => {
+        const load = async () => {
             try {
-                const response = await fetch(`${import.meta.env.BASE_URL}countries.geojson`, {
-                    cache: "force-cache",
-                    signal: abortController.signal
-                });
-
-                if (!response.ok) {
-                    throw new Error(`Failed to fetch countries.geojson: ${response.status}`);
-                }
-
-                const data = (await response.json()) as CountriesGeoJson;
-                if (!isMounted) {
-                    return;
-                }
-
-                setCountriesData(data);
-                setError(null);
-
-                try {
-                    localStorage.setItem(COUNTRIES_CACHE_KEY, JSON.stringify(data));
-                } catch {
-                    // Ignore cache write failures.
-                }
-            } catch (fetchError) {
-                if (fetchError instanceof DOMException && fetchError.name === "AbortError") {
-                    return;
-                }
-
+                const data = await loadCountries();
                 if (isMounted) {
-                    setError(fetchError instanceof Error ? fetchError.message : "Failed to load countries data");
+                    setCountriesData(data);
                 }
-            } finally {
+            } catch (loadError) {
                 if (isMounted) {
-                    setIsLoading(false);
+                    setError(loadError instanceof Error ? loadError.message : "Failed to load countries data");
                 }
             }
         };
 
-        if (!cachedCountries) {
-            void loadCountries();
-        }
+        void load();
 
         return () => {
             isMounted = false;
-            abortController.abort();
         };
-    }, [cachedCountries]);
+    }, [countriesData, error]);
 
-    return { countriesData, isLoading, error };
+    const retry = () => setError(null);
+
+    return { countriesData, isLoading: !countriesData && !error, error, retry };
 }

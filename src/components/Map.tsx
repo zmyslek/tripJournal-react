@@ -24,6 +24,7 @@ export type MapProps = {
   sizeVariant?: "default" | "compact";
   initialGlobeZoom?: number;
   showGlobeBackdrop?: boolean;
+  onLoad?: () => void;
 };
 
 const userLocationMarkup = `<div class="user-location-ring user-location-ring-outer"></div><div class="user-location-ring user-location-ring-inner"></div><div class="user-location-dot"></div>`;
@@ -88,7 +89,8 @@ const Map: React.FC<MapProps> = ({
   visibleStatuses,
   focusCountry = null,
   sizeVariant = "default",
-  initialGlobeZoom = DEFAULT_INITIAL_GLOBE_ZOOM
+  initialGlobeZoom = DEFAULT_INITIAL_GLOBE_ZOOM,
+  onLoad
 }) => {
   const mapContainer = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
@@ -101,6 +103,7 @@ const Map: React.FC<MapProps> = ({
   const focusCountryRef = useRef(focusCountry?.trim() || null);
   const viewModeRef = useRef(viewMode);
   const initialGlobeZoomRef = useRef(initialGlobeZoom);
+  const onLoadRef = useRef(onLoad);
   const lastFocusedCountryRef = useRef<string | null>(null);
 
   const globeSize = sizeVariant === "compact" ? "min(52vw, 52vh)" : "min(68vw, 68vh)";
@@ -190,6 +193,10 @@ const Map: React.FC<MapProps> = ({
   }, [initialGlobeZoom]);
 
   useEffect(() => {
+    onLoadRef.current = onLoad;
+  }, [onLoad]);
+
+  useEffect(() => {
     countriesDataRef.current = countriesData;
     selectedCountriesRef.current = selectedCountries;
     countryStatusesRef.current = countryStatuses;
@@ -275,6 +282,7 @@ const Map: React.FC<MapProps> = ({
             .addTo(map);
         }
         if (focusCountryRef.current) focusMapOnCountry(focusCountryRef.current);
+        onLoadRef.current?.();
       });
       map.on("error", (event: ErrorEvent) => console.error("MapTiler map error", event.error));
     };
