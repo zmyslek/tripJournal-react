@@ -22,12 +22,12 @@ export class SupabaseCountryStatusRepository implements CountryStatusRepository 
     private readonly localRepository = new LocalCountryStatusRepository();
 
     async load(): Promise<CountryStatusState> {
-        const { data, error } = await supabase.auth.getSession();
-        if (error) {
-            throw error;
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError) {
+            throw sessionError;
         }
 
-        const user = data.session?.user;
+        const user = sessionData.session?.user;
         if (!user) {
             return this.localRepository.load();
         }
@@ -54,12 +54,12 @@ export class SupabaseCountryStatusRepository implements CountryStatusRepository 
     }
 
     async save(state: CountryStatusState): Promise<void> {
-        const { data, error } = await supabase.auth.getSession();
-        if (error) {
-            throw error;
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError) {
+            throw sessionError;
         }
 
-        const user = data.session?.user;
+        const user = sessionData.session?.user;
         if (!user) {
             await this.localRepository.save(state);
             return;
