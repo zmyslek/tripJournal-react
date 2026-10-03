@@ -54,7 +54,6 @@ interface SettingsSection {
     description: string;
 }
 
-const SETTINGS_CACHE_KEY = "tripjournal:settings:v1";
 
 const sections: SettingsSection[] = [
     { id: "account", label: "Account", description: "Profile details and contact info" },
@@ -62,6 +61,8 @@ const sections: SettingsSection[] = [
     // { id: "premium", label: "Premium", description: "Plan, billing, and renewals" },
     { id: "about", label: "About & policies", description: "Help and legal pages" }
 ];
+
+const SETTINGS_CACHE_KEY = "tripjournal:settings:v1";
 
 const defaultSettings: UserSettings = {
     account: {
@@ -222,12 +223,6 @@ export function Settings() {
             return;
         }
 
-        try {
-            localStorage.setItem(SETTINGS_CACHE_KEY, JSON.stringify(settings));
-        } catch {
-            // Ignore cache write failures.
-        }
-
         if (!cloudUserId) {
             return;
         }
@@ -240,7 +235,6 @@ export function Settings() {
             username: settings.account.username.trim(),
             notifications
         }).catch((error: unknown) => {
-                                                    <input value={settings.account.email} readOnly className="w-full rounded-[0.7rem] border border-[#cf8d45]/55 bg-[#fff7ee] px-3 py-2 font-[Cormorant_Garamond] text-[1.08rem] text-[#50300d] outline-none" />
             setSettingsError(error instanceof Error ? error.message : "Unable to save your settings.");
         });
     }, [cloudUserId, isHydrated, settings]);

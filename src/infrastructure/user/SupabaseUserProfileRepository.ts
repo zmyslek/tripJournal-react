@@ -19,6 +19,14 @@ export interface CloudUserStats {
     trips: number;
 }
 
+export interface CloudRecentTrip {
+    id: string;
+    title: string;
+    status: string;
+    startDate: string | null;
+    endDate: string | null;
+}
+
 export interface CloudUserPreferences {
     weeklyDigest: boolean;
     itineraryReminders: boolean;
@@ -144,6 +152,27 @@ export async function loadCloudUserStats(): Promise<CloudUserStats | null> {
         returns: returns.count ?? 0,
         trips: trips.count ?? 0
     };
+}
+
+export async function loadCloudRecentTrips(limit = 3): Promise<CloudRecentTrip[] | null> {
+    const { data: authData, error: authError } = await supabase.auth.getUser();
+    if (authError) throw authError;
+    if (!authData.user) return null;
+
+    const { data, error } = await supabase.from("trips")
+        .select("id, title, status, start_date, end_date")
+        .eq("user_id", authData.user.id)
+        .order("created_at", { ascending: false })
+        .limit(limit);
+    if (error) throw error;
+
+    return (data ?? []).map((trip) => ({
+        id: trip.id,
+        title: trip.title,
+        status: trip.status,
+        startDate: trip.start_date,
+        endDate: trip.end_date
+    }));
 }
 
 export async function loadCloudUserPreferences(): Promise<{ userId: string; preferences: CloudUserPreferences } | null> {

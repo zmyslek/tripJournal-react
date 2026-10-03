@@ -11,10 +11,10 @@ import passportAvatar from "../assets/avatars/passport.png";
 import postcardAvatar from "../assets/avatars/postcard.png";
 import suitcaseAvatar from "../assets/avatars/suitcase.png";
 import { supabase } from "../lib/supabase/client";
-import { clearStoredUserProfile, getStoredUserProfile, saveStoredUserProfile } from "../types/user";
+import { clearStoredUserProfile } from "../types/user";
 import { UnsplashAttribution } from "../components/UnsplashAttribution";
 import { requestUnsplashDownload, useUnsplashPhoto } from "../lib/unsplash";
-import { loadCloudUserProfile, loadCloudUserStats, saveCloudUserProfile, type CloudUserStats } from "../infrastructure/user/SupabaseUserProfileRepository";
+import { loadCloudUserProfile, loadCloudUserStats, loadCloudRecentTrips, saveCloudUserProfile, type CloudUserProfile, type CloudUserStats, type CloudRecentTrip } from "../infrastructure/user/SupabaseUserProfileRepository";
 
 export type ProfileProps = Record<string, never>;
 
@@ -36,58 +36,23 @@ const avatarOptions = [
 ];
 
 const defaultProfile: ProfileForm = {
-    name: "Traveler",
+    name: "",
     email: "",
-    travelStyle: "Slow routes, old streets, good notes",
-    currentFocus: "Planning the next chapter",
-    avatar: compassAvatar
+    travelStyle: "",
+    currentFocus: "",
+    avatar: ""
 };
 
-const PROFILE_CACHE_KEY = "tripjournal:profile:v1";
 const AUTH_CACHE_KEY = "tripjournal:auth:v1";
 const PROFILE_UPDATED_EVENT = "tripjournal:profile-updated";
-
-function getCachedProfile(): ProfileForm {
-    const storedUser = getStoredUserProfile();
-
-    if (storedUser) {
-        return {
-            name: storedUser.username ?? storedUser.email.split("@")[0] ?? defaultProfile.name,
-            email: storedUser.email || defaultProfile.email,
-            travelStyle: storedUser.travelStyle || defaultProfile.travelStyle,
-            currentFocus: storedUser.currentFocus || defaultProfile.currentFocus,
-            avatar: storedUser.avatarUrl || defaultProfile.avatar
-        };
-    }
-
-    try {
-        const cachedProfile = localStorage.getItem(PROFILE_CACHE_KEY);
-        if (!cachedProfile) {
-            return defaultProfile;
-        }
-
-        const parsedProfile = JSON.parse(cachedProfile);
-        if (!parsedProfile || typeof parsedProfile !== "object") {
-            return defaultProfile;
-        }
-
-        return {
-            name: typeof parsedProfile.name === "string" && parsedProfile.name.trim() ? parsedProfile.name : defaultProfile.name,
-            email: typeof parsedProfile.email === "string" && parsedProfile.email.trim() ? parsedProfile.email : defaultProfile.email,
-            travelStyle: typeof parsedProfile.travelStyle === "string" && parsedProfile.travelStyle.trim() ? parsedProfile.travelStyle : defaultProfile.travelStyle,
-            currentFocus: typeof parsedProfile.currentFocus === "string" && parsedProfile.currentFocus.trim() ? parsedProfile.currentFocus : defaultProfile.currentFocus,
-            avatar: typeof parsedProfile.avatar === "string" && parsedProfile.avatar.trim() ? parsedProfile.avatar : defaultProfile.avatar
-        };
-    } catch {
-        return defaultProfile;
-    }
-}
 
 export function Profile() {
     const navigate = useNavigate();
     const heroPhoto = useUnsplashPhoto("photo-1519501025264-65ba15a82390");
-    const [profile, setProfile] = useState<ProfileForm>(() => getCachedProfile());
-    const [draftProfile, setDraftProfile] = useState<ProfileForm>(() => getCachedProfile());
+    const [profile, setProfile] = useState<ProfileForm>(defaultProfile);
+    const [draftProfile, setDraftProfile] = useState<ProfileForm>(defaultProfile);
+    const [cloudProfile, setCloudProfile] = useState<CloudUserProfile | null>(null);
+    const [recentTrips, setRecentTrips] = useState<CloudRecentTrip[]>([]);
     const [isEditing, setIsEditing] = useState(false);
     const [cloudStats, setCloudStats] = useState<CloudUserStats | null>(null);
     const [profileError, setProfileError] = useState<string | null>(null);
@@ -98,24 +63,26 @@ export function Profile() {
     useEffect(() => {
         let isMounted = true;
 
-        void Promise.all([loadCloudUserProfile(), loadCloudUserStats()])
-            .then(([cloudProfile, stats]) => {
+        void Promise.all([loadCloudUserProfile(), loadCloudUserStats(), loadCloudRecentTrips()])
+            .then(([cloudProfileResult, stats, trips]) => {
                 if (!isMounted) {
                     return;
                 }
 
-                if (cloudProfile) {
+                if (cloudProfileResult) {
                     const nextProfile: ProfileForm = {
-                        name: cloudProfile.username || cloudProfile.email.split("@")[0] || defaultProfile.name,
-                        email: cloudProfile.email,
-                        travelStyle: cloudProfile.travelStyle || defaultProfile.travelStyle,
-                        currentFocus: cloudProfile.currentFocus || defaultProfile.currentFocus,
-                        avatar: cloudProfile.avatarUrl || defaultProfile.avatar
+                        name: cloudProfileResult.username || "",
+                        email: cloudProfileResult.email,
+                        travelStyle: cloudProfileResult.travelStyle,
+                        currentFocus: cloudProfileResult.currentFocus,
+                        avatar: cloudProfileResult.avatarUrl || ""
                     };
+                    setCloudProfile(cloudProfileResult);
                     setProfile(nextProfile);
                     setDraftProfile(nextProfile);
                 }
                 setCloudStats(stats);
+                setRecentTrips(trips ?? []);
                 setProfileError(null);
             })
             .catch((error: unknown) => {
@@ -163,7 +130,7 @@ export function Profile() {
             .filter(Boolean)
             .slice(0, 2)
             .map((part) => part[0]?.toUpperCase())
-            .join("") || "TR";
+            .join("");
     }, [profile.name]);
 
     const openEditor = () => {
@@ -198,33 +165,16 @@ export function Profile() {
         setProfileError(null);
 
         try {
-            const storedUser = getStoredUserProfile();
-            if (storedUser) {
-                await saveCloudUserProfile({
-                    id: storedUser.id,
-                    email: draftProfile.email.trim() || storedUser.email,
-                    username: draftProfile.name.trim() || storedUser.username,
-                    avatarUrl: draftProfile.avatar || storedUser.avatarUrl,
-                    createdAt: storedUser.createdAt,
-                    authProvider: storedUser.authProvider,
-                    travelStyle: draftProfile.travelStyle,
-                    currentFocus: draftProfile.currentFocus
-                });
-                saveStoredUserProfile({
-                    ...storedUser,
-                    username: draftProfile.name.trim() || storedUser.username,
-                    email: draftProfile.email.trim() || storedUser.email,
-                    avatarUrl: draftProfile.avatar || storedUser.avatarUrl,
-                    travelStyle: draftProfile.travelStyle,
-                    currentFocus: draftProfile.currentFocus
-                });
-            } else {
-                try {
-                    localStorage.setItem(PROFILE_CACHE_KEY, JSON.stringify(draftProfile));
-                } catch {
-                    // Ignore guest profile cache failures.
-                }
-            }
+            if (!cloudProfile) throw new Error("Sign in to save profile changes.");
+            const savedProfile: CloudUserProfile = {
+                ...cloudProfile,
+                username: draftProfile.name.trim() || null,
+                avatarUrl: draftProfile.avatar || null,
+                travelStyle: draftProfile.travelStyle,
+                currentFocus: draftProfile.currentFocus
+            };
+            await saveCloudUserProfile(savedProfile);
+            setCloudProfile(savedProfile);
 
             setProfile(draftProfile);
             window.dispatchEvent(new Event(PROFILE_UPDATED_EVENT));
@@ -266,7 +216,7 @@ export function Profile() {
                                 {profile.name}
                             </h1>
                             <p className="mt-3 max-w-[42rem] font-[Cormorant_Garamond] text-[1.15rem] leading-[1.35] text-[#f7dfca]">
-                                {profile.currentFocus} · {profile.travelStyle}
+                                {[profile.currentFocus, profile.travelStyle].filter(Boolean).join(" · ")}
                             </p>
                             <UnsplashAttribution photo={heroPhoto} />
                         </div>
@@ -333,11 +283,11 @@ export function Profile() {
                                 */}
                                 <div className="rounded-[0.8rem] border border-[#eab681]/20 bg-[#ffead40d] px-4 py-3">
                                     <p className="font-[Adamina] text-[0.78rem] uppercase tracking-[0.18em] text-[#f6d7b5]">Profile created</p>
-                                    <p className="mt-1 font-[Cormorant_Garamond] text-[1.05rem] text-[#fff4e7]">{getStoredUserProfile()?.createdAt ? new Date(getStoredUserProfile()!.createdAt).toLocaleDateString() : "Not set yet"}</p>
+                                    <p className="mt-1 font-[Cormorant_Garamond] text-[1.05rem] text-[#fff4e7]">{cloudProfile?.createdAt ? new Date(cloudProfile.createdAt).toLocaleDateString() : "—"}</p>
                                 </div>
                                 <div className="rounded-[0.8rem] border border-[#eab681]/20 bg-[#ffead40d] px-4 py-3">
                                     <p className="font-[Adamina] text-[0.78rem] uppercase tracking-[0.18em] text-[#f6d7b5]">Login method</p>
-                                    <p className="mt-1 font-[Cormorant_Garamond] text-[1.05rem] text-[#fff4e7]">{getStoredUserProfile()?.authProvider || "email"}</p>
+                                    <p className="mt-1 font-[Cormorant_Garamond] text-[1.05rem] text-[#fff4e7]">{cloudProfile?.authProvider ?? "—"}</p>
                                 </div>
                             </div>
                         </div>
@@ -369,9 +319,7 @@ export function Profile() {
                                 </div>
                                 <Link to="/gallery" className="font-[Cormorant_Garamond] text-base text-[#936d58] hover:text-[#50300d]">View gallery →</Link>
                             </div>
-                            <div className="rounded-[0.8rem] border border-dashed border-[#cf8d45]/40 bg-[#fffaf4] px-4 py-6 text-center font-[Cormorant_Garamond] text-[1.1rem] text-[#6a4630]">
-                                {cloudStats?.trips ? `${cloudStats.trips} trip${cloudStats.trips === 1 ? "" : "s"} saved in your journal.` : "No journeys saved yet."}
-                            </div>
+                            {recentTrips.length ? <div className="grid gap-3 sm:grid-cols-2">{recentTrips.map((trip) => <article key={trip.id} className="rounded-[0.8rem] border border-[#cf8d45]/35 bg-[#fffaf4] px-4 py-3"><h3 className="font-[Adamina] text-[#50300d]">{trip.title}</h3><p className="mt-1 font-[Cormorant_Garamond] text-[#6a4630]">{trip.status}{trip.startDate ? ` · ${trip.startDate}` : ""}{trip.endDate ? ` – ${trip.endDate}` : ""}</p></article>)}</div> : <div className="rounded-[0.8rem] border border-dashed border-[#cf8d45]/40 bg-[#fffaf4] px-4 py-6 text-center font-[Cormorant_Garamond] text-[1.1rem] text-[#6a4630]">No journeys saved yet.</div>}
                         </section>
                     </div>
 
