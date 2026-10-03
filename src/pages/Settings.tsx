@@ -153,13 +153,9 @@ export function Settings() {
     const [cloudUserId, setCloudUserId] = useState<string | null>(null);
     const [isHydrated, setIsHydrated] = useState(false);
     const [settingsError, setSettingsError] = useState<string | null>(null);
-    const [activeSection, setActiveSection] = useState<SettingsSectionId>("account");
+    const activeSection = sectionFromHash(location.hash);
     const { showScrollTop, scrollToTop } = useScrollToTop();
     const [scrollBtnBottom, setScrollBtnBottom] = useState(window.innerHeight * 0.02);
-
-    useEffect(() => {
-        setActiveSection(sectionFromHash(location.hash));
-    }, [location.hash]);
 
     useEffect(() => {
         let isMounted = true;

@@ -190,7 +190,7 @@ function Itineraries(props: ItinerariesProps) {
     const { photos: supabasePhotos } = useSupabaseGallery();
     const [editingItineraryId, setEditingItineraryId] = useState<string | null>(null);
     const [isCloudUser, setIsCloudUser] = useState(false);
-    const [isItinerariesLoaded, setIsItinerariesLoaded] = useState(false);
+    const [loadedCountry, setLoadedCountry] = useState<string | null>(null);
     const [itineraryError, setItineraryError] = useState<string | null>(null);
 
     const countryNames = useMemo(() => {
@@ -212,8 +212,6 @@ function Itineraries(props: ItinerariesProps) {
 
     useEffect(() => {
         let isMounted = true;
-        setIsItinerariesLoaded(false);
-
         void loadCloudItineraries(routeCountryName)
             .then((cloudItems) => {
                 if (!isMounted) return;
@@ -224,13 +222,12 @@ function Itineraries(props: ItinerariesProps) {
                     setIsCloudUser(false);
                     dispatchItineraries({ type: "hydrate", payload: routeCountryName ? readItineraries(routeCountryName) : [] });
                 }
-                setIsItinerariesLoaded(true);
+                setLoadedCountry(routeCountryName);
                 setItineraryError(null);
             })
             .catch((error: unknown) => {
                 if (isMounted) {
                     setItineraryError(error instanceof Error ? error.message : "Unable to load your itineraries.");
-                    setIsItinerariesLoaded(true);
                 }
             });
 
@@ -243,7 +240,7 @@ function Itineraries(props: ItinerariesProps) {
     }, [location.search]);
 
     useEffect(() => {
-        if (!routeCountryName || !isItinerariesLoaded) return;
+        if (!routeCountryName || loadedCountry !== routeCountryName) return;
 
         if (isCloudUser) {
             void Promise.all(itineraries.map(itinerary => saveCloudItinerary(routeCountryName, itinerary)))
@@ -254,9 +251,9 @@ function Itineraries(props: ItinerariesProps) {
         try {
             localStorage.setItem(itineraryKey(routeCountryName), JSON.stringify(itineraries));
         } catch {
-            setItineraryError("Unable to save your local itinerary draft.");
+            queueMicrotask(() => setItineraryError("Unable to save your local itinerary draft."));
         }
-    }, [isCloudUser, isItinerariesLoaded, itineraries, routeCountryName]);
+    }, [isCloudUser, loadedCountry, itineraries, routeCountryName]);
 
     const primaryItinerary = useMemo(() => {
         if (focusedItineraryId) {
