@@ -1,3 +1,7 @@
+export const config = {
+    runtime: "edge"
+};
+
 type RestCountry = {
     name?: { common?: string; official?: string };
     region?: string;
@@ -7,7 +11,12 @@ type RestCountry = {
 };
 
 export default async function handler(request: Request): Promise<Response> {
-    const countryName = new URL(request.url).searchParams.get("name")?.trim();
+    let countryName: string | undefined;
+    try {
+        countryName = new URL(request.url).searchParams.get("name")?.trim();
+    } catch {
+        return Response.json({ error: "Invalid request URL" }, { status: 400 });
+    }
 
     if (!countryName) {
         return Response.json({ error: "Country name is required" }, { status: 400 });
