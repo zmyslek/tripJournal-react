@@ -14,9 +14,10 @@ import { supabase } from "../lib/supabase/client";
 import { clearStoredUserProfile } from "../types/user";
 import { UnsplashAttribution } from "../components/UnsplashAttribution";
 import { requestUnsplashDownload, useUnsplashPhoto } from "../lib/unsplash";
-import { loadCloudUserProfile, loadCloudUserStats, loadCloudRecentTrips, saveCloudUserProfile, type CloudUserProfile, type CloudUserStats, type CloudRecentTrip } from "../infrastructure/user/SupabaseUserProfileRepository";
+import { loadCloudUserProfile, loadCloudRecentTrips, saveCloudUserProfile, uploadCloudAvatar, type CloudUserProfile, type CloudRecentTrip } from "../infrastructure/user/SupabaseUserProfileRepository";
+import type { CountryStatus } from "../domain/country/Country";
 
-export type ProfileProps = Record<string, never>;
+export type ProfileProps = { countryStatuses: Record<string, CountryStatus> };
 
 type ProfileForm = {
     name: string;
@@ -46,7 +47,7 @@ const defaultProfile: ProfileForm = {
 const AUTH_CACHE_KEY = "tripjournal:auth:v1";
 const PROFILE_UPDATED_EVENT = "tripjournal:profile-updated";
 
-export function Profile() {
+export function Profile({ countryStatuses }: ProfileProps) {
     const navigate = useNavigate();
     const heroPhoto = useUnsplashPhoto("photo-1519501025264-65ba15a82390");
     const [profile, setProfile] = useState<ProfileForm>(defaultProfile);
@@ -54,7 +55,7 @@ export function Profile() {
     const [cloudProfile, setCloudProfile] = useState<CloudUserProfile | null>(null);
     const [recentTrips, setRecentTrips] = useState<CloudRecentTrip[]>([]);
     const [isEditing, setIsEditing] = useState(false);
-    const [cloudStats, setCloudStats] = useState<CloudUserStats | null>(null);
+    const [pendingAvatar, setPendingAvatar] = useState<File | null>(null);
     const [profileError, setProfileError] = useState<string | null>(null);
     const [isSaving, setIsSaving] = useState(false);
     const { showScrollTop, scrollToTop } = useScrollToTop();
@@ -63,8 +64,8 @@ export function Profile() {
     useEffect(() => {
         let isMounted = true;
 
-        void Promise.all([loadCloudUserProfile(), loadCloudUserStats(), loadCloudRecentTrips()])
-            .then(([cloudProfileResult, stats, trips]) => {
+        void Promise.all([loadCloudUserProfile(), loadCloudRecentTrips()])
+            .then(([cloudProfileResult, trips]) => {
                 if (!isMounted) {
                     return;
                 }
@@ -81,7 +82,6 @@ export function Profile() {
                     setProfile(nextProfile);
                     setDraftProfile(nextProfile);
                 }
-                setCloudStats(stats);
                 setRecentTrips(trips ?? []);
                 setProfileError(null);
             })
@@ -135,6 +135,7 @@ export function Profile() {
 
     const openEditor = () => {
         setDraftProfile(profile);
+        setPendingAvatar(null);
         setIsEditing(true);
     };
 
@@ -151,13 +152,13 @@ export function Profile() {
             return;
         }
 
-        const reader = new FileReader();
-        reader.addEventListener("load", () => {
-            if (typeof reader.result === "string") {
-                updateDraft("avatar", reader.result);
-            }
-        });
-        reader.readAsDataURL(file);
+        if (!["image/jpeg", "image/png", "image/webp", "image/gif"].includes(file.type) || file.size > 5 * 1024 * 1024) {
+            setProfileError("Choose a JPEG, PNG, WebP, or GIF image up to 5 MB.");
+            event.target.value = "";
+            return;
+        }
+        setPendingAvatar(file);
+        updateDraft("avatar", URL.createObjectURL(file));
     };
 
     const saveProfile = async () => {
@@ -166,17 +167,29 @@ export function Profile() {
 
         try {
             if (!cloudProfile) throw new Error("Sign in to save profile changes.");
+            let avatarUrl = draftProfile.avatar || null;
+            if (pendingAvatar) {
+                avatarUrl = await uploadCloudAvatar(cloudProfile.id, pendingAvatar);
+            } else if (avatarUrl?.startsWith("data:")) {
+                const response = await fetch(avatarUrl);
+                const blob = await response.blob();
+                const extension = blob.type.split("/")[1] || "png";
+                avatarUrl = await uploadCloudAvatar(cloudProfile.id, new File([blob], `avatar.${extension}`, { type: blob.type }));
+            }
             const savedProfile: CloudUserProfile = {
                 ...cloudProfile,
                 username: draftProfile.name.trim() || null,
-                avatarUrl: draftProfile.avatar || null,
+                avatarUrl,
                 travelStyle: draftProfile.travelStyle,
                 currentFocus: draftProfile.currentFocus
             };
             await saveCloudUserProfile(savedProfile);
             setCloudProfile(savedProfile);
 
-            setProfile(draftProfile);
+            const savedDraft = { ...draftProfile, avatar: avatarUrl ?? "" };
+            setProfile(savedDraft);
+            setDraftProfile(savedDraft);
+            setPendingAvatar(null);
             window.dispatchEvent(new Event(PROFILE_UPDATED_EVENT));
             setIsEditing(false);
         } catch (error: unknown) {
@@ -300,9 +313,9 @@ export function Profile() {
 
                         <div className="mt-7 grid gap-3 sm:grid-cols-3">
                             {[
-                                { label: "Visited", value: cloudStats?.visited ?? 0 },
-                                { label: "Wishlist", value: cloudStats?.wishlist ?? 0 },
-                                { label: "Returns", value: cloudStats?.returns ?? 0 }
+                                { label: "Visited", value: Object.values(countryStatuses).filter((status) => status === "visited").length },
+                                { label: "Wishlist", value: Object.values(countryStatuses).filter((status) => status === "want-to-go").length },
+                                { label: "Returns", value: Object.values(countryStatuses).filter((status) => status === "want-to-visit-again").length }
                             ].map((stat) => (
                                 <article key={stat.label} className="rounded-[1.2rem] border border-[#eab681]/35 bg-[#ffead41f] p-4 shadow-[inset_0_1px_0_#ffffff2b,0_10px_28px_rgb(0_0_0_/_30%)] interactive-transition hover:shadow-[inset_0_1px_0_#ffffff2b,0_14px_34px_rgb(0_0_0_/_40%)] hover:-translate-y-0.5">
                                     <p className="font-[Adamina] text-[0.72rem] uppercase tracking-[0.18em] text-[#f6d7b5]">{stat.label}</p>
@@ -401,7 +414,7 @@ export function Profile() {
                                 </div>
                                 <label className="mt-4 block rounded-[0.8rem] border border-dashed border-[#cf8d45] bg-[#fff7ee]/70 px-4 py-3 text-center font-[Adamina] text-[0.9rem] text-[#50300d]">
                                     Upload your own
-                                    <input type="file" accept="image/*,.heic,.heif" className="sr-only" onChange={handleAvatarUpload} />
+                                    <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="sr-only" onChange={handleAvatarUpload} />
                                 </label>
                             </div>
 

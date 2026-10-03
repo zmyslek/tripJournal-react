@@ -148,7 +148,7 @@ function App() {
                     path="/profile"
                     element={
                         <Suspense fallback={<RouteFallback />}>
-                            <Profile />
+                            <Profile countryStatuses={countryState.statuses} />
                         </Suspense>
                     }
                 />

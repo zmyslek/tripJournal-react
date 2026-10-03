@@ -175,6 +175,20 @@ export async function loadCloudRecentTrips(limit = 3): Promise<CloudRecentTrip[]
     }));
 }
 
+export async function uploadCloudAvatar(userId: string, file: File): Promise<string> {
+    if (!file.type.startsWith("image/")) throw new Error("Choose an image file for your avatar.");
+    if (file.size > 5 * 1024 * 1024) throw new Error("Avatar images must be 5 MB or smaller.");
+    const extension = file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "img";
+    const path = `${userId}/${crypto.randomUUID()}.${extension}`;
+    const { error } = await supabase.storage.from("profile-avatars").upload(path, file, {
+        contentType: file.type,
+        cacheControl: "3600",
+        upsert: false
+    });
+    if (error) throw error;
+    return supabase.storage.from("profile-avatars").getPublicUrl(path).data.publicUrl;
+}
+
 export async function loadCloudUserPreferences(): Promise<{ userId: string; preferences: CloudUserPreferences } | null> {
     const { data: authData, error: authError } = await supabase.auth.getUser();
     if (authError) {
