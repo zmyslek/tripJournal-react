@@ -149,17 +149,20 @@ export function useGalleryStorage() {
     let cancelled = false;
 
     const loadRemote = async () => {
-      const { data, error: authError } = await supabase.auth.getUser();
+      // A signed-out visitor is a valid gallery state. getUser() returns
+      // AuthSessionMissingError in that case, so inspect the persisted session
+      // instead of treating it as a gallery load failure.
+      const { data, error: authError } = await supabase.auth.getSession();
       if (authError) {
         if (!cancelled) setError(authError.message);
         return;
       }
-      if (!data.user) {
+      if (!data.session?.user) {
         return;
       }
 
       try {
-        const remotePhotos = await getRemotePhotos(data.user.id);
+        const remotePhotos = await getRemotePhotos(data.session.user.id);
         if (!cancelled) {
           setIsRemote(true);
           setPhotos(remotePhotos);
