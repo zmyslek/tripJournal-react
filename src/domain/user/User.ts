@@ -43,14 +43,21 @@ function getFallbackUsername(email: string): string | null {
     return trimmedEmail ? trimmedEmail.split("@")[0] || null : null;
 }
 
-function mapProvider(provider: string | undefined): AuthProvider {
-    return provider === "google" || provider === "facebook" ? provider : "email";
+function mapProvider(provider: string | undefined, identities: Array<{ provider?: string }> | null | undefined): AuthProvider {
+    if (provider === "google" || provider === "facebook") return provider;
+
+    // Supabase can keep `app_metadata.provider` as the account's original
+    // provider after another identity has been linked. Check linked identities
+    // before falling back to email so Google sign-ins are labelled correctly.
+    const linkedProvider = identities?.find((identity) => identity.provider === "google" || identity.provider === "facebook")?.provider;
+    return linkedProvider === "google" || linkedProvider === "facebook" ? linkedProvider : "email";
 }
 
 export function createUserFromSession(sessionUser: {
     id: string;
     email?: string | null;
     app_metadata?: { provider?: string };
+    identities?: Array<{ provider?: string }> | null;
     user_metadata?: { full_name?: string; name?: string; avatar_url?: string; username?: string };
 }): StoredUserProfile {
     const email = sessionUser.email ?? "";
@@ -65,7 +72,7 @@ export function createUserFromSession(sessionUser: {
         email,
         username,
         avatarUrl: sessionUser.user_metadata?.avatar_url?.trim() || null,
-        authProvider: mapProvider(sessionUser.app_metadata?.provider),
+        authProvider: mapProvider(sessionUser.app_metadata?.provider, sessionUser.identities),
         loginTime: new Date().toISOString()
     };
 }

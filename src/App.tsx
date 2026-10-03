@@ -1,10 +1,11 @@
-import { lazy, Suspense, useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import MainLayout from "./components/MainLayout.tsx";
 import { appDependencies } from "./app/composition.ts";
 import type { CountryStatus } from "./domain/country/Country.ts";
 import type { CountryStatusState } from "./application/country/CountryStatusService.ts";
 import { canAccessAsGuest, hasStoredAuth } from "./lib/guestAccess.ts";
+import { supabase } from "./lib/supabase/client.ts";
 
 const Home = lazy(() => import("./pages/Home.tsx"));
 const Welcome = lazy(() => import("./pages/Welcome"));
@@ -27,25 +28,48 @@ function MainRouteGuard() {
 function App() {
     const [countryState, setCountryState] = useState<CountryStatusState | null>(null);
     const [countryStateError, setCountryStateError] = useState<string | null>(null);
+    const countryOwnerId = useRef<string | null | undefined>(undefined);
 
     useEffect(() => {
         let isMounted = true;
+        let loadGeneration = 0;
 
-        void appDependencies.countryStatus.load()
-            .then((state) => {
-                if (isMounted) {
-                    setCountryState(state);
-                    setCountryStateError(null);
-                }
-            })
-            .catch((error: unknown) => {
-                if (isMounted) {
+        const loadForCurrentUser = async (userId: string | null) => {
+            const generation = ++loadGeneration;
+            countryOwnerId.current = userId;
+            setCountryState(null);
+            setCountryStateError(null);
+            try {
+                const state = await appDependencies.countryStatus.load();
+                if (isMounted && generation === loadGeneration) setCountryState(state);
+            } catch (error: unknown) {
+                if (isMounted && generation === loadGeneration) {
                     setCountryStateError(error instanceof Error ? error.message : "Unable to load country statuses.");
                 }
-            });
+            }
+        };
+
+        void supabase.auth.getSession().then(({ data, error }) => {
+            if (!isMounted) return;
+            if (error) {
+                setCountryStateError(error.message);
+                return;
+            }
+            void loadForCurrentUser(data.session?.user.id ?? null);
+        });
+
+        const { data: authSubscription } = supabase.auth.onAuthStateChange((_event, session) => {
+            const nextUserId = session?.user.id ?? null;
+            if (countryOwnerId.current === undefined || countryOwnerId.current === nextUserId) return;
+            // Let Supabase finish its auth event before the repository reads the session.
+            setTimeout(() => {
+                if (isMounted && countryOwnerId.current !== nextUserId) void loadForCurrentUser(nextUserId);
+            }, 0);
+        });
 
         return () => {
             isMounted = false;
+            authSubscription.subscription.unsubscribe();
         };
     }, []);
 
@@ -148,7 +172,7 @@ function App() {
                     path="/profile"
                     element={
                         <Suspense fallback={<RouteFallback />}>
-                            <Profile countryStatuses={countryState.statuses} />
+                            <Profile />
                         </Suspense>
                     }
                 />

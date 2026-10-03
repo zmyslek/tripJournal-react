@@ -105,13 +105,9 @@ function getCachedSettings(): UserSettings {
         }
 
         return {
-            account: {
-                firstName: typeof parsedSettings.account?.firstName === "string" ? parsedSettings.account.firstName : defaultSettings.account.firstName,
-                lastName: typeof parsedSettings.account?.lastName === "string" ? parsedSettings.account.lastName : defaultSettings.account.lastName,
-                username: typeof parsedSettings.account?.username === "string" ? parsedSettings.account.username : defaultSettings.account.username,
-                email: typeof parsedSettings.account?.email === "string" ? parsedSettings.account.email : defaultSettings.account.email,
-                secondaryEmail: typeof parsedSettings.account?.secondaryEmail === "string" ? parsedSettings.account.secondaryEmail : defaultSettings.account.secondaryEmail
-            },
+            // Account identity belongs to the active Supabase session. Never
+            // hydrate it from this browser-wide cache shared by all accounts.
+            account: defaultSettings.account,
             notifications: {
                 weeklyDigest: Boolean(parsedSettings.notifications?.weeklyDigest),
                 itineraryReminders: Boolean(parsedSettings.notifications?.itineraryReminders),
@@ -178,10 +174,13 @@ export function Settings() {
                             email: profile.email
                         }
                     }));
+                    setCloudUserId(profile.id);
+                } else {
+                    setCloudUserId(null);
+                    setSettings((current) => ({ ...current, account: defaultSettings.account }));
                 }
 
                 if (preferenceResult) {
-                    setCloudUserId(preferenceResult.userId);
                     const preferences = preferenceResult.preferences;
                     setSettings((current) => ({
                         ...current,

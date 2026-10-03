@@ -57,8 +57,11 @@ interface PreferencesRow {
     compact_cards?: boolean;
 }
 
-function mapProvider(provider: string | undefined): AuthProvider {
-    return provider === "google" || provider === "facebook" ? provider : "email";
+function mapProvider(provider: string | undefined, identities: Array<{ provider?: string }> | null | undefined): AuthProvider {
+    if (provider === "google" || provider === "facebook") return provider;
+
+    const linkedProvider = identities?.find((identity) => identity.provider === "google" || identity.provider === "facebook")?.provider;
+    return linkedProvider === "google" || linkedProvider === "facebook" ? linkedProvider : "email";
 }
 
 export async function loadCloudUserProfile(): Promise<CloudUserProfile | null> {
@@ -87,11 +90,13 @@ export async function loadCloudUserProfile(): Promise<CloudUserProfile | null> {
     const row = userRow as UserRow | null;
     return {
         id: authUser.id,
-        email: row?.email ?? authUser.email ?? "",
+        email: authUser.email ?? row?.email ?? "",
         username: row?.username ?? authUser.user_metadata?.username ?? authUser.user_metadata?.name ?? null,
         avatarUrl: row?.avatar_url ?? authUser.user_metadata?.avatar_url ?? null,
-        createdAt: row?.created_at ?? authUser.created_at,
-        authProvider: mapProvider(authUser.app_metadata?.provider),
+        // public.users.created_at is set when the profile trigger runs; the
+        // auth record is the authoritative account creation timestamp.
+        createdAt: authUser.created_at,
+        authProvider: mapProvider(authUser.app_metadata?.provider, authUser.identities),
         travelStyle: (preferences as PreferencesRow | null)?.travel_style ?? "",
         currentFocus: (preferences as PreferencesRow | null)?.current_focus ?? ""
     };

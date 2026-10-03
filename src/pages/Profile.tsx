@@ -14,10 +14,7 @@ import { supabase } from "../lib/supabase/client";
 import { clearStoredUserProfile } from "../types/user";
 import { UnsplashAttribution } from "../components/UnsplashAttribution";
 import { requestUnsplashDownload, useUnsplashPhoto } from "../lib/unsplash";
-import { loadCloudUserProfile, loadCloudRecentTrips, saveCloudUserProfile, uploadCloudAvatar, type CloudUserProfile, type CloudRecentTrip } from "../infrastructure/user/SupabaseUserProfileRepository";
-import type { CountryStatus } from "../domain/country/Country";
-
-export type ProfileProps = { countryStatuses: Record<string, CountryStatus> };
+import { loadCloudUserProfile, loadCloudUserStats, loadCloudRecentTrips, saveCloudUserProfile, uploadCloudAvatar, type CloudUserProfile, type CloudUserStats, type CloudRecentTrip } from "../infrastructure/user/SupabaseUserProfileRepository";
 
 type ProfileForm = {
     name: string;
@@ -47,12 +44,13 @@ const defaultProfile: ProfileForm = {
 const AUTH_CACHE_KEY = "tripjournal:auth:v1";
 const PROFILE_UPDATED_EVENT = "tripjournal:profile-updated";
 
-export function Profile({ countryStatuses }: ProfileProps) {
+export function Profile() {
     const navigate = useNavigate();
     const heroPhoto = useUnsplashPhoto("photo-1519501025264-65ba15a82390");
     const [profile, setProfile] = useState<ProfileForm>(defaultProfile);
     const [draftProfile, setDraftProfile] = useState<ProfileForm>(defaultProfile);
     const [cloudProfile, setCloudProfile] = useState<CloudUserProfile | null>(null);
+    const [cloudStats, setCloudStats] = useState<CloudUserStats | null>(null);
     const [recentTrips, setRecentTrips] = useState<CloudRecentTrip[]>([]);
     const [isEditing, setIsEditing] = useState(false);
     const [pendingAvatar, setPendingAvatar] = useState<File | null>(null);
@@ -64,8 +62,8 @@ export function Profile({ countryStatuses }: ProfileProps) {
     useEffect(() => {
         let isMounted = true;
 
-        void Promise.all([loadCloudUserProfile(), loadCloudRecentTrips()])
-            .then(([cloudProfileResult, trips]) => {
+        void Promise.all([loadCloudUserProfile(), loadCloudUserStats(), loadCloudRecentTrips()])
+            .then(([cloudProfileResult, stats, trips]) => {
                 if (!isMounted) {
                     return;
                 }
@@ -82,6 +80,7 @@ export function Profile({ countryStatuses }: ProfileProps) {
                     setProfile(nextProfile);
                     setDraftProfile(nextProfile);
                 }
+                setCloudStats(stats);
                 setRecentTrips(trips ?? []);
                 setProfileError(null);
             })
@@ -313,9 +312,9 @@ export function Profile({ countryStatuses }: ProfileProps) {
 
                         <div className="mt-7 grid gap-3 sm:grid-cols-3">
                             {[
-                                { label: "Visited", value: Object.values(countryStatuses).filter((status) => status === "visited").length },
-                                { label: "Wishlist", value: Object.values(countryStatuses).filter((status) => status === "want-to-go").length },
-                                { label: "Returns", value: Object.values(countryStatuses).filter((status) => status === "want-to-visit-again").length }
+                                { label: "Visited", value: cloudStats?.visited ?? 0 },
+                                { label: "Wishlist", value: cloudStats?.wishlist ?? 0 },
+                                { label: "Returns", value: cloudStats?.returns ?? 0 }
                             ].map((stat) => (
                                 <article key={stat.label} className="rounded-[1.2rem] border border-[#eab681]/35 bg-[#ffead41f] p-4 shadow-[inset_0_1px_0_#ffffff2b,0_10px_28px_rgb(0_0_0_/_30%)] interactive-transition hover:shadow-[inset_0_1px_0_#ffffff2b,0_14px_34px_rgb(0_0_0_/_40%)] hover:-translate-y-0.5">
                                     <p className="font-[Adamina] text-[0.72rem] uppercase tracking-[0.18em] text-[#f6d7b5]">{stat.label}</p>

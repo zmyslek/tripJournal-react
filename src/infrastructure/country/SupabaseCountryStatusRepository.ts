@@ -41,16 +41,10 @@ export class SupabaseCountryStatusRepository implements CountryStatusRepository 
             throw error;
         }
 
-        const cloudState = rowsToState((data ?? []) as CountryStatusRow[]);
-        if (Object.keys(cloudState.statuses).length === 0) {
-            const localState = await this.localRepository.load();
-            if (Object.keys(localState.statuses).length > 0) {
-                await this.saveForUser(user.id, localState);
-                return localState;
-            }
-        }
-
-        return cloudState;
+        // Authenticated data must always come from this user's Supabase rows.
+        // Importing the shared guest cache here copies one browser user's data
+        // into every newly signed-in account on that device.
+        return rowsToState((data ?? []) as CountryStatusRow[]);
     }
 
     async save(state: CountryStatusState): Promise<void> {
