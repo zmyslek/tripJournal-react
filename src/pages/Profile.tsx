@@ -56,6 +56,7 @@ export function Profile() {
     const [pendingAvatar, setPendingAvatar] = useState<File | null>(null);
     const [profileError, setProfileError] = useState<string | null>(null);
     const [isSaving, setIsSaving] = useState(false);
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
     const { showScrollTop, scrollToTop } = useScrollToTop();
     const [scrollBtnBottom, setScrollBtnBottom] = useState(window.innerHeight * 0.02);
 
@@ -198,8 +199,18 @@ export function Profile() {
         }
     };
 
-    const handleLogout = () => {
-        void supabase.auth.signOut();
+    const handleLogout = async () => {
+        setIsLoggingOut(true);
+        setProfileError(null);
+
+        // Welcome redirects to Home while a Supabase session exists, so the session must be gone before we navigate.
+        try {
+            await supabase.auth.signOut();
+        } catch (error: unknown) {
+            setProfileError(error instanceof Error ? error.message : "Unable to log out.");
+            setIsLoggingOut(false);
+            return;
+        }
 
         try {
             localStorage.removeItem(AUTH_CACHE_KEY);
@@ -364,10 +375,11 @@ export function Profile() {
 
                             <button
                                 type="button"
-                                className="mt-1 flex items-center justify-center rounded-full border border-[#cf8d45] bg-[#cf8d45] px-4 py-2.5 font-[Adamina] text-[0.92rem] text-[#fff4e7] shadow-[0_8px_20px_rgb(0_0_0_/_25%)] interactive-transition hover:-translate-y-px hover:bg-[#b97731] hover:shadow-[0_12px_26px_rgb(0_0_0_/_32%)]"
+                                className="mt-1 flex items-center justify-center rounded-full border border-[#cf8d45] bg-[#cf8d45] px-4 py-2.5 font-[Adamina] text-[0.92rem] text-[#fff4e7] shadow-[0_8px_20px_rgb(0_0_0_/_25%)] interactive-transition hover:-translate-y-px hover:bg-[#b97731] hover:shadow-[0_12px_26px_rgb(0_0_0_/_32%)] disabled:cursor-not-allowed disabled:opacity-60"
                                 onClick={handleLogout}
+                                disabled={isLoggingOut}
                             >
-                                Log out
+                                {isLoggingOut ? "Logging out..." : "Log out"}
                             </button>
                         </div>
                         <blockquote className="relative flex flex-col justify-center rounded-[1rem] border border-[#eab681]/35 bg-[#5a392b] p-6 text-[#fff4e7] shadow-[0_18px_44px_rgb(0_0_0_/_45%)] sm:p-7">
